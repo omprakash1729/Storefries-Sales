@@ -306,17 +306,20 @@ function AccountsPage() {
           </SelectContent>
         </Select>
 
-        {hasFilters && (
-          <Button
-            variant="outline"
-            size="default"
-            onClick={clearFilters}
-            className="h-9 px-3 flex items-center gap-1.5 text-xs font-semibold text-rose-600 border-rose-100 bg-rose-50/50 hover:bg-rose-100/80 hover:text-rose-700 transition-all"
-          >
-            <FilterX className="h-3.5 w-3.5" />
-            Clear
-          </Button>
-        )}
+        <Button
+          variant="outline"
+          size="default"
+          onClick={clearFilters}
+          disabled={!hasFilters}
+          className={`h-9 px-3 flex items-center gap-1.5 text-xs font-semibold transition-all ${
+            hasFilters 
+              ? "text-rose-600 border-rose-100 bg-rose-50/50 hover:bg-rose-100/80 hover:text-rose-700" 
+              : "text-muted-foreground/50 opacity-50 border-dashed"
+          }`}
+        >
+          <FilterX className="h-3.5 w-3.5" />
+          Clear Filters
+        </Button>
       </div>
 
       {/* Table */}
