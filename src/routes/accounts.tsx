@@ -380,7 +380,7 @@ function AccountsPage() {
             </div>
           </DialogHeader>
  
-          <div className="mt-6 space-y-6">
+          <div className="mt-6 space-y-6 max-h-[75vh] overflow-y-auto pr-1">
             {/* Modern Stats Panel */}
             <div className="grid grid-cols-2 gap-4 bg-slate-50/60 p-4 rounded-xl border border-slate-200/50">
               <div className="space-y-1">
