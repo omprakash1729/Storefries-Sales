@@ -6,6 +6,7 @@ import { StatusBadge } from "./StatusBadge";
 
 export interface Metrics {
   total: number;
+  new_lead: number;
   prospect: number;
   demo: number;
   trial: number;
@@ -15,7 +16,7 @@ export interface Metrics {
 }
 
 export function computeMetrics(accounts: Account[]): Metrics {
-  const m = { total: accounts.length, prospect: 0, demo: 0, trial: 0, rejected: 0, conversion: 0, active: 0 };
+  const m = { total: accounts.length, new_lead: 0, prospect: 0, demo: 0, trial: 0, rejected: 0, conversion: 0, active: 0 };
   for (const a of accounts) m[a.status]++;
   m.active = m.total - m.rejected;
   m.conversion = m.total === 0 ? 0 : Math.round(((m.demo + m.trial) / m.total) * 1000) / 10;
@@ -28,16 +29,35 @@ export function useMetrics() {
 }
 
 export function KpiCard({
-  label, value, sub, accent, progress,
-}: { label: string; value: string | number; sub?: string; accent?: string; progress?: number }) {
+  label, value, sub, accent, progress, theme = "indigo", onClick, active
+}: { label: string; value: string | number; sub?: string; accent?: string; progress?: number; theme?: "indigo" | "violet" | "slate" | "blue" | "amber" | "rose" | "brand"; onClick?: () => void; active?: boolean }) {
+  const themes = {
+    violet: { border: "border-violet-100/60", bg: "bg-violet-50/20", glow: "shadow-[0_8px_30px_rgba(139,92,246,0.03)]", text: "text-violet-600", bar: "bg-violet-500", dot: "bg-violet-500" },
+    indigo: { border: "border-indigo-100/60", bg: "bg-indigo-50/20", glow: "shadow-[0_8px_30px_rgba(99,102,241,0.03)]", text: "text-indigo-600", bar: "bg-indigo-500", dot: "bg-indigo-500" },
+    slate: { border: "border-slate-100/80", bg: "bg-slate-50/20", glow: "shadow-[0_8px_30px_rgba(148,163,184,0.03)]", text: "text-slate-600", bar: "bg-slate-400", dot: "bg-slate-400" },
+    blue: { border: "border-sky-100/60", bg: "bg-sky-50/20", glow: "shadow-[0_8px_30px_rgba(14,165,233,0.03)]", text: "text-sky-600", bar: "bg-sky-500", dot: "bg-sky-500" },
+    amber: { border: "border-amber-100/60", bg: "bg-amber-50/20", glow: "shadow-[0_8px_30px_rgba(245,158,11,0.03)]", text: "text-amber-600", bar: "bg-amber-500", dot: "bg-amber-500" },
+    rose: { border: "border-rose-100/60", bg: "bg-rose-50/20", glow: "shadow-[0_8px_30px_rgba(244,63,94,0.03)]", text: "text-rose-600", bar: "bg-rose-500", dot: "bg-rose-500" },
+    brand: { border: "border-emerald-100/60", bg: "bg-emerald-50/20", glow: "shadow-[0_8px_30px_rgba(16,185,129,0.03)]", text: "text-gradient-brand", bar: "bg-gradient-brand", dot: "bg-emerald-500" },
+  };
+
+  const t = themes[theme] || themes.indigo;
+
   return (
-    <div className="rounded-xl border bg-card p-4 shadow-card transition hover:shadow-elevated hover:-translate-y-0.5">
-      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className={"mt-1 text-3xl font-bold " + (accent ?? "text-foreground")}>{value}</div>
-      {sub && <div className="mt-1 text-xs text-muted-foreground">{sub}</div>}
+    <div 
+      onClick={onClick}
+      className={`relative overflow-hidden rounded-xl border p-4 shadow-card transition-all duration-300 ${active ? "border-primary/80 ring-2 ring-primary bg-slate-50/40 scale-[1.01] shadow-elevated" : `${t.border} ${t.bg} ${t.glow}`} ${onClick ? "cursor-pointer hover:shadow-elevated hover:-translate-y-1 hover:scale-[1.01]" : "hover:shadow-elevated hover:-translate-y-1"}`}
+    >
+      <div className={`absolute top-0 left-0 h-[3px] w-full ${t.bar} opacity-70`} />
+      <div className="flex items-center gap-1.5">
+        <span className={`h-1.5 w-1.5 rounded-full ${t.dot}`} />
+        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">{label}</div>
+      </div>
+      <div className={`mt-1.5 text-3xl font-extrabold tracking-tight ${accent ?? t.text}`}>{value}</div>
+      {sub && <div className="mt-1 text-[11px] text-muted-foreground/80 font-medium">{sub}</div>}
       {progress !== undefined && (
-        <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-          <div className="h-full rounded-full bg-gradient-brand transition-all" style={{ width: `${Math.min(100, progress)}%` }} />
+        <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+          <div className={`h-full rounded-full ${t.bar} transition-all duration-500`} style={{ width: `${Math.min(100, progress)}%` }} />
         </div>
       )}
     </div>
@@ -46,6 +66,20 @@ export function KpiCard({
 
 export function repInitials(name: string) {
   return name.split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+}
+
+export function RepAvatarMini({ name }: { name: string }) {
+  const reps = useStore((s) => s.reps);
+  const rep = reps.find((r) => r.name === name);
+  const cls = rep ? REP_COLOR_CLASS[rep.color] : "bg-slate-400";
+  return (
+    <div
+      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[9px] font-extrabold text-white shadow-sm ring-1 ring-white/10 ${cls}`}
+      title={name}
+    >
+      {name.trim().charAt(0).toUpperCase()}
+    </div>
+  );
 }
 
 export function RepAvatar({ name }: { name: string }) {

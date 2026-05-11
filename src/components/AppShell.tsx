@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { LayoutDashboard, Users, BarChart3, XCircle, Save } from "lucide-react";
+import { LayoutDashboard, Users, BarChart3, XCircle, Save, Cloud, RefreshCcw } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { ALL_MONTHS } from "@/lib/seed-data";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,6 +13,33 @@ const NAV = [
   { to: "/rejected", label: "Rejected", icon: XCircle },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
 ] as const;
+ 
+function AutoSaveIndicator({ accounts, reps }: { accounts: any[], reps: any[] }) {
+  const [isSaving, setIsSaving] = useState(false);
+  const [mounted, setMounted] = useState(false);
+ 
+  useEffect(() => {
+    if (!mounted) {
+      setMounted(true);
+      return;
+    }
+    setIsSaving(true);
+    const t = setTimeout(() => setIsSaving(false), 1000);
+    return () => clearTimeout(t);
+  }, [accounts, reps]);
+ 
+  return (
+    <div className={`flex items-center justify-center h-7 w-7 rounded-full transition-all duration-500 border ${
+      isSaving ? "bg-blue-50 text-blue-600 border-blue-100" : "bg-emerald-50 text-emerald-600 border-emerald-100"
+    }`} title={isSaving ? "Syncing..." : "Auto-saved"}>
+      {isSaving ? (
+        <RefreshCcw className="h-3.5 w-3.5 animate-spin" />
+      ) : (
+        <Cloud className="h-3.5 w-3.5 fill-current opacity-90" />
+      )}
+    </div>
+  );
+}
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { globalMonth, setGlobalMonth, accounts, reps } = useStore();
@@ -44,10 +71,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-40 border-b bg-white/80 backdrop-blur-md">
         <div className="flex h-16 items-center gap-4 px-4 md:px-6">
           <Link to="/" className="flex items-center gap-3">
-            <img src="/storefries-logo.png" alt="Storefries" className="h-9 w-9 rounded-md object-contain" />
+            <img src="/app-logo.png" alt="Logo" className="h-14 w-auto rounded-xl object-contain bg-slate-50/50 p-0.5 shadow-sm" />
             <div className="hidden sm:block">
-              <div className="text-base font-semibold leading-tight text-gradient-brand">Storefries Sales</div>
-              <div className="text-xs text-muted-foreground">Outbound Sales Department</div>
+              <div className="text-lg font-bold tracking-tight text-gradient-brand">Storefries Sales</div>
+              <div className="text-[10px] leading-tight text-muted-foreground font-medium">Outbound Sales Department</div>
             </div>
           </Link>
 
@@ -71,6 +98,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span className="hidden lg:inline text-xs text-muted-foreground">
               {now.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
             </span>
+            <AutoSaveIndicator accounts={accounts} reps={reps} />
             <Select value={globalMonth} onValueChange={setGlobalMonth}>
               <SelectTrigger className="h-9 w-[170px]">
                 <SelectValue placeholder="Filter month" />
@@ -82,8 +110,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 ))}
               </SelectContent>
             </Select>
-            <Button onClick={handleSaveSource} className="h-9 bg-gradient-brand text-white hover:opacity-90 border-0">
-              <Save className="h-4 w-4" /> Save
+            <Button onClick={handleSaveSource} variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:bg-accent hover:text-foreground" title="Manual JSON Backup">
+              <Save className="h-4 w-4" />
             </Button>
           </div>
         </div>

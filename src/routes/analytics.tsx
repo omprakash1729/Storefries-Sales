@@ -57,10 +57,10 @@ function AnalyticsPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard label="Industries Covered" value={byIndustry.length} accent="text-gradient-brand" />
-        <KpiCard label="Total Reps" value={reps.length} />
-        <KpiCard label="Months Tracked" value={monthCompare.length} />
-        <KpiCard label="Pipeline Volume" value={accounts.length} />
+        <KpiCard label="Industries Covered" value={byIndustry.length} theme="brand" />
+        <KpiCard label="Total Reps" value={reps.length} theme="blue" />
+        <KpiCard label="Months Tracked" value={monthCompare.length} theme="amber" />
+        <KpiCard label="Pipeline Volume" value={accounts.length} theme="indigo" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

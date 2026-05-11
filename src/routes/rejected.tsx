@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useFilteredAccounts } from "@/lib/store";
-import { KpiCard } from "@/components/dashboard-utils";
-import { RepChip } from "@/components/dashboard-utils";
+import { KpiCard, RepChip, RepAvatar } from "@/components/dashboard-utils";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Legend } from "chart.js";
 
@@ -49,10 +48,10 @@ function RejectedPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard label="Total Rejections" value={rejected.length} accent="text-rose-600" />
-        <KpiCard label="Top Industry" value={byIndustry[0]?.[0] ?? "—"} sub={byIndustry[0] ? `${byIndustry[0][1]} accounts` : ""} />
-        <KpiCard label="Top Reason" value={topReason.length > 30 ? topReason.slice(0, 30) + "…" : topReason} />
-        <KpiCard label="Rejection Rate" value={`${all.length ? Math.round((rejected.length / all.length) * 1000) / 10 : 0}%`} accent="text-gradient-brand" />
+        <KpiCard label="Total Rejections" value={rejected.length} theme="rose" />
+        <KpiCard label="Top Industry" value={byIndustry[0]?.[0] ?? "—"} sub={byIndustry[0] ? `${byIndustry[0][1]} accounts` : ""} theme="blue" />
+        <KpiCard label="Top Remark" value={topReason.length > 30 ? topReason.slice(0, 30) + "…" : topReason} theme="slate" />
+        <KpiCard label="Rejection Rate" value={`${all.length ? Math.round((rejected.length / all.length) * 1000) / 10 : 0}%`} theme="brand" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -97,7 +96,7 @@ function RejectedPage() {
                 <th className="text-left px-4 py-3">Industry</th>
                 <th className="text-left px-4 py-3">Owner</th>
                 <th className="text-left px-4 py-3">Month</th>
-                <th className="text-left px-4 py-3">Reason</th>
+                <th className="text-left px-4 py-3">Remark</th>
               </tr>
             </thead>
             <tbody>
@@ -105,7 +104,12 @@ function RejectedPage() {
                 <tr key={a.id} className="border-t">
                   <td className="px-4 py-2.5 font-medium">{a.name}</td>
                   <td className="px-4 py-2.5 text-muted-foreground">{a.industry}</td>
-                  <td className="px-4 py-2.5"><RepChip name={a.owner} /></td>
+                  <td className="px-4 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <RepAvatar name={a.owner} />
+                      <span className="text-xs font-medium text-slate-700">{a.owner}</span>
+                    </div>
+                  </td>
                   <td className="px-4 py-2.5 text-muted-foreground text-xs">{a.month}</td>
                   <td className="px-4 py-2.5 text-xs">{a.reason ?? "—"}</td>
                 </tr>

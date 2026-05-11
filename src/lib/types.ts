@@ -1,4 +1,4 @@
-export type AccountStatus = "prospect" | "demo" | "trial" | "rejected";
+export type AccountStatus = "new_lead" | "prospect" | "demo" | "trial" | "rejected";
 
 export interface Account {
   id: string;
@@ -8,6 +8,7 @@ export interface Account {
   month: string;
   status: AccountStatus;
   reason?: string;
+  createdAt?: string; // ISO timestamp
 }
 
 export type RepColor = "blue" | "green" | "amber" | "teal" | "purple" | "red";
@@ -18,6 +19,7 @@ export interface SalesRep {
 }
 
 export const STATUS_LABEL: Record<AccountStatus, string> = {
+  new_lead: "New Lead",
   prospect: "Prospect",
   demo: "Demo Attended",
   trial: "Trial Started",
