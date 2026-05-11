@@ -9,6 +9,7 @@ export interface Metrics {
   new_lead: number;
   prospect: number;
   demo: number;
+  proposal_sent: number;
   trial: number;
   rejected: number;
   conversion: number;
@@ -16,7 +17,7 @@ export interface Metrics {
 }
 
 export function computeMetrics(accounts: Account[]): Metrics {
-  const m = { total: accounts.length, new_lead: 0, prospect: 0, demo: 0, trial: 0, rejected: 0, conversion: 0, active: 0 };
+  const m = { total: accounts.length, new_lead: 0, prospect: 0, demo: 0, proposal_sent: 0, trial: 0, rejected: 0, conversion: 0, active: 0 };
   for (const a of accounts) m[a.status]++;
   m.active = m.total - m.rejected;
   m.conversion = m.total === 0 ? 0 : Math.round(((m.demo + m.trial) / m.total) * 1000) / 10;
@@ -30,8 +31,9 @@ export function useMetrics() {
 
 export function KpiCard({
   label, value, sub, accent, progress, theme = "indigo", onClick, active
-}: { label: string; value: string | number; sub?: string; accent?: string; progress?: number; theme?: "indigo" | "violet" | "slate" | "blue" | "amber" | "rose" | "brand"; onClick?: () => void; active?: boolean }) {
+}: { label: string; value: string | number; sub?: string; accent?: string; progress?: number; theme?: "indigo" | "violet" | "slate" | "blue" | "emerald" | "amber" | "rose" | "brand"; onClick?: () => void; active?: boolean }) {
   const themes = {
+    emerald: { border: "border-emerald-100/60", bg: "bg-emerald-50/20", glow: "shadow-[0_8px_30px_rgba(16,185,129,0.03)]", text: "text-emerald-600", bar: "bg-emerald-500", dot: "bg-emerald-500" },
     violet: { border: "border-violet-100/60", bg: "bg-violet-50/20", glow: "shadow-[0_8px_30px_rgba(139,92,246,0.03)]", text: "text-violet-600", bar: "bg-violet-500", dot: "bg-violet-500" },
     indigo: { border: "border-indigo-100/60", bg: "bg-indigo-50/20", glow: "shadow-[0_8px_30px_rgba(99,102,241,0.03)]", text: "text-indigo-600", bar: "bg-indigo-500", dot: "bg-indigo-500" },
     slate: { border: "border-slate-100/80", bg: "bg-slate-50/20", glow: "shadow-[0_8px_30px_rgba(148,163,184,0.03)]", text: "text-slate-600", bar: "bg-slate-400", dot: "bg-slate-400" },

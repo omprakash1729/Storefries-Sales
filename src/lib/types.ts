@@ -1,4 +1,4 @@
-export type AccountStatus = "new_lead" | "prospect" | "demo" | "trial" | "rejected";
+export type AccountStatus = "new_lead" | "prospect" | "demo" | "proposal_sent" | "trial" | "rejected";
 
 export interface Account {
   id: string;
@@ -22,6 +22,7 @@ export const STATUS_LABEL: Record<AccountStatus, string> = {
   new_lead: "New Lead",
   prospect: "Prospect",
   demo: "Demo Attended",
+  proposal_sent: "Proposal Sent",
   trial: "Trial Started",
   rejected: "Rejected",
 };

@@ -59,7 +59,7 @@ export function groupAccountsByCompany(accounts: Account[]): UniqueCompany[] {
     let mostRecent = latestChronological;
 
     if (latestChronological.status !== "rejected") {
-      const activeStatuses = ["new_lead", "prospect", "demo", "trial"];
+      const activeStatuses = ["new_lead", "prospect", "demo", "proposal_sent", "trial"];
       mostRecent = sorted.reduce((best, current) => {
         if (current.status === "rejected") return best;
         const currentRank = activeStatuses.indexOf(current.status);
