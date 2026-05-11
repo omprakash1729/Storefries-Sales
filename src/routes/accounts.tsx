@@ -363,7 +363,7 @@ function AccountsPage() {
 
       {/* Chronological Timeline History Modal */}
       <Dialog open={selectedCompany !== null} onOpenChange={(open) => !open && setSelectedCompany(null)}>
-        <DialogContent className="max-w-xl rounded-2xl border border-slate-100 p-6 shadow-elevated bg-white/95 backdrop-blur-sm">
+        <DialogContent className="max-w-xl rounded-2xl border border-slate-100 p-6 shadow-elevated bg-white/95 backdrop-blur-sm max-h-[90vh] overflow-y-auto custom-scrollbar">
           <DialogHeader className="pb-5 border-b border-slate-100 flex flex-row items-center justify-between space-y-0">
             <div className="flex items-center gap-4">
               <div className="h-14 w-14 rounded-2xl bg-gradient-soft text-primary flex items-center justify-center font-black text-2xl border border-slate-100 shadow-sm shrink-0 select-none uppercase">
@@ -380,7 +380,7 @@ function AccountsPage() {
             </div>
           </DialogHeader>
  
-          <div className="mt-6 space-y-6 max-h-[75vh] overflow-y-auto pr-1">
+          <div className="mt-6 space-y-6">
             {/* Modern Stats Panel */}
             <div className="grid grid-cols-2 gap-4 bg-slate-50/60 p-4 rounded-xl border border-slate-200/50">
               <div className="space-y-1">
