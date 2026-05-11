@@ -434,7 +434,7 @@ function AccountsPage() {
                             }
                           }
                         }}
-                        className="absolute top-3 right-3 p-1 rounded-md text-slate-300 hover:bg-rose-50 hover:text-rose-500 transition-all opacity-0 group-hover/timeline:opacity-100 focus:opacity-100"
+                        className="absolute top-3 right-3 p-1 rounded-md text-rose-400 hover:bg-rose-50 hover:text-rose-600 transition-all opacity-100"
                         title="Delete interaction"
                       >
                         <X className="h-3.5 w-3.5" />
