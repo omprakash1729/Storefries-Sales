@@ -18,6 +18,9 @@ export default defineConfig(({ command }) => {
           specifiers: ["server-only"],
         },
       },
+      prerender: {
+        enabled: true,
+      },
     }),
     react(),
   ];
