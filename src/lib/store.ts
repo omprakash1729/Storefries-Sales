@@ -53,7 +53,7 @@ export const useFilteredAccounts = () => {
 // Self-executing local state migration routine
 if (typeof window !== 'undefined') {
   setTimeout(() => {
-    const key = "v3_accounts_patched_final";
+    const key = "v4_accounts_patched_final";
     if (!localStorage.getItem(key)) {
       import("./seed-data").then(({ PATCH_ACCOUNTS }) => {
         const s = useStore.getState();

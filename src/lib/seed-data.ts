@@ -260,7 +260,8 @@ const newDataRaw = [
   { name: "Arvind Fashion Limited", owner: "Bhuvaneshwari", industry: "Apparel & Footwear", month: "May 2026", status: "new_lead", reason: "Sent WA Reminder", createdAt: "2026-05-08T12:00:00.000Z" },
   { name: "snitch", owner: "Bhuvaneshwari", industry: "Apparel & Footwear", month: "May 2026", status: "prospect", reason: "shared deck through WA", createdAt: "2026-05-08T12:00:00.000Z" },
   { name: "Rainbow", owner: "Bhuvaneshwari", industry: "Other", month: "May 2026", status: "new_lead", reason: "Attended but no response", createdAt: "2026-05-11T12:00:00.000Z" },
-  { name: "Deepsense Digital", owner: "Bhuvaneshwari", industry: "Digital Marketing", month: "May 2026", status: "new_lead", reason: "Sent WA Reminder", createdAt: "2026-05-11T12:00:00.000Z" }
+  { name: "Deepsense Digital", owner: "Bhuvaneshwari", industry: "Digital Marketing", month: "May 2026", status: "new_lead", reason: "Sent WA Reminder", createdAt: "2026-05-11T12:00:00.000Z" },
+  { name: "HCG (HealthCare Global Enterprises)", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "prospect", reason: "Call by 12pm tomorrow", createdAt: "2026-05-11T12:00:00.000Z" }
 ];
 
 export const PATCH_ACCOUNTS: Account[] = newDataRaw.map((a, i) => ({
