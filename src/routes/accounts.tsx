@@ -555,6 +555,7 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, 
   const [status, setStatus] = useState<AccountStatus>("new_lead");
   const [date, setDate] = useState<Date>(new Date());
   const [reason, setReason] = useState("");
+  const [isCustomIndustry, setIsCustomIndustry] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -564,11 +565,13 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, 
       setStatus(prefill?.status ?? "new_lead");
       setReason("");
       setDate(new Date()); // Always auto-select TODAY for a brand new interaction
+      setIsCustomIndustry(false); // Reset to standard select mode on fresh open
     }
   }, [open, prefill, industries, reps]);
  
   const submit = () => {
     if (!name.trim()) return toast.error("Account name required");
+    if (!industry.trim()) return toast.error("Industry name required");
     if (!owner) return toast.error("Owner required");
     
     const derivedMonth = format(date, "MMMM yyyy");
@@ -599,10 +602,44 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, 
           <div><Label>Company name</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Account Name" /></div>
           <div className="grid grid-cols-2 gap-3">
             <div><Label>Industry</Label>
-              <Select value={industry} onValueChange={setIndustry}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{industries.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}</SelectContent>
-              </Select>
+              {isCustomIndustry ? (
+                <div className="relative group">
+                  <Input 
+                    value={industry} 
+                    onChange={(e) => setIndustry(e.target.value)} 
+                    placeholder="E.g. Software" 
+                    autoFocus 
+                    className="h-10 pr-9 border-emerald-200 focus-visible:ring-emerald-500"
+                  />
+                  <Button 
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => { setIsCustomIndustry(false); setIndustry(industries[0]); }}
+                    className="h-8 w-8 absolute right-1 top-1 text-muted-foreground hover:text-slate-800"
+                    title="Cancel custom entry"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Select value={industry} onValueChange={(v) => {
+                  if (v === "CREATE_NEW") {
+                    setIsCustomIndustry(true);
+                    setIndustry("");
+                  } else {
+                    setIndustry(v);
+                  }
+                }}>
+                  <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CREATE_NEW" className="text-emerald-600 font-bold flex items-center gap-1.5 border-b border-slate-100 bg-emerald-50/30 hover:bg-emerald-50">
+                      <Plus className="inline h-3 w-3 mr-1" /> Add new industry
+                    </SelectItem>
+                    {industries.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <div><Label>Owner</Label>
               <Select value={owner} onValueChange={setOwner}>
