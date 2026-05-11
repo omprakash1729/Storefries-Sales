@@ -19,14 +19,20 @@ export const Route = createFileRoute("/analytics")({
   component: AnalyticsPage,
 });
 
+import { groupAccountsByCompany } from "@/lib/crm-utils";
+
 const STATUS_COLORS: Record<string, string> = {
   prospect: "#94a3b8", demo: "#0073c8", trial: "#f59e0b", rejected: "#f43f5e",
 };
 
 function AnalyticsPage() {
-  const accounts = useFilteredAccounts();
-  const allAccounts = useStore((s) => s.accounts);
+  const rawAccounts = useFilteredAccounts();
+  const rawAllAccounts = useStore((s) => s.accounts);
   const reps = useStore((s) => s.reps);
+
+  // 🎯 Derive Unique Companies strictly for reporting accurate distinct counts
+  const accounts = useMemo(() => groupAccountsByCompany(rawAccounts).map(u => u.mostRecent), [rawAccounts]);
+  const allAccounts = useMemo(() => groupAccountsByCompany(rawAllAccounts).map(u => u.mostRecent), [rawAllAccounts]);
 
   const byIndustry = useMemo(() => {
     const m = new Map<string, number>();
@@ -37,7 +43,9 @@ function AnalyticsPage() {
   const repBreakdown = useMemo(() => {
     return reps.map((r) => {
       const list = accounts.filter((a) => a.owner === r.name);
-      return { name: r.name, ...computeMetrics(list) };
+      // Pass directly to component utility, which already uses computeMetrics
+      const stats = computeMetrics(list); 
+      return { name: r.name, ...stats };
     });
   }, [reps, accounts]);
 

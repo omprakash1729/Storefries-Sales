@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import * as XLSX from "xlsx";
-import { Plus, Search, Trash2, Download, UserPlus, CalendarIcon, X } from "lucide-react";
+import { Plus, Search, Trash2, Download, UserPlus, CalendarIcon, X, FilterX } from "lucide-react";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
@@ -126,6 +126,23 @@ function AccountsPage() {
   const months = Array.from(new Set([...ALL_MONTHS, ...accounts.map((a) => a.month)]));
   const industries = Array.from(new Set([...INDUSTRIES, ...accounts.map((a) => a.industry)])).sort();
 
+  const hasFilters = search !== "" || 
+                    statusFilter !== "all" || 
+                    industryFilter !== "all" || 
+                    ownerFilter !== "all" || 
+                    dateRange !== undefined || 
+                    globalMonth !== "all";
+
+  const clearFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+    setIndustryFilter("all");
+    setOwnerFilter("all");
+    setDateRange(undefined);
+    useStore.getState().setGlobalMonth("all");
+    toast.success("Filters cleared");
+  };
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return accounts.filter((a) => {
@@ -179,12 +196,14 @@ function AccountsPage() {
     toast.success("Company details synchronized across all history.");
   };
 
+  const allUniqueCount = useMemo(() => groupAccountsByCompany(accounts).length, [accounts]);
+
   return (
     <div className="mx-auto max-w-7xl space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Accounts</h1>
-          <p className="text-sm text-muted-foreground">{filtered.length} of {accounts.length} accounts</p>
+          <p className="text-sm text-muted-foreground">{filteredUnique.length} of {allUniqueCount} unique companies</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => setShowAddRep(true)}><UserPlus className="h-4 w-4" />Add Rep</Button>
@@ -212,7 +231,7 @@ function AccountsPage() {
       </div>
 
       {/* Toolbar */}
-      <div className="rounded-xl border bg-card p-4 shadow-card grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-2">
+      <div className="rounded-xl border bg-card p-4 shadow-card grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-2">
         <div className="relative sm:col-span-2 xl:col-span-2">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Search company, owner, industry…" className="pl-9"
@@ -286,6 +305,18 @@ function AccountsPage() {
             {industries.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}
           </SelectContent>
         </Select>
+
+        {hasFilters && (
+          <Button
+            variant="outline"
+            size="default"
+            onClick={clearFilters}
+            className="h-9 px-3 flex items-center gap-1.5 text-xs font-semibold text-rose-600 border-rose-100 bg-rose-50/50 hover:bg-rose-100/80 hover:text-rose-700 transition-all"
+          >
+            <FilterX className="h-3.5 w-3.5" />
+            Clear
+          </Button>
+        )}
       </div>
 
       {/* Table */}

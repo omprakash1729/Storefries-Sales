@@ -4,6 +4,8 @@ import type { Account, AccountStatus } from "@/lib/types";
 import { REP_COLOR_CLASS, REP_COLOR_SOFT } from "@/lib/types";
 import { StatusBadge } from "./StatusBadge";
 
+import { groupAccountsByCompany } from "@/lib/crm-utils";
+
 export interface Metrics {
   total: number;
   new_lead: number;
@@ -17,10 +19,17 @@ export interface Metrics {
 }
 
 export function computeMetrics(accounts: Account[]): Metrics {
-  const m = { total: accounts.length, new_lead: 0, prospect: 0, demo: 0, proposal_sent: 0, trial: 0, rejected: 0, conversion: 0, active: 0 };
-  for (const a of accounts) m[a.status]++;
+  // 💎 DEDUPLICATION ENGINE: Convert raw timeline event log into Distinct Companies with Final Statuses.
+  const uniques = groupAccountsByCompany(accounts).map(u => u.mostRecent);
+  
+  const m = { total: uniques.length, new_lead: 0, prospect: 0, demo: 0, proposal_sent: 0, trial: 0, rejected: 0, conversion: 0, active: 0 };
+  
+  for (const a of uniques) {
+    m[a.status]++;
+  }
+  
   m.active = m.total - m.rejected;
-  m.conversion = m.total === 0 ? 0 : Math.round(((m.demo + m.trial) / m.total) * 1000) / 10;
+  m.conversion = m.total === 0 ? 0 : Math.round(((m.demo + m.trial) / Math.max(1, m.total)) * 1000) / 10;
   return m;
 }
 

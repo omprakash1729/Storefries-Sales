@@ -42,8 +42,17 @@ function AutoSaveIndicator({ accounts, reps }: { accounts: any[], reps: any[] })
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { globalMonth, setGlobalMonth, accounts, reps } = useStore();
+  const { globalMonth, setGlobalMonth, accounts, reps, fetchData, subscribeRealtime } = useStore();
   const [now, setNow] = useState(() => new Date());
+
+  // ⚡️ Initialize real-time shared database hydration
+  useEffect(() => {
+    fetchData();
+    const unsubscribe = subscribeRealtime();
+    return () => {
+      unsubscribe();
+    };
+  }, [fetchData, subscribeRealtime]);
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 60_000);
