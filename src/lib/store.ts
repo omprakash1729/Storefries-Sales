@@ -49,3 +49,26 @@ export const useFilteredAccounts = () => {
     ? accounts
     : accounts.filter((a) => a.month === globalMonth);
 };
+
+// Self-executing local state migration routine
+if (typeof window !== 'undefined') {
+  setTimeout(() => {
+    const key = "v3_accounts_patched_final";
+    if (!localStorage.getItem(key)) {
+      import("./seed-data").then(({ PATCH_ACCOUNTS }) => {
+        const s = useStore.getState();
+        const existingSet = new Set(s.accounts.map(a => `${a.name}|${a.createdAt || a.month}|${a.reason || ''}`));
+        
+        const toInject = PATCH_ACCOUNTS.filter(p => 
+          !existingSet.has(`${p.name}|${p.createdAt || p.month}|${p.reason || ''}`)
+        );
+
+        if (toInject.length > 0) {
+          useStore.setState({ accounts: [...toInject, ...s.accounts] });
+          console.log(`Automatically synchronized ${toInject.length} fresh accounts to your local dashboard!`);
+        }
+        localStorage.setItem(key, "true");
+      });
+    }
+  }, 500); // Slight timeout to ensure store is fully hydrated before manipulation
+}
