@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import * as XLSX from "xlsx";
-import { Plus, Search, Trash2, Download, UserPlus, CalendarIcon } from "lucide-react";
+import { Plus, Search, Trash2, Download, UserPlus, CalendarIcon, X } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -102,7 +102,11 @@ function AccountsPage() {
   const [industryFilter, setIndustryFilter] = useState<string>("all");
   const [showAdd, setShowAdd] = useState(false);
   const [showAddRep, setShowAddRep] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState<UniqueCompany | null>(null);
+  const [selectedCompanyName, setSelectedCompanyName] = useState<string | null>(null);
+  const activeCompany = useMemo(() => {
+    if (!selectedCompanyName) return null;
+    return uniqueCompanies.find(c => c.name === selectedCompanyName) || null;
+  }, [uniqueCompanies, selectedCompanyName]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [ownerFilter, setOwnerFilter] = useState<string>("all");
   const [prefillData, setPrefillData] = useState<Partial<Account> | null>(null);
@@ -256,7 +260,7 @@ function AccountsPage() {
                         className="font-bold text-slate-800"
                         displayNode={
                           <span
-                            onClick={() => !isEditMode && setSelectedCompany(uc)}
+                            onClick={() => !isEditMode && setSelectedCompanyName(uc.name)}
                             className={!isEditMode ? "cursor-pointer hover:text-primary hover:underline" : ""}
                           >
                             {uc.name}
@@ -362,16 +366,16 @@ function AccountsPage() {
       <AddRepModal open={showAddRep} onOpenChange={setShowAddRep} onAdd={addRep} existing={reps.map((r) => r.name)} />
 
       {/* Chronological Timeline History Modal */}
-      <Dialog open={selectedCompany !== null} onOpenChange={(open) => !open && setSelectedCompany(null)}>
+      <Dialog open={activeCompany !== null} onOpenChange={(open) => !open && setSelectedCompanyName(null)}>
         <DialogContent className="max-w-xl rounded-2xl border border-slate-100 p-6 shadow-elevated bg-white/95 backdrop-blur-sm max-h-[90vh] overflow-y-auto custom-scrollbar">
           <DialogHeader className="pb-5 border-b border-slate-100 flex flex-row items-center justify-between space-y-0">
             <div className="flex items-center gap-4">
               <div className="h-14 w-14 rounded-2xl bg-gradient-soft text-primary flex items-center justify-center font-black text-2xl border border-slate-100 shadow-sm shrink-0 select-none uppercase">
-                {selectedCompany?.name.charAt(0)}
+                {activeCompany?.name.charAt(0)}
               </div>
               <div>
                 <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight leading-none mb-1.5 capitalize">
-                  {selectedCompany?.name}
+                  {activeCompany?.name}
                 </DialogTitle>
                 <DialogDescription className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Account Activity
@@ -385,22 +389,22 @@ function AccountsPage() {
             <div className="grid grid-cols-2 gap-4 bg-slate-50/60 p-4 rounded-xl border border-slate-200/50">
               <div className="space-y-1">
                 <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Industry Vertical</span>
-                <span className="block font-semibold text-slate-800 text-sm">{selectedCompany?.industry}</span>
+                <span className="block font-semibold text-slate-800 text-sm">{activeCompany?.industry}</span>
               </div>
               <div className="space-y-1">
                 <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Assigned Owner</span>
                 <div className="flex items-center gap-2 font-semibold text-slate-800 text-sm">
-                  <div className="h-5 w-5 rounded-full bg-slate-200 text-[10px] flex items-center justify-center uppercase font-black">{selectedCompany?.mostRecent.owner.charAt(0)}</div>
-                  {selectedCompany?.mostRecent.owner}
+                  <div className="h-5 w-5 rounded-full bg-slate-200 text-[10px] flex items-center justify-center uppercase font-black">{activeCompany?.mostRecent.owner.charAt(0)}</div>
+                  {activeCompany?.mostRecent.owner}
                 </div>
               </div>
               <div className="space-y-1">
                 <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Current Pipeline State</span>
-                <div className="pt-0.5">{selectedCompany && <StatusBadge status={selectedCompany.mostRecent.status} className="scale-105 origin-left" />}</div>
+                <div className="pt-0.5">{activeCompany && <StatusBadge status={activeCompany.mostRecent.status} className="scale-105 origin-left" />}</div>
               </div>
               <div className="space-y-1">
                 <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Latest Milestone</span>
-                <span className="block font-semibold text-slate-800 text-sm">{selectedCompany?.mostRecent.month}</span>
+                <span className="block font-semibold text-slate-800 text-sm">{activeCompany?.mostRecent.month}</span>
               </div>
             </div>
  
@@ -410,15 +414,31 @@ function AccountsPage() {
                 <span className="h-px flex-1 bg-slate-100" /> Interaction Logs <span className="h-px flex-1 bg-slate-100" />
               </h4>
               <div className="relative pl-8 border-l-2 border-slate-100 ml-4 space-y-6">
-                {selectedCompany?.history.slice().reverse().map((h) => (
+                {activeCompany?.history.slice().reverse().map((h) => (
                   <div key={h.id} className="relative group/timeline">
                     {/* Dynamic Node */}
                     <span className="absolute -left-[41px] top-3 flex h-6 w-6 items-center justify-center rounded-full bg-white border shadow-sm group-hover/timeline:border-primary/50 transition-all duration-300">
                       <span className="h-2.5 w-2.5 rounded-full bg-primary/80 group-hover/timeline:bg-primary transition-colors" />
                     </span>
  
-                    <div className="bg-white border border-slate-200/70 shadow-[0_2px_8px_rgba(0,0,0,0.02)] rounded-xl p-3.5 group-hover/timeline:border-slate-300 group-hover/timeline:shadow-sm transition-all duration-300">
-                      <div className="flex items-start justify-between mb-2.5 gap-2 flex-wrap">
+                    <div className="bg-white border border-slate-200/70 shadow-[0_2px_8px_rgba(0,0,0,0.02)] rounded-xl p-3.5 group-hover/timeline:border-slate-300 group-hover/timeline:shadow-sm transition-all duration-300 relative">
+                      <button 
+                        onClick={() => {
+                          if (window.confirm("Remove this individual interaction?")) {
+                            deleteAccount(h.id);
+                            toast.success("Interaction deleted");
+                            if (activeCompany && activeCompany.history.length === 1) {
+                              setSelectedCompanyName(null);
+                            }
+                          }
+                        }}
+                        className="absolute top-3 right-3 p-1 rounded-md text-slate-300 hover:bg-rose-50 hover:text-rose-500 transition-all opacity-0 group-hover/timeline:opacity-100 focus:opacity-100"
+                        title="Delete interaction"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+
+                      <div className="flex items-start justify-between mb-2.5 gap-2 flex-wrap pr-6">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="text-sm font-bold text-slate-800">{h.month}</span>
                           <StatusBadge status={h.status} className="text-[9px]" />
@@ -449,14 +469,14 @@ function AccountsPage() {
             <Button 
               variant="ghost" 
               className="h-9 text-rose-600 hover:bg-rose-50 hover:text-rose-700 font-bold text-xs gap-2 rounded-lg transition-colors px-3"
-              onClick={() => selectedCompany && handleDeleteEntireCompany(selectedCompany.name)}
+              onClick={() => activeCompany && handleDeleteEntireCompany(activeCompany.name)}
             >
               <Trash2 className="h-4 w-4" /> Delete Entire Account
             </Button>
             <Button 
               variant="outline" 
               className="h-9 rounded-lg text-xs font-semibold px-4"
-              onClick={() => setSelectedCompany(null)}
+              onClick={() => setSelectedCompanyName(null)}
             >
               Close
             </Button>
