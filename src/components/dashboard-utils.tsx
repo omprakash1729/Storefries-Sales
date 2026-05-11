@@ -31,9 +31,9 @@ export function useMetrics() {
 
 export function KpiCard({
   label, value, sub, accent, progress, theme = "indigo", onClick, active
-}: { label: string; value: string | number; sub?: string; accent?: string; progress?: number; theme?: "indigo" | "violet" | "slate" | "blue" | "emerald" | "amber" | "rose" | "brand"; onClick?: () => void; active?: boolean }) {
+}: { label: string; value: string | number; sub?: string; accent?: string; progress?: number; theme?: "indigo" | "violet" | "slate" | "blue" | "teal" | "amber" | "rose" | "brand"; onClick?: () => void; active?: boolean }) {
   const themes = {
-    emerald: { border: "border-emerald-100/60", bg: "bg-emerald-50/20", glow: "shadow-[0_8px_30px_rgba(16,185,129,0.03)]", text: "text-emerald-600", bar: "bg-emerald-500", dot: "bg-emerald-500" },
+    teal: { border: "border-teal-100/60", bg: "bg-teal-50/20", glow: "shadow-[0_8px_30px_rgba(20,184,166,0.03)]", text: "text-teal-600", bar: "bg-teal-500", dot: "bg-teal-500" },
     violet: { border: "border-violet-100/60", bg: "bg-violet-50/20", glow: "shadow-[0_8px_30px_rgba(139,92,246,0.03)]", text: "text-violet-600", bar: "bg-violet-500", dot: "bg-violet-500" },
     indigo: { border: "border-indigo-100/60", bg: "bg-indigo-50/20", glow: "shadow-[0_8px_30px_rgba(99,102,241,0.03)]", text: "text-indigo-600", bar: "bg-indigo-500", dot: "bg-indigo-500" },
     slate: { border: "border-slate-100/80", bg: "bg-slate-50/20", glow: "shadow-[0_8px_30px_rgba(148,163,184,0.03)]", text: "text-slate-600", bar: "bg-slate-400", dot: "bg-slate-400" },

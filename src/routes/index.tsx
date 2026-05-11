@@ -65,11 +65,11 @@ function Dashboard() {
   }, [filteredUniqueCompanies]);
 
   const funnelData = {
-    labels: ["New Lead", "Prospect", "Demo Attended", "Proposal Sent", "Trial Started", "Rejected"],
+    labels: ["New Lead", "Prospect", "Demo", "Proposal", "Trial", "Rejected"],
     datasets: [{
       label: "Accounts",
       data: [m.new_lead, m.prospect, m.demo, m.proposal_sent, m.trial, m.rejected],
-      backgroundColor: ["#8b5cf6", "#94a3b8", "#0073c8", "#10b981", "#f59e0b", "#f43f5e"],
+      backgroundColor: ["#8b5cf6", "#94a3b8", "#0073c8", "#14b8a6", "#f59e0b", "#f43f5e"],
       borderRadius: 8,
       borderWidth: 0,
     }],
@@ -87,12 +87,12 @@ function Dashboard() {
       </div>
 
       {/* KPI strip */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-8 gap-3">
         <KpiCard label="Total Accounts" value={m.total} sub="Active pipeline" theme="indigo" onClick={() => setStatusFilter("all")} active={statusFilter === "all"} />
         <KpiCard label="New Leads" value={m.new_lead} sub="Initial outreach" theme="violet" progress={(m.new_lead / Math.max(1, m.total)) * 100} onClick={() => handleToggleFilter("new_lead")} active={statusFilter === "new_lead"} />
         <KpiCard label="Prospects" value={m.prospect} sub="In pipeline" theme="slate" progress={(m.prospect / Math.max(1, m.total)) * 100} onClick={() => handleToggleFilter("prospect")} active={statusFilter === "prospect"} />
         <KpiCard label="Demos" value={m.demo} sub="Demos attended" theme="blue" progress={(m.demo / Math.max(1, m.total)) * 100} onClick={() => handleToggleFilter("demo")} active={statusFilter === "demo"} />
-        <KpiCard label="Proposals" value={m.proposal_sent} sub="Sent to client" theme="emerald" progress={(m.proposal_sent / Math.max(1, m.total)) * 100} onClick={() => handleToggleFilter("proposal_sent")} active={statusFilter === "proposal_sent"} />
+        <KpiCard label="Proposals" value={m.proposal_sent} sub="Offers sent" theme="teal" progress={(m.proposal_sent / Math.max(1, m.total)) * 100} onClick={() => handleToggleFilter("proposal_sent")} active={statusFilter === "proposal_sent"} />
         <KpiCard label="Trials" value={m.trial} sub="Trials started" theme="amber" progress={(m.trial / Math.max(1, m.total)) * 100} onClick={() => handleToggleFilter("trial")} active={statusFilter === "trial"} />
         <KpiCard label="Rejected" value={m.rejected} sub="Lost leads" theme="rose" progress={(m.rejected / Math.max(1, m.total)) * 100} onClick={() => handleToggleFilter("rejected")} active={statusFilter === "rejected"} />
         <KpiCard label="Conversion" value={`${m.conversion}%`} sub="Demo + Trial rate" theme="brand" progress={m.conversion} />
@@ -103,7 +103,7 @@ function Dashboard() {
         <section className="lg:col-span-2 rounded-xl border bg-card p-5 shadow-card">
           <header className="mb-3">
             <h2 className="text-lg font-semibold">Conversion Funnel</h2>
-            <p className="text-xs text-muted-foreground">New Lead → Prospect → Demo → Proposal → Trial · Rejected leakage</p>
+            <p className="text-xs text-muted-foreground">New Lead → Prospect → Demo → Proposal → Trial</p>
           </header>
           <div className="h-72">
             <Bar

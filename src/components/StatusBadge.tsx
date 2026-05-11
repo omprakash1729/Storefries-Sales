@@ -6,7 +6,7 @@ const STYLES: Record<AccountStatus, string> = {
   new_lead: "bg-violet-50 text-violet-600 border-violet-200/60",
   prospect: "bg-slate-50 text-slate-600 border-slate-200/60",
   demo: "bg-sky-50 text-sky-600 border-sky-200/60",
-  proposal_sent: "bg-emerald-50 text-emerald-600 border-emerald-200/60",
+  proposal_sent: "bg-teal-50 text-teal-600 border-teal-200/60",
   trial: "bg-amber-50 text-amber-600 border-amber-200/60",
   rejected: "bg-rose-50 text-rose-600 border-rose-200/60",
 };
@@ -15,7 +15,7 @@ const DOTS: Record<AccountStatus, string> = {
   new_lead: "bg-violet-500",
   prospect: "bg-slate-400",
   demo: "bg-sky-500",
-  proposal_sent: "bg-emerald-500",
+  proposal_sent: "bg-teal-500",
   trial: "bg-amber-500",
   rejected: "bg-rose-500",
 };

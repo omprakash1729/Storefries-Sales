@@ -33,7 +33,7 @@ export const Route = createFileRoute("/accounts")({
   component: AccountsPage,
 });
 
-const STATUSES: AccountStatus[] = ["new_lead", "prospect", "demo", "trial", "rejected"];
+const STATUSES: AccountStatus[] = ["new_lead", "prospect", "demo", "proposal_sent", "trial", "rejected"];
 const COLORS: RepColor[] = ["blue", "green", "amber", "teal", "purple", "red"];
 
 function EditableCell({
@@ -83,10 +83,11 @@ function EditableCell({
   return (
     <div
       onDoubleClick={() => isEditMode && setIsEditing(true)}
-      className={`transition-all ${className} ${isEditMode
-        ? "cursor-pointer hover:bg-slate-100 hover:ring-1 ring-slate-200 rounded px-1 -mx-1"
-        : ""
-        }`}
+      className={`transition-all ${className} ${
+        isEditMode
+          ? "cursor-pointer hover:bg-slate-100 hover:ring-1 ring-slate-200 rounded px-1 -mx-1"
+          : ""
+      }`}
       title={isEditMode ? "Double click to edit" : undefined}
     >
       {displayNode ?? value}
@@ -104,6 +105,14 @@ function AccountsPage() {
   const [selectedCompany, setSelectedCompany] = useState<UniqueCompany | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [ownerFilter, setOwnerFilter] = useState<string>("all");
+ 
+  const handleDeleteEntireCompany = (companyName: string) => {
+    if (!window.confirm(`Are you sure you want to delete "${companyName}" and all its interaction history? This cannot be undone.`)) return;
+    const targets = accounts.filter(a => a.name === companyName);
+    targets.forEach(t => deleteAccount(t.id));
+    setSelectedCompany(null);
+    toast.success(`Permanently deleted ${companyName}`);
+  };
 
   const months = Array.from(new Set([...ALL_MONTHS, ...accounts.map((a) => a.month)]));
   const industries = Array.from(new Set([...INDUSTRIES, ...accounts.map((a) => a.industry)])).sort();
@@ -268,8 +277,8 @@ function AccountsPage() {
                           <span className="text-xs">{a.owner}</span>
                         </div>
                       ) : (
-                        <Select
-                          value={a.owner}
+                        <Select 
+                          value={a.owner} 
                           onValueChange={(v) => updateAccount(a.id, { owner: v })}
                         >
                           <SelectTrigger className="h-8 w-[160px] border-none bg-transparent shadow-none p-1 hover:bg-accent">
@@ -297,8 +306,8 @@ function AccountsPage() {
                           <StatusBadge status={a.status} />
                         </div>
                       ) : (
-                        <Select
-                          value={a.status}
+                        <Select 
+                          value={a.status} 
                           onValueChange={(v) => updateAccount(a.id, { status: v as AccountStatus })}
                         >
                           <SelectTrigger className="h-8 w-[140px] border-none bg-transparent shadow-none p-1 hover:bg-accent">
@@ -343,62 +352,80 @@ function AccountsPage() {
 
       {/* Chronological Timeline History Modal */}
       <Dialog open={selectedCompany !== null} onOpenChange={(open) => !open && setSelectedCompany(null)}>
-        <DialogContent className="max-w-lg rounded-2xl border border-slate-100 p-6 shadow-elevated bg-white">
-          <DialogHeader className="pb-4 border-b">
-            <DialogTitle className="text-xl font-extrabold text-slate-800">{selectedCompany?.name}</DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground mt-1">
-              Company profile and outbound interaction timeline
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="mt-4 space-y-5">
-            {/* Basic Info panel */}
-            <div className="grid grid-cols-2 gap-3 bg-slate-50/50 p-4 rounded-xl border border-slate-100/50 text-xs">
-              <div>
-                <span className="text-muted-foreground block font-medium">Industry Vertical</span>
-                <span className="font-bold text-slate-800">{selectedCompany?.industry}</span>
+        <DialogContent className="max-w-xl rounded-2xl border border-slate-100 p-6 shadow-elevated bg-white/95 backdrop-blur-sm">
+          <DialogHeader className="pb-5 border-b border-slate-100 flex flex-row items-center justify-between space-y-0">
+            <div className="flex items-center gap-4">
+              <div className="h-14 w-14 rounded-2xl bg-gradient-soft text-primary flex items-center justify-center font-black text-2xl border border-slate-100 shadow-sm shrink-0 select-none uppercase">
+                {selectedCompany?.name.charAt(0)}
               </div>
               <div>
-                <span className="text-muted-foreground block font-medium">Current Assigned Owner</span>
-                <span className="font-bold text-slate-800">{selectedCompany?.mostRecent.owner}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground block font-medium">Current Status</span>
-                {selectedCompany && <StatusBadge status={selectedCompany.mostRecent.status} className="mt-0.5" />}
-              </div>
-              <div>
-                <span className="text-muted-foreground block font-medium">Last Interaction Month</span>
-                <span className="font-bold text-slate-800">{selectedCompany?.mostRecent.month}</span>
+                <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight leading-none mb-1.5 capitalize">
+                  {selectedCompany?.name}
+                </DialogTitle>
+                <DialogDescription className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Account Activity
+                </DialogDescription>
               </div>
             </div>
-
-            {/* Chronological Timeline */}
+          </DialogHeader>
+ 
+          <div className="mt-6 space-y-6">
+            {/* Modern Stats Panel */}
+            <div className="grid grid-cols-2 gap-4 bg-slate-50/60 p-4 rounded-xl border border-slate-200/50">
+              <div className="space-y-1">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Industry Vertical</span>
+                <span className="block font-semibold text-slate-800 text-sm">{selectedCompany?.industry}</span>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Assigned Owner</span>
+                <div className="flex items-center gap-2 font-semibold text-slate-800 text-sm">
+                  <div className="h-5 w-5 rounded-full bg-slate-200 text-[10px] flex items-center justify-center uppercase font-black">{selectedCompany?.mostRecent.owner.charAt(0)}</div>
+                  {selectedCompany?.mostRecent.owner}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Current Pipeline State</span>
+                <div className="pt-0.5">{selectedCompany && <StatusBadge status={selectedCompany.mostRecent.status} className="scale-105 origin-left" />}</div>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Latest Milestone</span>
+                <span className="block font-semibold text-slate-800 text-sm">{selectedCompany?.mostRecent.month}</span>
+              </div>
+            </div>
+ 
+            {/* Upgraded Timeline */}
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80 mb-3">Interaction History</h4>
-              <div className="relative pl-6 border-l border-slate-100 ml-3 space-y-5">
+              <h4 className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+                <span className="h-px flex-1 bg-slate-100" /> Interaction Logs <span className="h-px flex-1 bg-slate-100" />
+              </h4>
+              <div className="relative pl-8 border-l-2 border-slate-100 ml-4 space-y-6">
                 {selectedCompany?.history.slice().reverse().map((h) => (
                   <div key={h.id} className="relative group/timeline">
-                    {/* Circle Node */}
-                    <span className="absolute -left-[31px] top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-white border-2 border-primary/40 group-hover/timeline:border-primary transition-colors">
-                      <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                    {/* Dynamic Node */}
+                    <span className="absolute -left-[41px] top-3 flex h-6 w-6 items-center justify-center rounded-full bg-white border shadow-sm group-hover/timeline:border-primary/50 transition-all duration-300">
+                      <span className="h-2.5 w-2.5 rounded-full bg-primary/80 group-hover/timeline:bg-primary transition-colors" />
                     </span>
-
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs font-extrabold text-slate-800">{h.month}</span>
+ 
+                    <div className="bg-white border border-slate-200/70 shadow-[0_2px_8px_rgba(0,0,0,0.02)] rounded-xl p-3.5 group-hover/timeline:border-slate-300 group-hover/timeline:shadow-sm transition-all duration-300">
+                      <div className="flex items-start justify-between mb-2.5 gap-2 flex-wrap">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm font-bold text-slate-800">{h.month}</span>
+                          <StatusBadge status={h.status} className="text-[9px]" />
+                        </div>
                         {h.createdAt && (
-                          <span className="text-[10px] font-medium bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded inline-flex items-center gap-1">
-                            <CalendarIcon className="h-2.5 w-2.5" />
+                          <span className="text-[10px] font-medium bg-slate-100/80 text-slate-500 px-2 py-1 rounded-md inline-flex items-center gap-1 border border-slate-200/30">
+                            <CalendarIcon className="h-3 w-3" />
                             {format(new Date(h.createdAt), "MMM dd, yyyy")}
                           </span>
                         )}
-                        <StatusBadge status={h.status} className="text-[9px] py-0 px-1.5" />
-                        <span className="text-[10px] text-muted-foreground">by {h.owner}</span>
+                      </div>
+                      <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 mb-2 font-medium">
+                        Logged by <span className="text-slate-700 font-bold underline decoration-slate-200 underline-offset-2">{h.owner}</span>
                       </div>
                       {h.reason && (
-                        <p className="text-xs text-slate-500 bg-slate-50/40 border border-slate-100/30 p-2 rounded-lg italic mt-1 leading-relaxed">
+                        <div className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100/50 italic leading-relaxed">
                           "{h.reason}"
-                        </p>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -406,6 +433,23 @@ function AccountsPage() {
               </div>
             </div>
           </div>
+          
+          <DialogFooter className="mt-8 pt-4 border-t border-slate-100 flex items-center justify-between sm:justify-between flex-row w-full">
+            <Button 
+              variant="ghost" 
+              className="h-9 text-rose-600 hover:bg-rose-50 hover:text-rose-700 font-bold text-xs gap-2 rounded-lg transition-colors px-3"
+              onClick={() => selectedCompany && handleDeleteEntireCompany(selectedCompany.name)}
+            >
+              <Trash2 className="h-4 w-4" /> Delete Entire Account
+            </Button>
+            <Button 
+              variant="outline" 
+              className="h-9 rounded-lg text-xs font-semibold px-4"
+              onClick={() => setSelectedCompany(null)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
@@ -423,23 +467,23 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps }
   const [status, setStatus] = useState<AccountStatus>("new_lead");
   const [date, setDate] = useState<Date>(new Date());
   const [reason, setReason] = useState("");
-
+ 
   const submit = () => {
     if (!name.trim()) return toast.error("Account name required");
     if (!owner) return toast.error("Owner required");
-
+    
     const derivedMonth = format(date, "MMMM yyyy");
-
-    onAdd({
-      name: name.trim(),
-      industry,
-      owner,
-      status,
-      month: derivedMonth,
+    
+    onAdd({ 
+      name: name.trim(), 
+      industry, 
+      owner, 
+      status, 
+      month: derivedMonth, 
       reason: reason.trim() || undefined,
       createdAt: date.toISOString()
     });
-
+    
     toast.success("Account added");
     setName(""); setReason("");
     onOpenChange(false);
@@ -536,8 +580,9 @@ function AddRepModal({ open, onOpenChange, onAdd, existing }: {
             <div className="mt-1 flex gap-2">
               {COLORS.map((c) => (
                 <button key={c} type="button" onClick={() => setColor(c)}
-                  className={`h-9 w-9 rounded-full transition ring-offset-2 ${color === c ? "ring-2 ring-foreground" : ""} ${{ blue: "bg-sky-500", green: "bg-emerald-500", amber: "bg-amber-500", teal: "bg-teal-500", purple: "bg-violet-500", red: "bg-rose-500" }[c]
-                    }`}
+                  className={`h-9 w-9 rounded-full transition ring-offset-2 ${color === c ? "ring-2 ring-foreground" : ""} ${
+                    { blue: "bg-sky-500", green: "bg-emerald-500", amber: "bg-amber-500", teal: "bg-teal-500", purple: "bg-violet-500", red: "bg-rose-500" }[c]
+                  }`}
                   aria-label={c}
                 />
               ))}
