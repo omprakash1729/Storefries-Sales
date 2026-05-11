@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { Plus, Search, Trash2, Download, UserPlus, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
@@ -105,6 +105,7 @@ function AccountsPage() {
   const [selectedCompany, setSelectedCompany] = useState<UniqueCompany | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [ownerFilter, setOwnerFilter] = useState<string>("all");
+  const [prefillData, setPrefillData] = useState<Partial<Account> | null>(null);
  
   const handleDeleteEntireCompany = (companyName: string) => {
     if (!window.confirm(`Are you sure you want to delete "${companyName}" and all its interaction history? This cannot be undone.`)) return;
@@ -184,7 +185,7 @@ function AccountsPage() {
             <Switch checked={isEditMode} onCheckedChange={setIsEditMode} aria-label="Toggle edit mode" />
           </div>
 
-          <Button onClick={() => setShowAdd(true)} className="bg-gradient-brand text-white border-0 hover:opacity-90">
+          <Button onClick={() => { setPrefillData(null); setShowAdd(true); }} className="bg-gradient-brand text-white border-0 hover:opacity-90">
             <Plus className="h-4 w-4" />Add Account
           </Button>
         </div>
@@ -327,7 +328,17 @@ function AccountsPage() {
                         displayNode={a.reason ?? "—"}
                       />
                     </td>
-                    <td className="px-4 py-2.5 text-right">
+                    <td className="px-4 py-2.5 text-right flex items-center justify-end gap-0.5">
+                      <Button 
+                        variant="ghost" size="icon" className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
+                        title="Log new interaction"
+                        onClick={() => {
+                          setPrefillData({ name: a.name, industry: a.industry, owner: a.owner, status: a.status });
+                          setShowAdd(true);
+                        }}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
                       {isEditMode ? (
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-600 hover:bg-rose-50"
                           onClick={() => { deleteAccount(a.id); toast.success("Account deleted"); }}>
@@ -346,7 +357,7 @@ function AccountsPage() {
         </div>
       </div>
 
-      <AddAccountModal open={showAdd} onOpenChange={setShowAdd} onAdd={addAccount}
+      <AddAccountModal open={showAdd} onOpenChange={setShowAdd} onAdd={addAccount} prefill={prefillData}
         industries={industries} months={months} reps={reps.map((r) => r.name)} />
       <AddRepModal open={showAddRep} onOpenChange={setShowAddRep} onAdd={addRep} existing={reps.map((r) => r.name)} />
 
@@ -456,10 +467,11 @@ function AccountsPage() {
   );
 }
 
-function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps }: {
+function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, prefill }: {
   open: boolean; onOpenChange: (v: boolean) => void;
   onAdd: (a: Omit<Account, "id">) => void;
   industries: string[]; months: string[]; reps: string[];
+  prefill?: Partial<Account> | null;
 }) {
   const [name, setName] = useState("");
   const [industry, setIndustry] = useState(industries[0] ?? "Other");
@@ -467,6 +479,17 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps }
   const [status, setStatus] = useState<AccountStatus>("new_lead");
   const [date, setDate] = useState<Date>(new Date());
   const [reason, setReason] = useState("");
+
+  useEffect(() => {
+    if (open) {
+      setName(prefill?.name ?? "");
+      setIndustry(prefill?.industry ?? industries[0] ?? "Other");
+      setOwner(prefill?.owner ?? reps[0] ?? "");
+      setStatus(prefill?.status ?? "new_lead");
+      setReason("");
+      setDate(new Date()); // Always auto-select TODAY for a brand new interaction
+    }
+  }, [open, prefill, industries, reps]);
  
   const submit = () => {
     if (!name.trim()) return toast.error("Account name required");
