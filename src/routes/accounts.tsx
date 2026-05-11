@@ -105,8 +105,10 @@ function AccountsPage() {
   const [selectedCompanyName, setSelectedCompanyName] = useState<string | null>(null);
   const activeCompany = useMemo(() => {
     if (!selectedCompanyName) return null;
-    return uniqueCompanies.find(c => c.name === selectedCompanyName) || null;
-  }, [uniqueCompanies, selectedCompanyName]);
+    // Derive dynamically from entire live store dataset
+    const allGrouped = groupAccountsByCompany(accounts);
+    return allGrouped.find(c => c.name === selectedCompanyName) || null;
+  }, [accounts, selectedCompanyName]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [ownerFilter, setOwnerFilter] = useState<string>("all");
   const [prefillData, setPrefillData] = useState<Partial<Account> | null>(null);
@@ -115,7 +117,7 @@ function AccountsPage() {
     if (!window.confirm(`Are you sure you want to delete "${companyName}" and all its interaction history? This cannot be undone.`)) return;
     const targets = accounts.filter(a => a.name === companyName);
     targets.forEach(t => deleteAccount(t.id));
-    setSelectedCompany(null);
+    setSelectedCompanyName(null);
     toast.success(`Permanently deleted ${companyName}`);
   };
 
