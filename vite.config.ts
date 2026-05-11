@@ -3,7 +3,6 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
-import { cloudflare } from "@cloudflare/vite-plugin";
 import path from "path";
 
 export default defineConfig(({ command }) => {
@@ -23,12 +22,6 @@ export default defineConfig(({ command }) => {
     react(),
   ];
 
-  // Maintain Cloudflare Worker environment build-bridge functionality for the backend host
-  if (command === "build") {
-    plugins.push(cloudflare({
-      viteEnvironment: { name: "ssr" }
-    }));
-  }
 
   return {
     plugins,
