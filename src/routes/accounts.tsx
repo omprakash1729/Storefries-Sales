@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { Plus, Search, Trash2, Download, UserPlus, CalendarIcon, X } from "lucide-react";
-import { format } from "date-fns";
+import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import type { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -112,6 +113,7 @@ function AccountsPage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [ownerFilter, setOwnerFilter] = useState<string>("all");
   const [prefillData, setPrefillData] = useState<Partial<Account> | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
  
   const handleDeleteEntireCompany = (companyName: string) => {
     if (!window.confirm(`Are you sure you want to delete "${companyName}" and all its interaction history? This cannot be undone.`)) return;
@@ -131,10 +133,22 @@ function AccountsPage() {
       if (statusFilter !== "all" && a.status !== statusFilter) return false;
       if (industryFilter !== "all" && a.industry !== industryFilter) return false;
       if (ownerFilter !== "all" && a.owner !== ownerFilter) return false;
+      
+      // Granular Date Range Filter logic
+      if (dateRange?.from && dateRange?.to) {
+        if (!a.createdAt) return false; // Legacy items without exact datetime are excluded from specific range
+        const timestamp = new Date(a.createdAt);
+        const rangeValid = isWithinInterval(timestamp, {
+          start: startOfDay(dateRange.from),
+          end: endOfDay(dateRange.to)
+        });
+        if (!rangeValid) return false;
+      }
+
       if (q && !(a.name.toLowerCase().includes(q) || a.owner.toLowerCase().includes(q) || a.industry.toLowerCase().includes(q))) return false;
       return true;
     });
-  }, [accounts, search, statusFilter, industryFilter, globalMonth, ownerFilter]);
+  }, [accounts, search, statusFilter, industryFilter, globalMonth, ownerFilter, dateRange]);
 
   const filteredUnique = useMemo(() => {
     return groupAccountsByCompany(filtered);
@@ -198,12 +212,52 @@ function AccountsPage() {
       </div>
 
       {/* Toolbar */}
-      <div className="rounded-xl border bg-card p-4 shadow-card grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
-        <div className="relative sm:col-span-2">
+      <div className="rounded-xl border bg-card p-4 shadow-card grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-2">
+        <div className="relative sm:col-span-2 xl:col-span-2">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Search company, owner, industry…" className="pl-9"
             value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
+        
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-full justify-start text-left font-normal truncate bg-transparent",
+                !dateRange && "text-muted-foreground"
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+              <span className="truncate flex-1">
+                {dateRange?.from ? (
+                  dateRange.to ? (
+                    <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</>
+                  ) : (
+                    format(dateRange.from, "LLL dd")
+                  )
+                ) : (
+                  "Specific Date"
+                )}
+              </span>
+              {dateRange && (
+                <div role="button" onClick={(e) => { e.stopPropagation(); setDateRange(undefined); }} className="ml-1 p-0.5 hover:bg-accent rounded-full">
+                  <X className="h-3 w-3 opacity-60 hover:opacity-100" />
+                </div>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              initialFocus
+              mode="range"
+              defaultMonth={dateRange?.from}
+              selected={dateRange}
+              onSelect={setDateRange}
+              numberOfMonths={1}
+            />
+          </PopoverContent>
+        </Popover>
         <Select value={ownerFilter} onValueChange={setOwnerFilter}>
           <SelectTrigger><SelectValue placeholder="All Owners" /></SelectTrigger>
           <SelectContent>
