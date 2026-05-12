@@ -112,8 +112,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             
             <MonthFilter months={months} selected={globalMonths} onChange={setGlobalMonths} />
             
-            <Button onClick={handleSaveSource} variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:bg-accent hover:text-foreground" title="Manual JSON Backup">
-              <Save className="h-4 w-4" />
+            <Button 
+              onClick={async () => {
+                await fetchData();
+                toast.success("Database synchronization complete");
+              }} 
+              variant="ghost" 
+              size="icon" 
+              className="h-9 w-9 text-muted-foreground hover:bg-accent hover:text-foreground group" 
+              title="Force Data Refresh"
+            >
+              <RefreshCcw className="h-4 w-4 transition-transform group-active:rotate-180 duration-500" />
             </Button>
           </div>
         </div>
