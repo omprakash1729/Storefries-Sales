@@ -328,6 +328,7 @@ function AccountsPage() {
                 <th className="text-left px-4 py-3">Owner</th>
                 <th className="text-left px-4 py-3">Month</th>
                 <th className="text-left px-4 py-3">Status</th>
+                <th className="text-center px-4 py-3">Follow Ups</th>
                 <th className="text-left px-4 py-3">Remark</th>
                 <th className="px-4 py-3"></th>
               </tr>
@@ -408,6 +409,26 @@ function AccountsPage() {
                           </SelectContent>
                         </Select>
                       )}
+                    </td>
+                    <td className="px-4 py-2.5 text-center">
+                      <div className="flex items-center justify-center">
+                        {!isEditMode ? (
+                          <div 
+                            className="h-7 w-7 rounded-full bg-primary/10 border border-primary/20 text-primary font-bold flex items-center justify-center text-xs cursor-help shadow-sm select-none"
+                            title="Total interactions recorded"
+                          >
+                            {a.followUpCount ?? 0}
+                          </div>
+                        ) : (
+                          <input
+                            type="number"
+                            min="0"
+                            className="h-7 w-12 text-center text-xs font-bold border rounded bg-white focus:ring-1 ring-primary"
+                            value={a.followUpCount ?? 0}
+                            onChange={(e) => updateAccount(a.id, { followUpCount: parseInt(e.target.value) || 0 })}
+                          />
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-2.5 text-xs text-muted-foreground max-w-xs truncate">
                       <EditableCell
@@ -584,6 +605,7 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, 
   const [status, setStatus] = useState<AccountStatus>("new_lead");
   const [date, setDate] = useState<Date>(new Date());
   const [reason, setReason] = useState("");
+  const [followUpCount, setFollowUpCount] = useState(0);
   const [isCustomIndustry, setIsCustomIndustry] = useState(false);
 
   useEffect(() => {
@@ -593,6 +615,7 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, 
       setOwner(prefill?.owner ?? reps[0] ?? "");
       setStatus(prefill?.status ?? "new_lead");
       setReason("");
+      setFollowUpCount(prefill?.followUpCount ?? 0);
       setDate(new Date()); // Always auto-select TODAY for a brand new interaction
       setIsCustomIndustry(false); // Reset to standard select mode on fresh open
     }
@@ -612,11 +635,12 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, 
       status, 
       month: derivedMonth, 
       reason: reason.trim() || undefined,
-      createdAt: date.toISOString()
+      createdAt: date.toISOString(),
+      followUpCount: followUpCount
     });
     
     toast.success("Account added");
-    setName(""); setReason("");
+    setName(""); setReason(""); setFollowUpCount(0);
     onOpenChange(false);
   };
 
@@ -705,6 +729,16 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, 
                   />
                 </PopoverContent>
               </Popover>
+            </div>
+            <div>
+              <Label>Follow Ups</Label>
+              <Input 
+                type="number" 
+                min="0" 
+                value={followUpCount} 
+                onChange={(e) => setFollowUpCount(parseInt(e.target.value) || 0)} 
+                className="h-10 font-bold"
+              />
             </div>
           </div>
           <div><Label>Remark</Label><Textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="e.g. Interested in trial next week" /></div>

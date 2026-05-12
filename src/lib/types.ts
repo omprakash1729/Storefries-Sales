@@ -9,6 +9,7 @@ export interface Account {
   status: AccountStatus;
   reason?: string;
   createdAt?: string; // ISO timestamp
+  followUpCount?: number;
 }
 
 export type RepColor = "blue" | "green" | "amber" | "teal" | "purple" | "red";
