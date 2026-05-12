@@ -38,7 +38,17 @@ function Dashboard() {
 
   const filteredUniqueCompanies = useMemo(() => {
     if (statusFilter === "all") return uniqueCompanies;
-    return uniqueCompanies.filter((uc) => uc.history.some(h => h.status === statusFilter));
+    return uniqueCompanies.filter((uc) => {
+      const historyStatuses = new Set(uc.history.map(h => h.status));
+      
+      // ⛔ EXCLUSIONARY RULE: Parity with counting engine. A rejected company shouldn't be listed in early-funnel filters.
+      if (historyStatuses.has("rejected")) {
+        historyStatuses.delete("prospect");
+        historyStatuses.delete("new_lead");
+      }
+      
+      return historyStatuses.has(statusFilter as any);
+    });
   }, [uniqueCompanies, statusFilter]);
 
   const handleToggleFilter = (status: string) => {
@@ -202,7 +212,10 @@ function Dashboard() {
                     </span>
                     <div className="flex items-center gap-1.5 shrink-0 ml-auto">
                       <RepAvatarMini name={uc.mostRecent.owner} />
-                      <StatusBadge status={uc.mostRecent.status} className="text-[9px] px-1.5 py-0" />
+                      <StatusBadge 
+                        status={(statusFilter !== "all" ? statusFilter : uc.mostRecent.status) as AccountStatus} 
+                        className="text-[9px] px-1.5 py-0" 
+                      />
                     </div>
                   </li>
                 ))}

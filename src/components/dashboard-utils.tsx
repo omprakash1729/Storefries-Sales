@@ -27,6 +27,13 @@ export function computeMetrics(accounts: Account[]): Metrics {
   for (const group of uniqueGroups) {
     // Collect unique set of statuses this company has achieved in the filtered range
     const distinctStatuses = new Set(group.history.map(h => h.status));
+    
+    // ⛔ EXCLUSIONARY RULE: If a company was ever rejected, it shouldn't inflate early-funnel counts like Prospect
+    if (distinctStatuses.has("rejected")) {
+      distinctStatuses.delete("prospect");
+      distinctStatuses.delete("new_lead");
+    }
+
     for (const s of distinctStatuses) {
       if (s in m) {
         m[s as keyof Metrics]++;
