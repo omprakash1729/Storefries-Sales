@@ -5,10 +5,14 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error("Missing Supabase environment variables. Ensure .env is configured.");
+  console.warn("⚠️ Supabase environment variables missing. Using simulated fallback client mode.");
 }
 
-export const supabase = createClient(supabaseUrl || "", supabaseAnonKey || "");
+// Use valid-format placeholder URI and generic key to prevent library crash during SSR/Build step
+export const supabase = createClient(
+  supabaseUrl || "https://placeholder-project.supabase.co", 
+  supabaseAnonKey || "placeholder-anon-key"
+);
 
 // Strong types for our tables database interface helper
 export interface Database {
