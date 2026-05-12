@@ -263,7 +263,14 @@ const newDataRaw = [
   { name: "Rainbow Hospital", owner: "Bhuvaneshwari", industry: "Other", month: "May 2026", status: "new_lead", reason: "Attended but no response", createdAt: "2026-05-11T12:00:00.000Z" },
   { name: "Deepsense Digital", owner: "Bhuvaneshwari", industry: "Digital Marketing", month: "May 2026", status: "new_lead", reason: "Sent WA Reminder", createdAt: "2026-05-11T12:00:00.000Z" },
   { name: "HCG (HealthCare Global Enterprises)", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "prospect", reason: "Call by 12pm tomorrow", createdAt: "2026-05-11T12:00:00.000Z" },
-  { name: "Harsha Toyota", owner: "Om Prakash", industry: "Automotive", month: "May 2026", status: "demo", reason: "Demo completed.", createdAt: "2026-05-11T12:00:00.000Z" }
+  { name: "Harsha Toyota", owner: "Om Prakash", industry: "Automotive", month: "May 2026", status: "demo", reason: "Demo completed.", createdAt: "2026-05-11T12:00:00.000Z" },
+  { name: "HCG (HealthCare Global Enterprises)", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "prospect", reason: "Follow up call made but no response, Shared deck throguh WA with sajid", createdAt: "2026-05-12T12:00:00.000Z", followUpCount: 1 },
+  { name: "Glen Eagles", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "new_lead", reason: "Shared pitch deck through WA", createdAt: "2026-05-12T12:00:00.000Z", followUpCount: 0 },
+  { name: "Partha Dental", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "new_lead", reason: "Not the right contact", createdAt: "2026-05-12T12:00:00.000Z", followUpCount: 0 },
+  { name: "Kosmoderma skin and hair", owner: "Bhuvaneshwari", industry: "Beauty & Wellness", month: "May 2026", status: "prospect", reason: "Fix demo for 3pm tomorrow", createdAt: "2026-05-12T12:00:00.000Z", followUpCount: 0 },
+  { name: "DermaVue Clinics", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "prospect", reason: "He said that he will discuss with their operations team and call back if needed", createdAt: "2026-05-12T12:00:00.000Z", followUpCount: 0 },
+  { name: "RMKV Silks", owner: "Bhuvaneshwari", industry: "Apparel & Footwear", month: "May 2026", status: "prospect", reason: "Shared pitch deck through mail", createdAt: "2026-05-12T12:00:00.000Z", followUpCount: 0 },
+  { name: "KIMS (Krishna Institute)", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "prospect", reason: "Follow up call made and he need to check with his ceo", createdAt: "2026-05-12T12:00:00.000Z", followUpCount: 1 }
 ];
 
 export const PATCH_ACCOUNTS: Account[] = newDataRaw.map((a, i) => ({
