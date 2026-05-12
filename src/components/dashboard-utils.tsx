@@ -19,16 +19,26 @@ export interface Metrics {
 }
 
 export function computeMetrics(accounts: Account[]): Metrics {
-  // 💎 DEDUPLICATION ENGINE: Convert raw timeline event log into Distinct Companies with Final Statuses.
-  const uniques = groupAccountsByCompany(accounts).map(u => u.mostRecent);
+  // 💎 DEDUPLICATION ENGINE: Group entries by unique companies
+  const uniqueGroups = groupAccountsByCompany(accounts);
   
-  const m = { total: uniques.length, new_lead: 0, prospect: 0, demo: 0, proposal_sent: 0, trial: 0, rejected: 0, conversion: 0, active: 0 };
+  const m = { total: uniqueGroups.length, new_lead: 0, prospect: 0, demo: 0, proposal_sent: 0, trial: 0, rejected: 0, conversion: 0, active: 0 };
   
-  for (const a of uniques) {
-    m[a.status]++;
+  for (const group of uniqueGroups) {
+    // Collect unique set of statuses this company has achieved in the filtered range
+    const distinctStatuses = new Set(group.history.map(h => h.status));
+    for (const s of distinctStatuses) {
+      if (s in m) {
+        m[s as keyof Metrics]++;
+      }
+    }
   }
   
+  // Define Active as having passed through the funnel but not explicitly counting only final outcomes as rejection
+  // Wait, let's follow historical total-rejected active math, just ensuring numbers reflect user count.
   m.active = m.total - m.rejected;
+  
+  // Formula uses total companies that touched Demo or Trial compared to population
   m.conversion = m.total === 0 ? 0 : Math.round(((m.demo + m.trial) / Math.max(1, m.total)) * 1000) / 10;
   return m;
 }

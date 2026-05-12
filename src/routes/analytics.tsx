@@ -42,20 +42,19 @@ function AnalyticsPage() {
 
   const repBreakdown = useMemo(() => {
     return reps.map((r) => {
-      const list = accounts.filter((a) => a.owner === r.name);
-      // Pass directly to component utility, which already uses computeMetrics
+      const list = rawAccounts.filter((a) => a.owner === r.name);
       const stats = computeMetrics(list); 
       return { name: r.name, ...stats };
     });
-  }, [reps, accounts]);
+  }, [reps, rawAccounts]);
 
   const monthCompare = useMemo(() => {
-    const months = Array.from(new Set(allAccounts.map((a) => a.month)));
+    const months = Array.from(new Set(rawAllAccounts.map((a) => a.month)));
     return months.map((m) => {
-      const list = allAccounts.filter((a) => a.month === m);
+      const list = rawAllAccounts.filter((a) => a.month === m);
       return { month: m, ...computeMetrics(list) };
     });
-  }, [allAccounts]);
+  }, [rawAllAccounts]);
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">

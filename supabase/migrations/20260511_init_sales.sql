@@ -1,7 +1,7 @@
 -- 🚀 Step 1: Create necessary tables for Accounts & Reps
 CREATE TABLE IF NOT EXISTS sales_accounts (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
+  "createdAt" TIMESTAMPTZ DEFAULT NOW(),
   name TEXT NOT NULL,
   industry TEXT NOT NULL,
   owner TEXT NOT NULL,

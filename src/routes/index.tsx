@@ -27,7 +27,7 @@ function Dashboard() {
   const m = useMetrics();
   const accounts = useFilteredAccounts();
   const reps = useStore((s) => s.reps);
-  const globalMonth = useStore((s) => s.globalMonth);
+  const globalMonths = useStore((s) => s.globalMonths);
 
   const [selectedCompany, setSelectedCompany] = useState<UniqueCompany | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -38,7 +38,7 @@ function Dashboard() {
 
   const filteredUniqueCompanies = useMemo(() => {
     if (statusFilter === "all") return uniqueCompanies;
-    return uniqueCompanies.filter((uc) => uc.mostRecent.status === statusFilter);
+    return uniqueCompanies.filter((uc) => uc.history.some(h => h.status === statusFilter));
   }, [uniqueCompanies, statusFilter]);
 
   const handleToggleFilter = (status: string) => {
@@ -81,7 +81,11 @@ function Dashboard() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Sales Intelligence Hub</h1>
           <p className="text-sm text-muted-foreground">
-            {globalMonth === "all" ? "All months" : globalMonth} · {m.total} accounts
+            {globalMonths.length === 0 
+              ? "All months" 
+              : globalMonths.length === 1 
+                ? globalMonths[0] 
+                : `${globalMonths.length} Months selected`} · {m.total} accounts
           </p>
         </div>
       </div>

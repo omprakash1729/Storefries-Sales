@@ -107,6 +107,7 @@ const raw: Seed[] = [
   { name: "Health & Glow", owner: "Bhuvaneshwari", industry: "Beauty & Wellness", month: "Feb to March 2026", status: "prospect" },
   { name: "Marie Claire", owner: "Aswini", industry: "Beauty & Wellness", month: "Feb to March 2026", status: "prospect" },
   { name: "The Building Doctor", owner: "Aswini", industry: "Construction", month: "Feb to March 2026", status: "demo" },
+  { name: "The Building Doctor", owner: "Aswini", industry: "Construction", month: "April 2026", status: "trial" },
   { name: "Digitmarket", owner: "Aswini", industry: "Digital Marketing", month: "Feb to March 2026", status: "prospect" },
   { name: "Woodhead", owner: "Aswini", industry: "Digital Marketing", month: "Feb to March 2026", status: "prospect" },
   { name: "Metamorphisi Preschool", owner: "Aswini", industry: "Education", month: "Feb to March 2026", status: "demo", reason: "Follow up for onboarding" },

@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { MonthFilter } from "./MonthFilter";
 import { LayoutDashboard, Users, BarChart3, XCircle, Save, Cloud, RefreshCcw } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { ALL_MONTHS } from "@/lib/seed-data";
@@ -42,7 +43,7 @@ function AutoSaveIndicator({ accounts, reps }: { accounts: any[], reps: any[] })
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { globalMonth, setGlobalMonth, accounts, reps, fetchData, subscribeRealtime } = useStore();
+  const { globalMonths, setGlobalMonths, accounts, reps, fetchData, subscribeRealtime } = useStore();
   const [now, setNow] = useState(() => new Date());
 
   // ⚡️ Initialize real-time shared database hydration
@@ -108,17 +109,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {now.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
             </span>
             <AutoSaveIndicator accounts={accounts} reps={reps} />
-            <Select value={globalMonth} onValueChange={setGlobalMonth}>
-              <SelectTrigger className="h-9 w-[170px]">
-                <SelectValue placeholder="Filter month" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Months</SelectItem>
-                {months.map((m) => (
-                  <SelectItem key={m} value={m}>{m}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            
+            <MonthFilter months={months} selected={globalMonths} onChange={setGlobalMonths} />
+            
             <Button onClick={handleSaveSource} variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:bg-accent hover:text-foreground" title="Manual JSON Backup">
               <Save className="h-4 w-4" />
             </Button>

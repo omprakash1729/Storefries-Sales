@@ -7,7 +7,7 @@ import { toast } from "sonner";
 interface State {
   accounts: Account[];
   reps: SalesRep[];
-  globalMonth: string;
+  globalMonths: string[];
   isLoading: boolean;
   
   fetchData: () => Promise<void>;
@@ -17,21 +17,21 @@ interface State {
   updateAccount: (id: string, patch: Partial<Account>) => Promise<void>;
   deleteAccount: (id: string) => Promise<void>;
   addRep: (r: SalesRep) => Promise<void>;
-  setGlobalMonth: (m: string) => void;
+  setGlobalMonths: (m: string[]) => void;
   resetData: () => void;
 }
 
 export const useStore = create<State>()((set, get) => ({
   accounts: SEED_ACCOUNTS,
   reps: SEED_REPS,
-  globalMonth: "all",
+  globalMonths: [],
   isLoading: false,
 
   fetchData: async () => {
     set({ isLoading: true });
     try {
       const [accountsRes, repsRes] = await Promise.all([
-        supabase.from("sales_accounts").select("*").order("created_at", { ascending: false }),
+        supabase.from("sales_accounts").select("*").order("createdAt", { ascending: false }),
         supabase.from("sales_reps").select("*").order("name"),
       ]);
 
@@ -57,7 +57,7 @@ export const useStore = create<State>()((set, get) => ({
         
         // Recursive single run-thru to load freshly inserted rows back into cache
         const [accReload, repsReload] = await Promise.all([
-          supabase.from("sales_accounts").select("*").order("created_at", { ascending: false }),
+          supabase.from("sales_accounts").select("*").order("createdAt", { ascending: false }),
           supabase.from("sales_reps").select("*").order("name"),
         ]);
         
@@ -187,17 +187,17 @@ export const useStore = create<State>()((set, get) => ({
     }
   },
 
-  setGlobalMonth: (m) => set({ globalMonth: m }),
+  setGlobalMonths: (m) => set({ globalMonths: m }),
   
   resetData: () => {
     // Purge local memory override back to seeds
-    set({ accounts: SEED_ACCOUNTS, reps: SEED_REPS, globalMonth: "all" });
+    set({ accounts: SEED_ACCOUNTS, reps: SEED_REPS, globalMonths: [] });
   },
 }));
 
 export const useFilteredAccounts = () => {
-  const { accounts, globalMonth } = useStore();
-  return globalMonth === "all"
+  const { accounts, globalMonths } = useStore();
+  return globalMonths.length === 0
     ? accounts
-    : accounts.filter((a) => a.month === globalMonth);
+    : accounts.filter((a) => globalMonths.includes(a.month));
 };

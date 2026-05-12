@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { MonthFilter } from "@/components/MonthFilter";
 import { useMemo, useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { Plus, Search, Trash2, Download, UserPlus, CalendarIcon, X, FilterX } from "lucide-react";
@@ -97,7 +98,7 @@ function EditableCell({
 }
 
 function AccountsPage() {
-  const { accounts, reps, addAccount, updateAccount, deleteAccount, addRep, globalMonth } = useStore();
+  const { accounts, reps, addAccount, updateAccount, deleteAccount, addRep, globalMonths } = useStore();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [industryFilter, setIndustryFilter] = useState<string>("all");
@@ -131,7 +132,7 @@ function AccountsPage() {
                     industryFilter !== "all" || 
                     ownerFilter !== "all" || 
                     dateRange !== undefined || 
-                    globalMonth !== "all";
+                    globalMonths.length > 0;
 
   const clearFilters = () => {
     setSearch("");
@@ -139,14 +140,14 @@ function AccountsPage() {
     setIndustryFilter("all");
     setOwnerFilter("all");
     setDateRange(undefined);
-    useStore.getState().setGlobalMonth("all");
+    useStore.getState().setGlobalMonths([]);
     toast.success("Filters cleared");
   };
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return accounts.filter((a) => {
-      if (globalMonth !== "all" && a.month !== globalMonth) return false;
+      if (globalMonths.length > 0 && !globalMonths.includes(a.month)) return false;
       if (statusFilter !== "all" && a.status !== statusFilter) return false;
       if (industryFilter !== "all" && a.industry !== industryFilter) return false;
       if (ownerFilter !== "all" && a.owner !== ownerFilter) return false;
@@ -165,7 +166,7 @@ function AccountsPage() {
       if (q && !(a.name.toLowerCase().includes(q) || a.owner.toLowerCase().includes(q) || a.industry.toLowerCase().includes(q))) return false;
       return true;
     });
-  }, [accounts, search, statusFilter, industryFilter, globalMonth, ownerFilter, dateRange]);
+  }, [accounts, search, statusFilter, industryFilter, globalMonths, ownerFilter, dateRange]);
 
   const filteredUnique = useMemo(() => {
     return groupAccountsByCompany(filtered);
@@ -284,13 +285,7 @@ function AccountsPage() {
             {reps.map((r) => <SelectItem key={r.name} value={r.name}>{r.name}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Select value={globalMonth} onValueChange={(val) => useStore.getState().setGlobalMonth(val)}>
-          <SelectTrigger><SelectValue placeholder="All Months" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Months</SelectItem>
-            {months.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-          </SelectContent>
-        </Select>
+        <MonthFilter months={months} selected={globalMonths} onChange={(val) => useStore.getState().setGlobalMonths(val)} className="w-full h-10 xl:h-9 text-xs" />
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
