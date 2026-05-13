@@ -38,17 +38,7 @@ function Dashboard() {
 
   const filteredUniqueCompanies = useMemo(() => {
     if (statusFilter === "all") return uniqueCompanies;
-    return uniqueCompanies.filter((uc) => {
-      const historyStatuses = new Set(uc.history.map(h => h.status));
-      
-      // ⛔ EXCLUSIONARY RULE: Parity with counting engine. A rejected company shouldn't be listed in early-funnel filters.
-      if (historyStatuses.has("rejected")) {
-        historyStatuses.delete("prospect");
-        historyStatuses.delete("new_lead");
-      }
-      
-      return historyStatuses.has(statusFilter as any);
-    });
+    return uniqueCompanies.filter((uc) => uc.mostRecent.status === statusFilter);
   }, [uniqueCompanies, statusFilter]);
 
   const handleToggleFilter = (status: string) => {
@@ -102,7 +92,7 @@ function Dashboard() {
 
       {/* KPI strip */}
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-8 gap-3">
-        <KpiCard label="Total Accounts" value={m.total} sub="Active pipeline" theme="indigo" onClick={() => setStatusFilter("all")} active={statusFilter === "all"} />
+        <KpiCard label="Total Accounts" value={m.total} sub="All unique accounts" theme="indigo" onClick={() => setStatusFilter("all")} active={statusFilter === "all"} />
         <KpiCard label="New Leads" value={m.new_lead} sub="Initial outreach" theme="violet" progress={(m.new_lead / Math.max(1, m.total)) * 100} onClick={() => handleToggleFilter("new_lead")} active={statusFilter === "new_lead"} />
         <KpiCard label="Prospects" value={m.prospect} sub="In pipeline" theme="slate" progress={(m.prospect / Math.max(1, m.total)) * 100} onClick={() => handleToggleFilter("prospect")} active={statusFilter === "prospect"} />
         <KpiCard label="Demos" value={m.demo} sub="Demos attended" theme="blue" progress={(m.demo / Math.max(1, m.total)) * 100} onClick={() => handleToggleFilter("demo")} active={statusFilter === "demo"} />

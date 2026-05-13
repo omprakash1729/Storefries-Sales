@@ -24,29 +24,29 @@ export function computeMetrics(accounts: Account[]): Metrics {
   
   const m = { total: uniqueGroups.length, new_lead: 0, prospect: 0, demo: 0, proposal_sent: 0, trial: 0, rejected: 0, conversion: 0, active: 0 };
   
+  let convertedCount = 0;
+
   for (const group of uniqueGroups) {
-    // Collect unique set of statuses this company has achieved in the filtered range
-    const distinctStatuses = new Set(group.history.map(h => h.status));
-    
-    // ⛔ EXCLUSIONARY RULE: If a company was ever rejected, it shouldn't inflate early-funnel counts like Prospect
-    if (distinctStatuses.has("rejected")) {
-      distinctStatuses.delete("prospect");
-      distinctStatuses.delete("new_lead");
+    // 🎯 STRICT DEDUPLICATION: Every company must only occupy its CURRENT (latest) status
+    // to ensure numbers sum up exactly and do not duplicate across the dashboard.
+    const currentStatus = group.mostRecent.status;
+    if (currentStatus in m) {
+      m[currentStatus as keyof Metrics]++;
     }
 
-    for (const s of distinctStatuses) {
-      if (s in m) {
-        m[s as keyof Metrics]++;
-      }
+    // 📊 CONVERSION ENGINE: Calculate true conversion by counting unique companies 
+    // that ever reached an advanced stage (Demo, Proposal, or Trial).
+    const historyStatuses = new Set(group.history.map(h => h.status));
+    if (historyStatuses.has("demo") || historyStatuses.has("proposal_sent") || historyStatuses.has("trial")) {
+      convertedCount++;
     }
   }
   
-  // Define Active as having passed through the funnel but not explicitly counting only final outcomes as rejection
-  // Wait, let's follow historical total-rejected active math, just ensuring numbers reflect user count.
+  // Define Active as all unique accounts minus the ones currently rejected
   m.active = m.total - m.rejected;
   
-  // Formula uses total companies that touched Demo or Trial compared to population
-  m.conversion = m.total === 0 ? 0 : Math.round(((m.demo + m.trial) / Math.max(1, m.total)) * 1000) / 10;
+  // Accurate conversion percentage based on unique converted companies
+  m.conversion = m.total === 0 ? 0 : Math.round((convertedCount / Math.max(1, m.total)) * 1000) / 10;
   return m;
 }
 
