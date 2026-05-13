@@ -4,7 +4,6 @@ import { useFilteredAccounts } from "@/lib/store";
 import { KpiCard, RepChip, RepAvatar } from "@/components/dashboard-utils";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Legend } from "chart.js";
-import { groupAccountsByCompany } from "@/lib/crm-utils";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
@@ -19,14 +18,8 @@ export const Route = createFileRoute("/rejected")({
 });
 
 function RejectedPage() {
-  const rawAccounts = useFilteredAccounts();
-  
-  const rejected = useMemo(() => {
-    const uniqueGroups = groupAccountsByCompany(rawAccounts);
-    return uniqueGroups
-      .filter((g) => g.mostRecent.status === "rejected")
-      .map((g) => g.mostRecent);
-  }, [rawAccounts]);
+  const all = useFilteredAccounts();
+  const rejected = all.filter((a) => a.status === "rejected");
 
   const byIndustry = useMemo(() => {
     const m = new Map<string, number>();
@@ -58,7 +51,7 @@ function RejectedPage() {
         <KpiCard label="Total Rejections" value={rejected.length} theme="rose" />
         <KpiCard label="Top Industry" value={byIndustry[0]?.[0] ?? "—"} sub={byIndustry[0] ? `${byIndustry[0][1]} accounts` : ""} theme="blue" />
         <KpiCard label="Top Remark" value={topReason.length > 30 ? topReason.slice(0, 30) + "…" : topReason} theme="slate" />
-        <KpiCard label="Rejection Rate" value={`${rawAccounts.length ? Math.round((rejected.length / groupAccountsByCompany(rawAccounts).length) * 1000) / 10 : 0}%`} theme="brand" />
+        <KpiCard label="Rejection Rate" value={`${all.length ? Math.round((rejected.length / all.length) * 1000) / 10 : 0}%`} theme="brand" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
