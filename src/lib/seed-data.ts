@@ -270,7 +270,11 @@ const newDataRaw = [
   { name: "Kosmoderma skin and hair", owner: "Bhuvaneshwari", industry: "Beauty & Wellness", month: "May 2026", status: "prospect", reason: "Fix demo for 3pm tomorrow", createdAt: "2026-05-12T12:00:00.000Z", followUpCount: 0 },
   { name: "DermaVue Clinics", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "prospect", reason: "He said that he will discuss with their operations team and call back if needed", createdAt: "2026-05-12T12:00:00.000Z", followUpCount: 0 },
   { name: "RMKV Silks", owner: "Bhuvaneshwari", industry: "Apparel & Footwear", month: "May 2026", status: "prospect", reason: "Shared pitch deck through mail", createdAt: "2026-05-12T12:00:00.000Z", followUpCount: 0 },
-  { name: "KIMS (Krishna Institute)", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "prospect", reason: "Follow up call made and he need to check with his ceo", createdAt: "2026-05-12T12:00:00.000Z", followUpCount: 1 }
+  { name: "KIMS (Krishna Institute)", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "prospect", reason: "Follow up call made and he need to check with his ceo", createdAt: "2026-05-12T12:00:00.000Z", followUpCount: 1 },
+  { name: "Popees", owner: "Bhuvaneshwari", industry: "Food & Beverage", month: "May 2026", status: "prospect", reason: "We will contact you.", createdAt: "2026-05-13T12:00:00.000Z", followUpCount: 0 },
+  { name: "Kosmoderma skin and hair", owner: "Bhuvaneshwari", industry: "Beauty & Wellness", month: "May 2026", status: "demo", reason: "Follow up made to remind about the demo - Demo Completed - we need to give competitor analysis", createdAt: "2026-05-13T12:00:00.000Z", followUpCount: 0 },
+  { name: "Motherhood Hospitals", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "new_lead", reason: "Not required right now, shared the pitch deck through WA", createdAt: "2026-05-13T12:00:00.000Z", followUpCount: 0 },
+  { name: "Oliva Skin & Hair Clinic", owner: "Bhuvaneshwari", industry: "Beauty & Wellness", month: "May 2026", status: "demo", reason: "Demo by 6pm - Demo completed", createdAt: "2026-05-13T12:00:00.000Z", followUpCount: 0 }
 ];
 
 export const PATCH_ACCOUNTS: Account[] = newDataRaw.map((a, i) => ({
