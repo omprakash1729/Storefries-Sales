@@ -250,11 +250,11 @@ function AccountsPage() {
               <Button
                 variant="outline"
                 className={cn(
-                  "w-full justify-start text-left font-normal truncate bg-white border-slate-200/70 hover:border-slate-300 hover:bg-white shadow-xs transition-all",
-                  !dateRange && "text-slate-400"
+                  "w-full justify-start text-left font-normal truncate bg-violet-50/50 border-violet-200 hover:border-violet-300 hover:bg-violet-100/50 shadow-xs transition-all text-violet-700",
+                  !dateRange && "text-violet-600/70"
                 )}
               >
-                <CalendarIcon className="mr-2 h-4 w-4 shrink-0 text-slate-400" />
+                <CalendarIcon className="mr-2 h-4 w-4 shrink-0 text-violet-500" />
                 <span className="truncate flex-1">
                   {dateRange?.from ? (
                     dateRange.to ? (
@@ -267,8 +267,8 @@ function AccountsPage() {
                   )}
                 </span>
                 {dateRange && (
-                  <div role="button" onClick={(e) => { e.stopPropagation(); setDateRange(undefined); }} className="ml-1 p-0.5 hover:bg-slate-100 rounded-full">
-                    <X className="h-3 w-3 opacity-60 hover:opacity-100" />
+                  <div role="button" onClick={(e) => { e.stopPropagation(); setDateRange(undefined); }} className="ml-1 p-0.5 hover:bg-violet-100 rounded-full">
+                    <X className="h-3 w-3 opacity-60 hover:opacity-100 text-violet-700" />
                   </div>
                 )}
               </Button>
@@ -286,7 +286,7 @@ function AccountsPage() {
           </Popover>
 
           <Select value={ownerFilter} onValueChange={setOwnerFilter}>
-            <SelectTrigger className="bg-white border-slate-200/70 hover:border-slate-300 hover:bg-white shadow-xs transition-all text-slate-700">
+            <SelectTrigger className="bg-blue-50/50 border-blue-200 hover:border-blue-300 hover:bg-blue-100/50 shadow-xs transition-all text-blue-700">
               <SelectValue placeholder="All Owners" />
             </SelectTrigger>
             <SelectContent>
@@ -299,11 +299,11 @@ function AccountsPage() {
             months={months} 
             selected={globalMonths} 
             onChange={(val) => useStore.getState().setGlobalMonths(val)} 
-            className="w-full bg-white border-slate-200/70 hover:border-slate-300 hover:bg-white shadow-xs transition-all" 
+            className="w-full bg-teal-50/50 border-teal-200 hover:border-teal-300 hover:bg-teal-100/50 shadow-xs transition-all text-teal-700" 
           />
 
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="bg-white border-slate-200/70 hover:border-slate-300 hover:bg-white shadow-xs transition-all text-slate-700">
+            <SelectTrigger className="bg-amber-50/50 border-amber-200 hover:border-amber-300 hover:bg-amber-100/50 shadow-xs transition-all text-amber-700">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -313,7 +313,7 @@ function AccountsPage() {
           </Select>
 
           <Select value={industryFilter} onValueChange={setIndustryFilter}>
-            <SelectTrigger className="bg-white border-slate-200/70 hover:border-slate-300 hover:bg-white shadow-xs transition-all text-slate-700">
+            <SelectTrigger className="bg-indigo-50/50 border-indigo-200 hover:border-indigo-300 hover:bg-indigo-100/50 shadow-xs transition-all text-indigo-700">
               <SelectValue placeholder="Industry" />
             </SelectTrigger>
             <SelectContent>
