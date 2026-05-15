@@ -250,7 +250,7 @@ function AccountsPage() {
               <Button
                 variant="outline"
                 className={cn(
-                  "w-full justify-start text-left font-normal truncate bg-violet-50/50 border-violet-200 hover:border-violet-300 hover:bg-violet-100/50 shadow-xs transition-all text-violet-700",
+                  "w-full justify-start text-left font-normal truncate bg-violet-50/50 border border-violet-200 border-t-[3px] border-t-violet-500 hover:border-violet-300 hover:border-t-violet-600 hover:bg-violet-100/50 shadow-xs transition-all text-violet-700",
                   !dateRange && "text-violet-600/70"
                 )}
               >
@@ -286,7 +286,7 @@ function AccountsPage() {
           </Popover>
 
           <Select value={ownerFilter} onValueChange={setOwnerFilter}>
-            <SelectTrigger className="bg-blue-50/50 border-blue-200 hover:border-blue-300 hover:bg-blue-100/50 shadow-xs transition-all text-blue-700">
+            <SelectTrigger className="bg-blue-50/50 border border-blue-200 border-t-[3px] border-t-blue-500 hover:border-blue-300 hover:border-t-blue-600 hover:bg-blue-100/50 shadow-xs transition-all text-blue-700">
               <SelectValue placeholder="All Owners" />
             </SelectTrigger>
             <SelectContent>
@@ -299,11 +299,11 @@ function AccountsPage() {
             months={months} 
             selected={globalMonths} 
             onChange={(val) => useStore.getState().setGlobalMonths(val)} 
-            className="w-full bg-teal-50/50 border-teal-200 hover:border-teal-300 hover:bg-teal-100/50 shadow-xs transition-all text-teal-700" 
+            className="w-full bg-teal-50/50 border border-teal-200 border-t-[3px] border-t-teal-500 hover:border-teal-300 hover:border-t-teal-600 hover:bg-teal-100/50 shadow-xs transition-all text-teal-700" 
           />
 
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="bg-amber-50/50 border-amber-200 hover:border-amber-300 hover:bg-amber-100/50 shadow-xs transition-all text-amber-700">
+            <SelectTrigger className="bg-amber-50/50 border border-amber-200 border-t-[3px] border-t-amber-500 hover:border-amber-300 hover:border-t-amber-600 hover:bg-amber-100/50 shadow-xs transition-all text-amber-700">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -313,7 +313,7 @@ function AccountsPage() {
           </Select>
 
           <Select value={industryFilter} onValueChange={setIndustryFilter}>
-            <SelectTrigger className="bg-indigo-50/50 border-indigo-200 hover:border-indigo-300 hover:bg-indigo-100/50 shadow-xs transition-all text-indigo-700">
+            <SelectTrigger className="bg-indigo-50/50 border border-indigo-200 border-t-[3px] border-t-indigo-500 hover:border-indigo-300 hover:border-t-indigo-600 hover:bg-indigo-100/50 shadow-xs transition-all text-indigo-700">
               <SelectValue placeholder="Industry" />
             </SelectTrigger>
             <SelectContent>
@@ -329,7 +329,7 @@ function AccountsPage() {
             disabled={!hasFilters}
             className={`h-9 px-3 flex items-center gap-1.5 text-xs font-semibold shadow-xs transition-all ${
               hasFilters 
-                ? "text-rose-600 border-rose-200 bg-rose-50/50 hover:bg-rose-100/80 hover:text-rose-700 hover:border-rose-300" 
+                ? "text-rose-600 border border-rose-200 border-t-[3px] border-t-rose-500 bg-rose-50/50 hover:bg-rose-100/80 hover:text-rose-700 hover:border-rose-300 hover:border-t-rose-600" 
                 : "text-slate-400/60 bg-slate-50/30 border-slate-200/60 border-dashed"
             }`}
           >
