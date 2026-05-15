@@ -153,12 +153,12 @@ function AccountsPage() {
       if (ownerFilter !== "all" && a.owner !== ownerFilter) return false;
       
       // Granular Date Range Filter logic
-      if (dateRange?.from && dateRange?.to) {
+      if (dateRange?.from) {
         if (!a.createdAt) return false; // Legacy items without exact datetime are excluded from specific range
         const timestamp = new Date(a.createdAt);
         const rangeValid = isWithinInterval(timestamp, {
           start: startOfDay(dateRange.from),
-          end: endOfDay(dateRange.to)
+          end: dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from)
         });
         if (!rangeValid) return false;
       }
