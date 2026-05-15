@@ -105,7 +105,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="ml-auto flex items-center gap-2 md:gap-3">
-            <span className="hidden lg:inline text-xs text-muted-foreground">
+            <span className="hidden lg:inline text-xs text-muted-foreground" suppressHydrationWarning>
               {now.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
             </span>
             <AutoSaveIndicator accounts={accounts} reps={reps} />

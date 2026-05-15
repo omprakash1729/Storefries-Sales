@@ -285,7 +285,7 @@ function AccountsPage() {
             {reps.map((r) => <SelectItem key={r.name} value={r.name}>{r.name}</SelectItem>)}
           </SelectContent>
         </Select>
-        <MonthFilter months={months} selected={globalMonths} onChange={(val) => useStore.getState().setGlobalMonths(val)} className="w-full h-10 xl:h-9 text-xs" />
+        <MonthFilter months={months} selected={globalMonths} onChange={(val) => useStore.getState().setGlobalMonths(val)} className="w-full" />
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>

@@ -6,6 +6,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { Bar } from "react-chartjs-2";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { groupAccountsByCompany, UniqueCompany } from "@/lib/crm-utils";
+import type { AccountStatus } from "@/lib/types";
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement,
   Title, Tooltip, Legend, ArcElement,
