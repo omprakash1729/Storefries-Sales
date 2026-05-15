@@ -231,151 +231,171 @@ function AccountsPage() {
         </div>
       </div>
 
-      {/* Toolbar */}
-      <div className="rounded-xl border bg-card p-4 shadow-card grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-2">
-        <div className="relative sm:col-span-2 xl:col-span-2">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search company, owner, industry…" className="pl-9"
-            value={search} onChange={(e) => setSearch(e.target.value)} />
-        </div>
+      {/* Modern Unified Enterprise Sheet */}
+      <div className="rounded-xl border border-slate-200/70 bg-card shadow-card overflow-hidden flex flex-col">
         
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-full justify-start text-left font-normal truncate bg-transparent",
-                !dateRange && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
-              <span className="truncate flex-1">
-                {dateRange?.from ? (
-                  dateRange.to ? (
-                    <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</>
-                  ) : (
-                    format(dateRange.from, "LLL dd")
-                  )
-                ) : (
-                  "Specific Date"
-                )}
-              </span>
-              {dateRange && (
-                <div role="button" onClick={(e) => { e.stopPropagation(); setDateRange(undefined); }} className="ml-1 p-0.5 hover:bg-accent rounded-full">
-                  <X className="h-3 w-3 opacity-60 hover:opacity-100" />
-                </div>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              initialFocus
-              mode="range"
-              defaultMonth={dateRange?.from}
-              selected={dateRange}
-              onSelect={setDateRange}
-              numberOfMonths={1}
+        {/* Seamless Integrated High-End Toolbar */}
+        <div className="bg-slate-50/40 px-4 py-3 border-b border-slate-200/60 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-2.5 items-center">
+          <div className="relative sm:col-span-2 xl:col-span-2">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input 
+              placeholder="Search company, owner, industry…" 
+              className="pl-9 bg-white border-slate-200/70 hover:border-slate-300 shadow-xs placeholder:text-slate-400 focus-visible:ring-slate-200 focus-visible:border-slate-300 transition-all"
+              value={search} onChange={(e) => setSearch(e.target.value)} 
             />
-          </PopoverContent>
-        </Popover>
-        <Select value={ownerFilter} onValueChange={setOwnerFilter}>
-          <SelectTrigger><SelectValue placeholder="All Owners" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Owners</SelectItem>
-            {reps.map((r) => <SelectItem key={r.name} value={r.name}>{r.name}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <MonthFilter months={months} selected={globalMonths} onChange={(val) => useStore.getState().setGlobalMonths(val)} className="w-full" />
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            {STATUSES.map((s) => <SelectItem key={s} value={s}>{STATUS_LABEL[s]}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select value={industryFilter} onValueChange={setIndustryFilter}>
-          <SelectTrigger><SelectValue placeholder="Industry" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Industries</SelectItem>
-            {industries.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}
-          </SelectContent>
-        </Select>
+          </div>
+          
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal truncate bg-white border-slate-200/70 hover:border-slate-300 hover:bg-white shadow-xs transition-all",
+                  !dateRange && "text-slate-400"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4 shrink-0 text-slate-400" />
+                <span className="truncate flex-1">
+                  {dateRange?.from ? (
+                    dateRange.to ? (
+                      <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</>
+                    ) : (
+                      format(dateRange.from, "LLL dd")
+                    )
+                  ) : (
+                    "Specific Date"
+                  )}
+                </span>
+                {dateRange && (
+                  <div role="button" onClick={(e) => { e.stopPropagation(); setDateRange(undefined); }} className="ml-1 p-0.5 hover:bg-slate-100 rounded-full">
+                    <X className="h-3 w-3 opacity-60 hover:opacity-100" />
+                  </div>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                initialFocus
+                mode="range"
+                defaultMonth={dateRange?.from}
+                selected={dateRange}
+                onSelect={setDateRange}
+                numberOfMonths={1}
+              />
+            </PopoverContent>
+          </Popover>
 
-        <Button
-          variant="outline"
-          size="default"
-          onClick={clearFilters}
-          disabled={!hasFilters}
-          className={`h-9 px-3 flex items-center gap-1.5 text-xs font-semibold transition-all ${
-            hasFilters 
-              ? "text-rose-600 border-rose-100 bg-rose-50/50 hover:bg-rose-100/80 hover:text-rose-700" 
-              : "text-muted-foreground/50 opacity-50 border-dashed"
-          }`}
-        >
-          <FilterX className="h-3.5 w-3.5" />
-          Clear Filters
-        </Button>
-      </div>
+          <Select value={ownerFilter} onValueChange={setOwnerFilter}>
+            <SelectTrigger className="bg-white border-slate-200/70 hover:border-slate-300 hover:bg-white shadow-xs transition-all text-slate-700">
+              <SelectValue placeholder="All Owners" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Owners</SelectItem>
+              {reps.map((r) => <SelectItem key={r.name} value={r.name}>{r.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
 
-      {/* Table */}
-      <div className="rounded-xl border bg-card shadow-card overflow-hidden">
+          <MonthFilter 
+            months={months} 
+            selected={globalMonths} 
+            onChange={(val) => useStore.getState().setGlobalMonths(val)} 
+            className="w-full bg-white border-slate-200/70 hover:border-slate-300 hover:bg-white shadow-xs transition-all" 
+          />
+
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="bg-white border-slate-200/70 hover:border-slate-300 hover:bg-white shadow-xs transition-all text-slate-700">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              {STATUSES.map((s) => <SelectItem key={s} value={s}>{STATUS_LABEL[s]}</SelectItem>)}
+            </SelectContent>
+          </Select>
+
+          <Select value={industryFilter} onValueChange={setIndustryFilter}>
+            <SelectTrigger className="bg-white border-slate-200/70 hover:border-slate-300 hover:bg-white shadow-xs transition-all text-slate-700">
+              <SelectValue placeholder="Industry" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Industries</SelectItem>
+              {industries.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}
+            </SelectContent>
+          </Select>
+
+          <Button
+            variant="outline"
+            size="default"
+            onClick={clearFilters}
+            disabled={!hasFilters}
+            className={`h-9 px-3 flex items-center gap-1.5 text-xs font-semibold shadow-xs transition-all ${
+              hasFilters 
+                ? "text-rose-600 border-rose-200 bg-rose-50/50 hover:bg-rose-100/80 hover:text-rose-700 hover:border-rose-300" 
+                : "text-slate-400/60 bg-slate-50/30 border-slate-200/60 border-dashed"
+            }`}
+          >
+            <FilterX className="h-3.5 w-3.5" />
+            Clear Filters
+          </Button>
+        </div>
+
+        {/* High-Performance Spacious Table Viewport */}
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground">
+          <table className="w-full text-sm border-collapse">
+            <thead className="bg-slate-50/80 border-b border-slate-200/60 text-[11px] font-bold uppercase tracking-wider text-slate-500">
               <tr>
-                <th className="text-left px-4 py-3">Company</th>
-                <th className="text-left px-4 py-3">Industry</th>
-                <th className="text-left px-4 py-3">Owner</th>
-                <th className="text-left px-4 py-3">Month</th>
-                <th className="text-left px-4 py-3">Status</th>
-                <th className="text-center px-4 py-3">Follow Ups</th>
-                <th className="text-left px-4 py-3">Remark</th>
-                <th className="px-4 py-3"></th>
+                <th className="text-left px-5 py-3 font-bold tracking-wider">Company</th>
+                <th className="text-left px-5 py-3 font-bold tracking-wider">Industry</th>
+                <th className="text-left px-5 py-3 font-bold tracking-wider">Owner</th>
+                <th className="text-left px-5 py-3 font-bold tracking-wider">Month</th>
+                <th className="text-left px-5 py-3 font-bold tracking-wider">Status</th>
+                <th className="text-center px-5 py-3 font-bold tracking-wider">Follow Ups</th>
+                <th className="text-left px-5 py-3 font-bold tracking-wider">Remark</th>
+                <th className="px-5 py-3"></th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100/70">
               {filteredUnique.map((uc) => {
                 const a = uc.mostRecent;
                 return (
-                  <tr key={uc.name} className="border-t hover:bg-accent/30 transition-colors">
-                    <td className="px-4 py-2.5">
+                  <tr key={uc.name} className="hover:bg-slate-50/40 transition-colors group/row">
+                    <td className="px-5 py-3.5">
                       <EditableCell
                         value={uc.name}
                         isEditMode={isEditMode}
                         onSave={(val) => updateCompanyField(uc.name, { name: val })}
-                        className="font-bold text-slate-800"
+                        className="font-bold text-slate-800 text-[14px]"
                         displayNode={
                           <span
                             onClick={() => !isEditMode && setSelectedCompanyName(uc.name)}
-                            className={!isEditMode ? "cursor-pointer hover:text-primary hover:underline" : ""}
+                            className={!isEditMode ? "cursor-pointer hover:text-primary hover:underline decoration-primary/30 underline-offset-2" : ""}
                           >
                             {uc.name}
                           </span>
                         }
                       />
                     </td>
-                    <td className="px-4 py-2.5 text-muted-foreground">
+                    <td className="px-5 py-3.5 text-slate-500 font-medium">
                       <EditableCell
                         value={uc.industry}
                         isEditMode={isEditMode}
                         onSave={(val) => updateCompanyField(uc.name, { industry: val })}
                       />
                     </td>
-                    <td className="px-4 py-2.5">
+                    <td className="px-5 py-3.5">
                       {!isEditMode ? (
-                        <div className="flex items-center gap-2 px-1 h-8 text-slate-700 font-medium">
+                        <div className="flex items-center gap-2 h-8 text-slate-700 font-medium">
                           <RepAvatar name={a.owner} />
-                          <span className="text-xs">{a.owner}</span>
+                          <span className="text-xs font-semibold text-slate-600">{a.owner}</span>
                         </div>
                       ) : (
                         <Select 
                           value={a.owner} 
                           onValueChange={(v) => updateAccount(a.id, { owner: v })}
                         >
-                          <SelectTrigger className="h-8 w-[160px] border-none bg-transparent shadow-none p-1 hover:bg-accent">
+                          <SelectTrigger className="h-8 w-[160px] border-none bg-transparent shadow-none p-1 hover:bg-slate-100 transition-all">
                             <div className="flex items-center gap-2">
                               <RepAvatar name={a.owner} />
-                              <span className="text-xs">{a.owner}</span>
+                              <span className="text-xs font-semibold text-slate-600">{a.owner}</span>
                             </div>
                           </SelectTrigger>
                           <SelectContent>
@@ -384,24 +404,24 @@ function AccountsPage() {
                         </Select>
                       )}
                     </td>
-                    <td className="px-4 py-2.5 text-muted-foreground text-xs">
+                    <td className="px-5 py-3.5 text-slate-500 font-medium text-xs">
                       <EditableCell
                         value={a.month}
                         isEditMode={isEditMode}
                         onSave={(val) => updateAccount(a.id, { month: val })}
                       />
                     </td>
-                    <td className="px-4 py-2.5">
+                    <td className="px-5 py-3.5">
                       {!isEditMode ? (
-                        <div className="px-1 h-8 flex items-center">
-                          <StatusBadge status={a.status} />
+                        <div className="h-8 flex items-center">
+                          <StatusBadge status={a.status} className="shadow-xs border-slate-200/20" />
                         </div>
                       ) : (
                         <Select 
                           value={a.status} 
                           onValueChange={(v) => updateAccount(a.id, { status: v as AccountStatus })}
                         >
-                          <SelectTrigger className="h-8 w-[140px] border-none bg-transparent shadow-none p-1 hover:bg-accent">
+                          <SelectTrigger className="h-8 w-[140px] border-none bg-transparent shadow-none p-1 hover:bg-slate-100 transition-all">
                             <StatusBadge status={a.status} />
                           </SelectTrigger>
                           <SelectContent>
@@ -410,11 +430,11 @@ function AccountsPage() {
                         </Select>
                       )}
                     </td>
-                    <td className="px-4 py-2.5 text-center">
+                    <td className="px-5 py-3.5 text-center">
                       <div className="flex items-center justify-center">
                         {!isEditMode ? (
                           <div 
-                            className="h-7 w-7 rounded-full bg-primary/10 border border-primary/20 text-primary font-bold flex items-center justify-center text-xs cursor-help shadow-sm select-none"
+                            className="h-7 w-7 rounded-full bg-primary/5 border border-primary/10 text-primary font-extrabold flex items-center justify-center text-xs cursor-help shadow-xs hover:bg-primary/10 transition-all select-none"
                             title="Total interactions recorded"
                           >
                             {a.followUpCount ?? 0}
@@ -423,14 +443,14 @@ function AccountsPage() {
                           <input
                             type="number"
                             min="0"
-                            className="h-7 w-12 text-center text-xs font-bold border rounded bg-white focus:ring-1 ring-primary"
+                            className="h-7 w-12 text-center text-xs font-bold border border-slate-200 shadow-xs rounded bg-white focus:ring-1 ring-primary/50 focus:border-primary focus:outline-none"
                             value={a.followUpCount ?? 0}
                             onChange={(e) => updateAccount(a.id, { followUpCount: parseInt(e.target.value) || 0 })}
                           />
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-2.5 text-xs text-muted-foreground max-w-xs truncate">
+                    <td className="px-5 py-3.5 text-xs text-slate-500 font-medium max-w-xs truncate italic group-hover/row:text-slate-600 transition-colors">
                       <EditableCell
                         value={a.reason ?? ""}
                         isEditMode={isEditMode}
@@ -438,29 +458,31 @@ function AccountsPage() {
                         displayNode={a.reason ?? "—"}
                       />
                     </td>
-                    <td className="px-4 py-2.5 text-right flex items-center justify-end gap-0.5">
-                      <Button 
-                        variant="ghost" size="icon" className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
-                        title="Log new interaction"
-                        onClick={() => {
-                          setPrefillData({ name: a.name, industry: a.industry, owner: a.owner, status: a.status });
-                          setShowAdd(true);
-                        }}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                      {isEditMode ? (
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-600 hover:bg-rose-50"
-                          onClick={() => { deleteAccount(a.id); toast.success("Account deleted"); }}>
-                          <Trash2 className="h-4 w-4" />
+                    <td className="px-5 py-3.5 text-right">
+                      <div className="flex items-center justify-end gap-0.5 opacity-60 group-hover/row:opacity-100 transition-opacity">
+                        <Button 
+                          variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
+                          title="Log new interaction"
+                          onClick={() => {
+                            setPrefillData({ name: a.name, industry: a.industry, owner: a.owner, status: a.status });
+                            setShowAdd(true);
+                          }}
+                        >
+                          <Plus className="h-4 w-4" />
                         </Button>
-                      ) : null}
+                        {isEditMode ? (
+                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-rose-400 hover:bg-rose-50 hover:text-rose-600 transition-colors"
+                            onClick={() => { deleteAccount(a.id); toast.success("Account deleted"); }}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        ) : null}
+                      </div>
                     </td>
                   </tr>
                 );
               })}
               {filteredUnique.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-12 text-center text-sm text-muted-foreground">No accounts match your filters.</td></tr>
+                <tr><td colSpan={8} className="px-5 py-16 text-center text-sm text-slate-400 font-medium bg-slate-50/20">No accounts match your current filters.</td></tr>
               )}
             </tbody>
           </table>
