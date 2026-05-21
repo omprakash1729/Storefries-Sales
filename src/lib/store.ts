@@ -9,6 +9,7 @@ interface State {
   reps: SalesRep[];
   globalMonths: string[];
   isLoading: boolean;
+  isAuthenticated: boolean | null;
   
   fetchData: () => Promise<void>;
   subscribeRealtime: () => (() => void);
@@ -18,6 +19,7 @@ interface State {
   deleteAccount: (id: string) => Promise<void>;
   addRep: (r: SalesRep) => Promise<void>;
   setGlobalMonths: (m: string[]) => void;
+  setAuthenticated: (val: boolean) => void;
   resetData: () => void;
 }
 
@@ -26,6 +28,7 @@ export const useStore = create<State>()((set, get) => ({
   reps: SEED_REPS,
   globalMonths: [],
   isLoading: false,
+  isAuthenticated: null,
 
   fetchData: async () => {
     set({ isLoading: true });
@@ -188,6 +191,7 @@ export const useStore = create<State>()((set, get) => ({
   },
 
   setGlobalMonths: (m) => set({ globalMonths: m }),
+  setAuthenticated: (val) => set({ isAuthenticated: val }),
   
   resetData: () => {
     // Purge local memory override back to seeds

@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { MonthFilter } from "./MonthFilter";
-import { LayoutDashboard, Users, BarChart3, XCircle, Save, Cloud, RefreshCcw } from "lucide-react";
+import { LayoutDashboard, Users, BarChart3, XCircle, Save, Cloud, RefreshCcw, LogOut } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { supabase } from "@/lib/supabase";
 import { ALL_MONTHS } from "@/lib/seed-data";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -123,6 +124,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               title="Save and Sync with Cloud"
             >
               <Save className="h-4 w-4" />
+            </Button>
+
+            <Button 
+              onClick={async () => {
+                await supabase.auth.signOut();
+                toast.info("Signed out successfully");
+              }} 
+              variant="ghost" 
+              size="icon" 
+              className="h-9 w-9 text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-950/30 dark:hover:text-rose-400 group" 
+              title="Sign Out"
+            >
+              <LogOut className="h-4 w-4" />
             </Button>
           </div>
         </div>
