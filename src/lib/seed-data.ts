@@ -274,7 +274,14 @@ const newDataRaw = [
   { name: "Popees", owner: "Bhuvaneshwari", industry: "Food & Beverage", month: "May 2026", status: "prospect", reason: "We will contact you.", createdAt: "2026-05-13T12:00:00.000Z", followUpCount: 0 },
   { name: "Kosmoderma skin and hair", owner: "Bhuvaneshwari", industry: "Beauty & Wellness", month: "May 2026", status: "demo", reason: "Follow up made to remind about the demo - Demo Completed - we need to give competitor analysis", createdAt: "2026-05-13T12:00:00.000Z", followUpCount: 0 },
   { name: "Motherhood Hospitals", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "new_lead", reason: "Not required right now, shared the pitch deck through WA", createdAt: "2026-05-13T12:00:00.000Z", followUpCount: 0 },
-  { name: "Oliva Skin & Hair Clinic", owner: "Bhuvaneshwari", industry: "Beauty & Wellness", month: "May 2026", status: "demo", reason: "Demo by 6pm - Demo completed", createdAt: "2026-05-13T12:00:00.000Z", followUpCount: 0 }
+  { name: "Oliva Skin & Hair Clinic", owner: "Bhuvaneshwari", industry: "Beauty & Wellness", month: "May 2026", status: "demo", reason: "Demo by 6pm - Demo completed", createdAt: "2026-05-13T12:00:00.000Z", followUpCount: 0 },
+  { name: "Sparsh", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "new_lead", createdAt: "2026-05-26T12:00:00.000Z", followUpCount: 0 },
+  { name: "Oasis fertility", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "new_lead", createdAt: "2026-05-26T12:00:00.000Z", followUpCount: 0 },
+  { name: "Dava India Pharmacy", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "new_lead", createdAt: "2026-05-26T12:00:00.000Z", followUpCount: 0 },
+  { name: "Wellness Forever Medicare", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "new_lead", createdAt: "2026-05-26T12:00:00.000Z", followUpCount: 0 },
+  { name: "Sahyadri Hospitals", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "new_lead", createdAt: "2026-05-26T12:00:00.000Z", followUpCount: 0 },
+  { name: "Vecura Wellness clinic", owner: "Bhuvaneshwari", industry: "Beauty & Wellness", month: "May 2026", status: "new_lead", createdAt: "2026-05-26T12:00:00.000Z", followUpCount: 0 },
+  { name: "Dr. Batra's Homeopathy", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "new_lead", createdAt: "2026-05-26T12:00:00.000Z", followUpCount: 0 }
 ];
 
 export const PATCH_ACCOUNTS: Account[] = newDataRaw.map((a, i) => ({
