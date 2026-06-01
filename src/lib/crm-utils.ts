@@ -80,5 +80,14 @@ export function groupAccountsByCompany(accounts: Account[]): UniqueCompany[] {
     });
   }
 
-  return result;
+  // Sort companies globally by month rank descending, and then by createdAt descending
+  return result.sort((a, b) => {
+    const rankA = getMonthRank(a.mostRecent.month);
+    const rankB = getMonthRank(b.mostRecent.month);
+    if (rankB !== rankA) return rankB - rankA;
+
+    const dateA = a.mostRecent.createdAt ? new Date(a.mostRecent.createdAt).getTime() : 0;
+    const dateB = b.mostRecent.createdAt ? new Date(b.mostRecent.createdAt).getTime() : 0;
+    return dateB - dateA;
+  });
 }
