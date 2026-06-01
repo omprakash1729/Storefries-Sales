@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MonthFilter } from "@/components/MonthFilter";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, memo } from "react";
 import * as XLSX from "xlsx";
 import { Plus, Search, Trash2, Download, UserPlus, CalendarIcon, X, FilterX, Clock, CalendarClock } from "lucide-react";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
@@ -96,6 +96,174 @@ function EditableCell({
     </div>
   );
 }
+
+const AccountRow = memo(function AccountRow({
+  uc,
+  isEditMode,
+  reps,
+  updateCompanyField,
+  updateAccount,
+  deleteAccount,
+  setActiveCompanyTimeline,
+  setPrefillData,
+  setShowAdd,
+}: {
+  uc: UniqueCompany;
+  isEditMode: boolean;
+  reps: any[];
+  updateCompanyField: (oldName: string, patch: Partial<Account>) => void;
+  updateAccount: (id: string, patch: Partial<Account>) => Promise<void>;
+  deleteAccount: (id: string) => Promise<void>;
+  setActiveCompanyTimeline: (name: string | null) => void;
+  setPrefillData: (data: any) => void;
+  setShowAdd: (show: boolean) => void;
+}) {
+  const a = uc.mostRecent;
+  const activeReminder = uc.history.find(h => h.reminderType && h.reminderType !== "none" && !h.reminderClosed);
+
+  return (
+    <tr className="hover:bg-slate-50/40 transition-colors group/row">
+      <td className="px-5 py-3.5">
+        <EditableCell
+          value={uc.name}
+          isEditMode={isEditMode}
+          onSave={(val) => updateCompanyField(uc.name, { name: val })}
+          className="font-bold text-slate-800 text-[14px]"
+          displayNode={
+            <div className="flex items-center flex-wrap gap-1.5">
+              <span
+                onClick={() => !isEditMode && setActiveCompanyTimeline(uc.name)}
+                className={!isEditMode ? "cursor-pointer hover:text-primary hover:underline decoration-primary/30 underline-offset-2" : ""}
+              >
+                {uc.name}
+              </span>
+              {activeReminder && (
+                <span 
+                  className={cn(
+                    "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border leading-none shadow-3xs",
+                    activeReminder.reminderType === "reach_again" 
+                      ? "bg-sky-50 text-sky-700 border-sky-200" 
+                      : "bg-amber-50 text-amber-700 border-amber-200"
+                  )}
+                  title={`${activeReminder.reminderType === "reach_again" ? "Reach Again" : "Follow Up"} scheduled for ${
+                    activeReminder.reminderDate ? format(new Date(activeReminder.reminderDate), "MMM dd, yyyy") : ""
+                  }`}
+                >
+                  <CalendarClock className="h-2.5 w-2.5 shrink-0" />
+                  {activeReminder.reminderType === "reach_again" ? "Reach Again" : "Follow Up"}
+                </span>
+              )}
+            </div>
+          }
+        />
+      </td>
+      <td className="px-5 py-3.5 text-slate-500 font-medium">
+        <EditableCell
+          value={uc.industry}
+          isEditMode={isEditMode}
+          onSave={(val) => updateCompanyField(uc.name, { industry: val })}
+        />
+      </td>
+      <td className="px-5 py-3.5">
+        {!isEditMode ? (
+          <div className="flex items-center gap-2 h-8 text-slate-700 font-medium">
+            <RepAvatar name={a.owner} />
+            <span className="text-xs font-semibold text-slate-600">{a.owner}</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 h-8">
+            <RepAvatar name={a.owner} />
+            <select
+              value={a.owner}
+              onChange={(e) => updateAccount(a.id, { owner: e.target.value })}
+              className="h-7 w-[130px] text-xs font-semibold text-slate-600 bg-transparent hover:bg-slate-100 rounded px-1 border-none focus:ring-1 focus:ring-primary/30 focus:outline-none cursor-pointer"
+            >
+              {reps.map((r) => <option key={r.name} value={r.name}>{r.name}</option>)}
+            </select>
+          </div>
+        )}
+      </td>
+      <td className="px-5 py-3.5 text-slate-500 font-medium text-xs">
+        <EditableCell
+          value={a.month}
+          isEditMode={isEditMode}
+          onSave={(val) => updateAccount(a.id, { month: val })}
+        />
+      </td>
+      <td className="px-5 py-3.5">
+        {!isEditMode ? (
+          <div className="h-8 flex items-center">
+            <StatusBadge status={a.status} className="shadow-xs border-slate-200/20" />
+          </div>
+        ) : (
+          <select
+            value={a.status}
+            onChange={(e) => updateAccount(a.id, { status: e.target.value as AccountStatus })}
+            className={cn(
+              "h-7 w-[130px] text-xs font-bold rounded-full px-2.5 py-0.5 border-none focus:outline-none cursor-pointer transition-all",
+              a.status === "new_lead" && "bg-purple-50 text-purple-700 hover:bg-purple-100",
+              a.status === "prospect" && "bg-sky-50 text-sky-700 hover:bg-sky-100",
+              a.status === "demo" && "bg-indigo-50 text-indigo-700 hover:bg-indigo-100",
+              a.status === "proposal_sent" && "bg-emerald-50 text-emerald-700 hover:bg-emerald-100",
+              a.status === "trial" && "bg-amber-50 text-amber-700 hover:bg-amber-100",
+              a.status === "rejected" && "bg-rose-50 text-rose-700 hover:bg-rose-100"
+            )}
+          >
+            {STATUSES.map((s) => <option key={s} value={s} className="bg-white text-slate-700 font-medium">{STATUS_LABEL[s]}</option>)}
+          </select>
+        )}
+      </td>
+      <td className="px-5 py-3.5 text-center">
+        <div className="flex items-center justify-center">
+          {!isEditMode ? (
+            <div 
+              className="h-7 w-7 rounded-full bg-primary/5 border border-primary/10 text-primary font-extrabold flex items-center justify-center text-xs cursor-help shadow-xs hover:bg-primary/10 transition-all select-none"
+              title="Total interactions recorded"
+            >
+              {a.followUpCount ?? 0}
+            </div>
+          ) : (
+            <input
+              type="number"
+              min="0"
+              className="h-7 w-12 text-center text-xs font-bold border border-slate-200 shadow-xs rounded bg-white focus:ring-1 ring-primary/50 focus:border-primary focus:outline-none"
+              value={a.followUpCount ?? 0}
+              onChange={(e) => updateAccount(a.id, { followUpCount: parseInt(e.target.value) || 0 })}
+            />
+          )}
+        </div>
+      </td>
+      <td className="px-5 py-3.5 text-xs text-slate-500 font-medium max-w-xs truncate italic group-hover/row:text-slate-600 transition-colors">
+        <EditableCell
+          value={a.reason ?? ""}
+          isEditMode={isEditMode}
+          onSave={(val) => updateAccount(a.id, { reason: val || undefined })}
+          displayNode={a.reason ?? "—"}
+        />
+      </td>
+      <td className="pl-5 py-3.5 text-right w-px whitespace-nowrap" style={{ paddingRight: '24px' }}>
+        <div className="flex items-center justify-end gap-1 opacity-60 group-hover/row:opacity-100 transition-opacity ml-auto" style={{ width: '72px' }}>
+          <Button 
+            variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
+            title="Log new interaction"
+            onClick={() => {
+              setPrefillData({ name: a.name, industry: a.industry, owner: a.owner, status: a.status });
+              setShowAdd(true);
+            }}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+          {isEditMode ? (
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-rose-400 hover:bg-rose-50 hover:text-rose-600 transition-colors"
+              onClick={() => { deleteAccount(a.id); toast.success("Account deleted"); }}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          ) : null}
+        </div>
+      </td>
+    </tr>
+  );
+});
 
 function AccountsPage() {
   const { accounts, reps, addAccount, updateAccount, deleteAccount, addRep, globalMonths, setActiveCompanyTimeline } = useStore();
@@ -335,160 +503,24 @@ function AccountsPage() {
                 <th className="text-left px-5 py-3 font-bold tracking-wider">Status</th>
                 <th className="text-center px-5 py-3 font-bold tracking-wider">Follow Ups</th>
                 <th className="text-left px-5 py-3 font-bold tracking-wider">Remark</th>
-                <th className="pl-3 py-3 text-right" style={{ width: '100px', minWidth: '100px', paddingRight: '16px' }}></th>
+                <th className="pl-5 py-3 text-right w-px whitespace-nowrap" style={{ paddingRight: '24px' }}></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100/70">
-              {filteredUnique.map((uc) => {
-                const a = uc.mostRecent;
-                const activeReminder = uc.history.find(h => h.reminderType && h.reminderType !== "none" && !h.reminderClosed);
-                return (
-                  <tr key={uc.name} className="hover:bg-slate-50/40 transition-colors group/row">
-                    <td className="px-5 py-3.5">
-                      <div className="max-w-[200px] truncate" title={uc.name}>
-                        <EditableCell
-                          value={uc.name}
-                          isEditMode={isEditMode}
-                          onSave={(val) => updateCompanyField(uc.name, { name: val })}
-                          className="font-bold text-slate-800 text-[14px]"
-                          displayNode={
-                            <div className="flex items-center flex-wrap gap-1.5">
-                              <span
-                                onClick={() => !isEditMode && setActiveCompanyTimeline(uc.name)}
-                                className={!isEditMode ? "cursor-pointer hover:text-primary hover:underline decoration-primary/30 underline-offset-2" : ""}
-                              >
-                                {uc.name}
-                              </span>
-                              {activeReminder && (
-                                <span 
-                                  className={cn(
-                                    "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border leading-none shadow-3xs",
-                                    activeReminder.reminderType === "reach_again" 
-                                      ? "bg-sky-50 text-sky-700 border-sky-200" 
-                                      : "bg-amber-50 text-amber-700 border-amber-200"
-                                  )}
-                                  title={`${activeReminder.reminderType === "reach_again" ? "Reach Again" : "Follow Up"} scheduled for ${
-                                    activeReminder.reminderDate ? format(new Date(activeReminder.reminderDate), "MMM dd, yyyy") : ""
-                                  }`}
-                                >
-                                  <CalendarClock className="h-2.5 w-2.5 shrink-0" />
-                                  {activeReminder.reminderType === "reach_again" ? "Reach Again" : "Follow Up"}
-                                </span>
-                              )}
-                            </div>
-                          }
-                        />
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5 text-slate-500 font-medium">
-                      <EditableCell
-                        value={uc.industry}
-                        isEditMode={isEditMode}
-                        onSave={(val) => updateCompanyField(uc.name, { industry: val })}
-                      />
-                    </td>
-                    <td className="px-5 py-3.5">
-                      {!isEditMode ? (
-                        <div className="flex items-center gap-2 h-8 text-slate-700 font-medium">
-                          <RepAvatar name={a.owner} />
-                          <span className="text-xs font-semibold text-slate-600">{a.owner}</span>
-                        </div>
-                      ) : (
-                        <Select 
-                          value={a.owner} 
-                          onValueChange={(v) => updateAccount(a.id, { owner: v })}
-                        >
-                          <SelectTrigger className="h-8 w-[160px] border-none bg-transparent shadow-none p-1 hover:bg-slate-100 transition-all">
-                            <div className="flex items-center gap-2">
-                              <RepAvatar name={a.owner} />
-                              <span className="text-xs font-semibold text-slate-600">{a.owner}</span>
-                            </div>
-                          </SelectTrigger>
-                          <SelectContent>
-                            {reps.map((r) => <SelectItem key={r.name} value={r.name}>{r.name}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5 text-slate-500 font-medium text-xs">
-                      <EditableCell
-                        value={a.month}
-                        isEditMode={isEditMode}
-                        onSave={(val) => updateAccount(a.id, { month: val })}
-                      />
-                    </td>
-                    <td className="px-5 py-3.5">
-                      {!isEditMode ? (
-                        <div className="h-8 flex items-center">
-                          <StatusBadge status={a.status} className="shadow-xs border-slate-200/20" />
-                        </div>
-                      ) : (
-                        <Select 
-                          value={a.status} 
-                          onValueChange={(v) => updateAccount(a.id, { status: v as AccountStatus })}
-                        >
-                          <SelectTrigger className="h-8 w-[140px] border-none bg-transparent shadow-none p-1 hover:bg-slate-100 transition-all">
-                            <StatusBadge status={a.status} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {STATUSES.map((s) => <SelectItem key={s} value={s}>{STATUS_LABEL[s]}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5 text-center">
-                      <div className="flex items-center justify-center">
-                        {!isEditMode ? (
-                          <div 
-                            className="h-7 w-7 rounded-full bg-primary/5 border border-primary/10 text-primary font-extrabold flex items-center justify-center text-xs cursor-help shadow-xs hover:bg-primary/10 transition-all select-none"
-                            title="Total interactions recorded"
-                          >
-                            {a.followUpCount ?? 0}
-                          </div>
-                        ) : (
-                          <input
-                            type="number"
-                            min="0"
-                            className="h-7 w-12 text-center text-xs font-bold border border-slate-200 shadow-xs rounded bg-white focus:ring-1 ring-primary/50 focus:border-primary focus:outline-none"
-                            value={a.followUpCount ?? 0}
-                            onChange={(e) => updateAccount(a.id, { followUpCount: parseInt(e.target.value) || 0 })}
-                          />
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5 text-xs text-slate-500 font-medium max-w-xs truncate italic group-hover/row:text-slate-600 transition-colors">
-                      <div className="max-w-[250px] truncate" title={a.reason ?? undefined}>
-                        <EditableCell
-                          value={a.reason ?? ""}
-                          isEditMode={isEditMode}
-                          onSave={(val) => updateAccount(a.id, { reason: val || undefined })}
-                          displayNode={a.reason ?? "—"}
-                        />
-                      </div>
-                    </td>
-                    <td className="pl-3 py-3.5 text-right" style={{ width: '100px', minWidth: '100px', paddingRight: '16px' }}>
-                      <div className="flex items-center justify-end gap-1 opacity-60 group-hover/row:opacity-100 transition-opacity ml-auto" style={{ width: '68px' }}>
-                        <Button 
-                          variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
-                          title="Log new interaction"
-                          onClick={() => {
-                            setPrefillData({ name: a.name, industry: a.industry, owner: a.owner, status: a.status });
-                            setShowAdd(true);
-                          }}
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                        {isEditMode ? (
-                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-rose-400 hover:bg-rose-50 hover:text-rose-600 transition-colors"
-                            onClick={() => { deleteAccount(a.id); toast.success("Account deleted"); }}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        ) : null}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+              {filteredUnique.map((uc) => (
+                <AccountRow
+                  key={uc.name}
+                  uc={uc}
+                  isEditMode={isEditMode}
+                  reps={reps}
+                  updateCompanyField={updateCompanyField}
+                  updateAccount={updateAccount}
+                  deleteAccount={deleteAccount}
+                  setActiveCompanyTimeline={setActiveCompanyTimeline}
+                  setPrefillData={setPrefillData}
+                  setShowAdd={setShowAdd}
+                />
+              ))}
               {filteredUnique.length === 0 && (
                 <tr><td colSpan={8} className="px-5 py-16 text-center text-sm text-slate-400 font-medium bg-slate-50/20">No accounts match your current filters.</td></tr>
               )}
