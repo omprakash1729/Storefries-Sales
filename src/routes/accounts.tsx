@@ -325,7 +325,7 @@ function AccountsPage() {
 
         {/* High-Performance Spacious Table Viewport */}
         <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse min-w-[1000px]">
+          <table className="w-full text-sm border-collapse">
             <thead className="bg-slate-50/80 border-b border-slate-200/60 text-[11px] font-bold uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="text-left px-5 py-3 font-bold tracking-wider">Company</th>
@@ -335,7 +335,7 @@ function AccountsPage() {
                 <th className="text-left px-5 py-3 font-bold tracking-wider">Status</th>
                 <th className="text-center px-5 py-3 font-bold tracking-wider">Follow Ups</th>
                 <th className="text-left px-5 py-3 font-bold tracking-wider">Remark</th>
-                <th className="pl-5 py-3 text-right" style={{ width: '120px', minWidth: '120px', paddingRight: '24px' }}></th>
+                <th className="pl-3 py-3 text-right" style={{ width: '100px', minWidth: '100px', paddingRight: '16px' }}></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100/70">
@@ -345,38 +345,40 @@ function AccountsPage() {
                 return (
                   <tr key={uc.name} className="hover:bg-slate-50/40 transition-colors group/row">
                     <td className="px-5 py-3.5">
-                      <EditableCell
-                        value={uc.name}
-                        isEditMode={isEditMode}
-                        onSave={(val) => updateCompanyField(uc.name, { name: val })}
-                        className="font-bold text-slate-800 text-[14px]"
-                        displayNode={
-                          <div className="flex items-center flex-wrap gap-1.5">
-                            <span
-                              onClick={() => !isEditMode && setActiveCompanyTimeline(uc.name)}
-                              className={!isEditMode ? "cursor-pointer hover:text-primary hover:underline decoration-primary/30 underline-offset-2" : ""}
-                            >
-                              {uc.name}
-                            </span>
-                            {activeReminder && (
-                              <span 
-                                className={cn(
-                                  "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border leading-none shadow-3xs",
-                                  activeReminder.reminderType === "reach_again" 
-                                    ? "bg-sky-50 text-sky-700 border-sky-200" 
-                                    : "bg-amber-50 text-amber-700 border-amber-200"
-                                )}
-                                title={`${activeReminder.reminderType === "reach_again" ? "Reach Again" : "Follow Up"} scheduled for ${
-                                  activeReminder.reminderDate ? format(new Date(activeReminder.reminderDate), "MMM dd, yyyy") : ""
-                                }`}
+                      <div className="max-w-[200px] truncate" title={uc.name}>
+                        <EditableCell
+                          value={uc.name}
+                          isEditMode={isEditMode}
+                          onSave={(val) => updateCompanyField(uc.name, { name: val })}
+                          className="font-bold text-slate-800 text-[14px]"
+                          displayNode={
+                            <div className="flex items-center flex-wrap gap-1.5">
+                              <span
+                                onClick={() => !isEditMode && setActiveCompanyTimeline(uc.name)}
+                                className={!isEditMode ? "cursor-pointer hover:text-primary hover:underline decoration-primary/30 underline-offset-2" : ""}
                               >
-                                <CalendarClock className="h-2.5 w-2.5 shrink-0" />
-                                {activeReminder.reminderType === "reach_again" ? "Reach Again" : "Follow Up"}
+                                {uc.name}
                               </span>
-                            )}
-                          </div>
-                        }
-                      />
+                              {activeReminder && (
+                                <span 
+                                  className={cn(
+                                    "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border leading-none shadow-3xs",
+                                    activeReminder.reminderType === "reach_again" 
+                                      ? "bg-sky-50 text-sky-700 border-sky-200" 
+                                      : "bg-amber-50 text-amber-700 border-amber-200"
+                                  )}
+                                  title={`${activeReminder.reminderType === "reach_again" ? "Reach Again" : "Follow Up"} scheduled for ${
+                                    activeReminder.reminderDate ? format(new Date(activeReminder.reminderDate), "MMM dd, yyyy") : ""
+                                  }`}
+                                >
+                                  <CalendarClock className="h-2.5 w-2.5 shrink-0" />
+                                  {activeReminder.reminderType === "reach_again" ? "Reach Again" : "Follow Up"}
+                                </span>
+                              )}
+                            </div>
+                          }
+                        />
+                      </div>
                     </td>
                     <td className="px-5 py-3.5 text-slate-500 font-medium">
                       <EditableCell
@@ -455,15 +457,17 @@ function AccountsPage() {
                       </div>
                     </td>
                     <td className="px-5 py-3.5 text-xs text-slate-500 font-medium max-w-xs truncate italic group-hover/row:text-slate-600 transition-colors">
-                      <EditableCell
-                        value={a.reason ?? ""}
-                        isEditMode={isEditMode}
-                        onSave={(val) => updateAccount(a.id, { reason: val || undefined })}
-                        displayNode={a.reason ?? "—"}
-                      />
+                      <div className="max-w-[250px] truncate" title={a.reason ?? undefined}>
+                        <EditableCell
+                          value={a.reason ?? ""}
+                          isEditMode={isEditMode}
+                          onSave={(val) => updateAccount(a.id, { reason: val || undefined })}
+                          displayNode={a.reason ?? "—"}
+                        />
+                      </div>
                     </td>
-                    <td className="pl-5 py-3.5 text-right" style={{ width: '120px', minWidth: '120px', paddingRight: '24px' }}>
-                      <div className="flex items-center justify-end gap-1 opacity-60 group-hover/row:opacity-100 transition-opacity ml-auto" style={{ width: '72px' }}>
+                    <td className="pl-3 py-3.5 text-right" style={{ width: '100px', minWidth: '100px', paddingRight: '16px' }}>
+                      <div className="flex items-center justify-end gap-1 opacity-60 group-hover/row:opacity-100 transition-opacity ml-auto" style={{ width: '68px' }}>
                         <Button 
                           variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
                           title="Log new interaction"
