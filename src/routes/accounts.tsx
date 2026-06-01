@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { MonthFilter } from "@/components/MonthFilter";
 import { useMemo, useState, useEffect } from "react";
 import * as XLSX from "xlsx";
-import { Plus, Search, Trash2, Download, UserPlus, CalendarIcon, X, FilterX } from "lucide-react";
+import { Plus, Search, Trash2, Download, UserPlus, CalendarIcon, X, FilterX, Clock, CalendarClock } from "lucide-react";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
@@ -98,31 +98,16 @@ function EditableCell({
 }
 
 function AccountsPage() {
-  const { accounts, reps, addAccount, updateAccount, deleteAccount, addRep, globalMonths } = useStore();
+  const { accounts, reps, addAccount, updateAccount, deleteAccount, addRep, globalMonths, setActiveCompanyTimeline } = useStore();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [industryFilter, setIndustryFilter] = useState<string>("all");
   const [showAdd, setShowAdd] = useState(false);
   const [showAddRep, setShowAddRep] = useState(false);
-  const [selectedCompanyName, setSelectedCompanyName] = useState<string | null>(null);
-  const activeCompany = useMemo(() => {
-    if (!selectedCompanyName) return null;
-    // Derive dynamically from entire live store dataset
-    const allGrouped = groupAccountsByCompany(accounts);
-    return allGrouped.find(c => c.name === selectedCompanyName) || null;
-  }, [accounts, selectedCompanyName]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [ownerFilter, setOwnerFilter] = useState<string>("all");
   const [prefillData, setPrefillData] = useState<Partial<Account> | null>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
- 
-  const handleDeleteEntireCompany = (companyName: string) => {
-    if (!window.confirm(`Are you sure you want to delete "${companyName}" and all its interaction history? This cannot be undone.`)) return;
-    const targets = accounts.filter(a => a.name === companyName);
-    targets.forEach(t => deleteAccount(t.id));
-    setSelectedCompanyName(null);
-    toast.success(`Permanently deleted ${companyName}`);
-  };
 
   const months = Array.from(new Set([...ALL_MONTHS, ...accounts.map((a) => a.month)]));
   const industries = Array.from(new Set([...INDUSTRIES, ...accounts.map((a) => a.industry)])).sort();
@@ -340,7 +325,7 @@ function AccountsPage() {
 
         {/* High-Performance Spacious Table Viewport */}
         <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse">
+          <table className="w-full text-sm border-collapse min-w-[1000px]">
             <thead className="bg-slate-50/80 border-b border-slate-200/60 text-[11px] font-bold uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="text-left px-5 py-3 font-bold tracking-wider">Company</th>
@@ -350,12 +335,13 @@ function AccountsPage() {
                 <th className="text-left px-5 py-3 font-bold tracking-wider">Status</th>
                 <th className="text-center px-5 py-3 font-bold tracking-wider">Follow Ups</th>
                 <th className="text-left px-5 py-3 font-bold tracking-wider">Remark</th>
-                <th className="px-5 py-3"></th>
+                <th className="pl-5 py-3 text-right" style={{ width: '120px', minWidth: '120px', paddingRight: '24px' }}></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100/70">
               {filteredUnique.map((uc) => {
                 const a = uc.mostRecent;
+                const activeReminder = uc.history.find(h => h.reminderType && h.reminderType !== "none" && !h.reminderClosed);
                 return (
                   <tr key={uc.name} className="hover:bg-slate-50/40 transition-colors group/row">
                     <td className="px-5 py-3.5">
@@ -365,12 +351,30 @@ function AccountsPage() {
                         onSave={(val) => updateCompanyField(uc.name, { name: val })}
                         className="font-bold text-slate-800 text-[14px]"
                         displayNode={
-                          <span
-                            onClick={() => !isEditMode && setSelectedCompanyName(uc.name)}
-                            className={!isEditMode ? "cursor-pointer hover:text-primary hover:underline decoration-primary/30 underline-offset-2" : ""}
-                          >
-                            {uc.name}
-                          </span>
+                          <div className="flex items-center flex-wrap gap-1.5">
+                            <span
+                              onClick={() => !isEditMode && setActiveCompanyTimeline(uc.name)}
+                              className={!isEditMode ? "cursor-pointer hover:text-primary hover:underline decoration-primary/30 underline-offset-2" : ""}
+                            >
+                              {uc.name}
+                            </span>
+                            {activeReminder && (
+                              <span 
+                                className={cn(
+                                  "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border leading-none shadow-3xs",
+                                  activeReminder.reminderType === "reach_again" 
+                                    ? "bg-sky-50 text-sky-700 border-sky-200" 
+                                    : "bg-amber-50 text-amber-700 border-amber-200"
+                                )}
+                                title={`${activeReminder.reminderType === "reach_again" ? "Reach Again" : "Follow Up"} scheduled for ${
+                                  activeReminder.reminderDate ? format(new Date(activeReminder.reminderDate), "MMM dd, yyyy") : ""
+                                }`}
+                              >
+                                <CalendarClock className="h-2.5 w-2.5 shrink-0" />
+                                {activeReminder.reminderType === "reach_again" ? "Reach Again" : "Follow Up"}
+                              </span>
+                            )}
+                          </div>
                         }
                       />
                     </td>
@@ -458,8 +462,8 @@ function AccountsPage() {
                         displayNode={a.reason ?? "—"}
                       />
                     </td>
-                    <td className="px-5 py-3.5 text-right">
-                      <div className="flex items-center justify-end gap-0.5 opacity-60 group-hover/row:opacity-100 transition-opacity">
+                    <td className="pl-5 py-3.5 text-right" style={{ width: '120px', minWidth: '120px', paddingRight: '24px' }}>
+                      <div className="flex items-center justify-end gap-1 opacity-60 group-hover/row:opacity-100 transition-opacity ml-auto" style={{ width: '72px' }}>
                         <Button 
                           variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
                           title="Log new interaction"
@@ -492,125 +496,6 @@ function AccountsPage() {
       <AddAccountModal open={showAdd} onOpenChange={setShowAdd} onAdd={addAccount} prefill={prefillData}
         industries={industries} months={months} reps={reps.map((r) => r.name)} />
       <AddRepModal open={showAddRep} onOpenChange={setShowAddRep} onAdd={addRep} existing={reps.map((r) => r.name)} />
-
-      {/* Chronological Timeline History Modal */}
-      <Dialog open={activeCompany !== null} onOpenChange={(open) => !open && setSelectedCompanyName(null)}>
-        <DialogContent className="max-w-xl rounded-2xl border border-slate-100 p-6 shadow-elevated bg-white/95 backdrop-blur-sm max-h-[90vh] overflow-y-auto custom-scrollbar">
-          <DialogHeader className="pb-5 border-b border-slate-100 flex flex-row items-center justify-between space-y-0">
-            <div className="flex items-center gap-4">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-soft text-primary flex items-center justify-center font-black text-2xl border border-slate-100 shadow-sm shrink-0 select-none uppercase">
-                {activeCompany?.name.charAt(0)}
-              </div>
-              <div>
-                <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight leading-none mb-1.5 capitalize">
-                  {activeCompany?.name}
-                </DialogTitle>
-                <DialogDescription className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Account Activity
-                </DialogDescription>
-              </div>
-            </div>
-          </DialogHeader>
- 
-          <div className="mt-6 space-y-6">
-            {/* Modern Stats Panel */}
-            <div className="grid grid-cols-2 gap-4 bg-slate-50/60 p-4 rounded-xl border border-slate-200/50">
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Industry Vertical</span>
-                <span className="block font-semibold text-slate-800 text-sm">{activeCompany?.industry}</span>
-              </div>
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Assigned Owner</span>
-                <div className="flex items-center gap-2 font-semibold text-slate-800 text-sm">
-                  <div className="h-5 w-5 rounded-full bg-slate-200 text-[10px] flex items-center justify-center uppercase font-black">{activeCompany?.mostRecent.owner.charAt(0)}</div>
-                  {activeCompany?.mostRecent.owner}
-                </div>
-              </div>
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Current Pipeline State</span>
-                <div className="pt-0.5">{activeCompany && <StatusBadge status={activeCompany.mostRecent.status} className="scale-105 origin-left" />}</div>
-              </div>
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Latest Milestone</span>
-                <span className="block font-semibold text-slate-800 text-sm">{activeCompany?.mostRecent.month}</span>
-              </div>
-            </div>
- 
-            {/* Upgraded Timeline */}
-            <div>
-              <h4 className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
-                <span className="h-px flex-1 bg-slate-100" /> Interaction Logs <span className="h-px flex-1 bg-slate-100" />
-              </h4>
-              <div className="relative pl-8 border-l-2 border-slate-100 ml-4 space-y-6">
-                {activeCompany?.history.slice().reverse().map((h) => (
-                  <div key={h.id} className="relative group/timeline">
-                    {/* Dynamic Node */}
-                    <span className="absolute -left-[41px] top-3 flex h-6 w-6 items-center justify-center rounded-full bg-white border shadow-sm group-hover/timeline:border-primary/50 transition-all duration-300">
-                      <span className="h-2.5 w-2.5 rounded-full bg-primary/80 group-hover/timeline:bg-primary transition-colors" />
-                    </span>
- 
-                    <div className="bg-white border border-slate-200/70 shadow-[0_2px_8px_rgba(0,0,0,0.02)] rounded-xl p-3.5 group-hover/timeline:border-slate-300 group-hover/timeline:shadow-sm transition-all duration-300 relative">
-                      <button 
-                        onClick={() => {
-                          if (window.confirm("Remove this individual interaction?")) {
-                            deleteAccount(h.id);
-                            toast.success("Interaction deleted");
-                            if (activeCompany && activeCompany.history.length === 1) {
-                              setSelectedCompanyName(null);
-                            }
-                          }
-                        }}
-                        className="absolute top-3 right-3 p-1 rounded-md text-rose-400 hover:bg-rose-50 hover:text-rose-600 transition-all opacity-100"
-                        title="Delete interaction"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-
-                      <div className="flex items-start justify-between mb-2.5 gap-2 flex-wrap pr-6">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-sm font-bold text-slate-800">{h.month}</span>
-                          <StatusBadge status={h.status} className="text-[9px]" />
-                        </div>
-                        {h.createdAt && (
-                          <span className="text-[10px] font-medium bg-slate-100/80 text-slate-500 px-2 py-1 rounded-md inline-flex items-center gap-1 border border-slate-200/30">
-                            <CalendarIcon className="h-3 w-3" />
-                            {format(new Date(h.createdAt), "MMM dd, yyyy")}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 mb-2 font-medium">
-                        Logged by <span className="text-slate-700 font-bold underline decoration-slate-200 underline-offset-2">{h.owner}</span>
-                      </div>
-                      {h.reason && (
-                        <div className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100/50 italic leading-relaxed">
-                          "{h.reason}"
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          
-          <DialogFooter className="mt-8 pt-4 border-t border-slate-100 flex items-center justify-between sm:justify-between flex-row w-full">
-            <Button 
-              variant="ghost" 
-              className="h-9 text-rose-600 hover:bg-rose-50 hover:text-rose-700 font-bold text-xs gap-2 rounded-lg transition-colors px-3"
-              onClick={() => activeCompany && handleDeleteEntireCompany(activeCompany.name)}
-            >
-              <Trash2 className="h-4 w-4" /> Delete Entire Account
-            </Button>
-            <Button 
-              variant="outline" 
-              className="h-9 rounded-lg text-xs font-semibold px-4"
-              onClick={() => setSelectedCompanyName(null)}
-            >
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
@@ -629,6 +514,8 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, 
   const [reason, setReason] = useState("");
   const [followUpCount, setFollowUpCount] = useState(0);
   const [isCustomIndustry, setIsCustomIndustry] = useState(false);
+  const [reminderType, setReminderType] = useState<"none" | "reach_again" | "followup">("none");
+  const [reminderDate, setReminderDate] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
     if (open) {
@@ -640,6 +527,8 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, 
       setFollowUpCount(prefill?.followUpCount ?? 0);
       setDate(new Date()); // Always auto-select TODAY for a brand new interaction
       setIsCustomIndustry(false); // Reset to standard select mode on fresh open
+      setReminderType("none");
+      setReminderDate(undefined);
     }
   }, [open, prefill, industries, reps]);
  
@@ -649,6 +538,13 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, 
     if (!owner) return toast.error("Owner required");
     
     const derivedMonth = format(date, "MMMM yyyy");
+
+    let reminderDateIso: string | undefined = undefined;
+    if (reminderType !== "none" && reminderDate) {
+      const d = new Date(reminderDate);
+      d.setHours(0, 0, 0, 0);
+      reminderDateIso = d.toISOString();
+    }
     
     onAdd({ 
       name: name.trim(), 
@@ -658,7 +554,10 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, 
       month: derivedMonth, 
       reason: reason.trim() || undefined,
       createdAt: date.toISOString(),
-      followUpCount: followUpCount
+      followUpCount: followUpCount,
+      reminderType,
+      reminderDate: reminderDateIso,
+      reminderClosed: reminderType !== "none" ? false : undefined
     });
     
     toast.success("Account added");
@@ -668,7 +567,7 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle>Add Account</DialogTitle>
           <DialogDescription>Create a new prospect or lead in your pipeline.</DialogDescription>
@@ -680,11 +579,11 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, 
               {isCustomIndustry ? (
                 <div className="relative group">
                   <Input 
-                    value={industry} 
-                    onChange={(e) => setIndustry(e.target.value)} 
-                    placeholder="E.g. Software" 
-                    autoFocus 
-                    className="h-10 pr-9 border-emerald-200 focus-visible:ring-emerald-500"
+                     value={industry} 
+                     onChange={(e) => setIndustry(e.target.value)} 
+                     placeholder="E.g. Software" 
+                     autoFocus 
+                     className="h-10 pr-9 border-emerald-200 focus-visible:ring-emerald-500"
                   />
                   <Button 
                     type="button"
@@ -718,13 +617,13 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, 
             </div>
             <div><Label>Owner</Label>
               <Select value={owner} onValueChange={setOwner}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
                 <SelectContent>{reps.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div><Label>Status</Label>
               <Select value={status} onValueChange={(v) => setStatus(v as AccountStatus)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
                 <SelectContent>{STATUSES.map((s) => <SelectItem key={s} value={s}>{STATUS_LABEL[s]}</SelectItem>)}</SelectContent>
               </Select>
             </div>
@@ -764,6 +663,52 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, 
             </div>
           </div>
           <div><Label>Remark</Label><Textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="e.g. Interested in trial next week" /></div>
+          
+          <div className="border-t border-slate-100 pt-3 mt-3 space-y-2">
+            <Label className="font-bold text-slate-800 flex items-center gap-1.5">
+              <CalendarClock className="h-4 w-4 text-primary" /> Follow Up Reminder
+            </Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label>Reminder Action</Label>
+                <Select value={reminderType} onValueChange={(v) => setReminderType(v as any)}>
+                  <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No Reminder</SelectItem>
+                    <SelectItem value="reach_again">Reach Again (No Answer)</SelectItem>
+                    <SelectItem value="followup">Follow Up (Needs Action)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {reminderType !== "none" && (
+                <div>
+                  <Label>Reminder Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal h-10",
+                          !reminderDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {reminderDate ? format(reminderDate, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={reminderDate}
+                        onSelect={(d) => d && setReminderDate(d)}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>

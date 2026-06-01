@@ -10,6 +10,9 @@ export interface Account {
   reason?: string;
   createdAt?: string; // ISO timestamp
   followUpCount?: number;
+  reminderType?: "none" | "reach_again" | "followup";
+  reminderDate?: string; // ISO timestamp
+  reminderClosed?: boolean;
 }
 
 export type RepColor = "blue" | "green" | "amber" | "teal" | "purple" | "red";

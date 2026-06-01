@@ -30,7 +30,7 @@ function Dashboard() {
   const reps = useStore((s) => s.reps);
   const globalMonths = useStore((s) => s.globalMonths);
 
-  const [selectedCompany, setSelectedCompany] = useState<UniqueCompany | null>(null);
+  const setActiveCompanyTimeline = useStore((s) => s.setActiveCompanyTimeline);
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const uniqueCompanies = useMemo(() => {
@@ -205,7 +205,7 @@ function Dashboard() {
                 {list.slice(0, 50).map((uc) => (
                   <li
                     key={uc.name}
-                    onClick={() => setSelectedCompany(uc)}
+                    onClick={() => setActiveCompanyTimeline(uc.name)}
                     className="flex items-center justify-between gap-2.5 text-xs py-1 px-1.5 rounded-lg hover:bg-indigo-50/50 cursor-pointer transition-colors duration-150 group/item"
                   >
                     <span className="font-semibold text-slate-700 truncate max-w-[130px] group-hover/item:text-primary" title={uc.name}>
@@ -225,68 +225,6 @@ function Dashboard() {
           ))}
         </div>
       </section>
-
-      {/* Chronological Timeline History Modal */}
-      <Dialog open={selectedCompany !== null} onOpenChange={(open) => !open && setSelectedCompany(null)}>
-        <DialogContent className="max-w-lg rounded-2xl border border-slate-100 p-6 shadow-elevated bg-white">
-          <DialogHeader className="pb-4 border-b">
-            <DialogTitle className="text-xl font-extrabold text-slate-800">{selectedCompany?.name}</DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground mt-1">
-              Company profile and outbound interaction timeline
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="mt-4 space-y-5">
-            {/* Basic Info panel */}
-            <div className="grid grid-cols-2 gap-3 bg-slate-50/50 p-4 rounded-xl border border-slate-100/50 text-xs">
-              <div>
-                <span className="text-muted-foreground block font-medium">Industry Vertical</span>
-                <span className="font-bold text-slate-800">{selectedCompany?.industry}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground block font-medium">Current Assigned Owner</span>
-                <span className="font-bold text-slate-800">{selectedCompany?.mostRecent.owner}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground block font-medium">Current Status</span>
-                {selectedCompany && <StatusBadge status={selectedCompany.mostRecent.status} className="mt-0.5" />}
-              </div>
-              <div>
-                <span className="text-muted-foreground block font-medium">Last Interaction Month</span>
-                <span className="font-bold text-slate-800">{selectedCompany?.mostRecent.month}</span>
-              </div>
-            </div>
-
-            {/* Chronological Timeline */}
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80 mb-3">Interaction History</h4>
-              <div className="relative pl-6 border-l border-slate-100 ml-3 space-y-5">
-                {selectedCompany?.history.slice().reverse().map((h) => (
-                  <div key={h.id} className="relative group/timeline">
-                    {/* Circle Node */}
-                    <span className="absolute -left-[31px] top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-white border-2 border-primary/40 group-hover/timeline:border-primary transition-colors">
-                      <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                    </span>
-
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs font-extrabold text-slate-800">{h.month}</span>
-                        <StatusBadge status={h.status} className="text-[9px] py-0 px-1.5" />
-                        <span className="text-[10px] text-muted-foreground">by {h.owner}</span>
-                      </div>
-                      {h.reason && (
-                        <p className="text-xs text-slate-500 bg-slate-50/40 border border-slate-100/30 p-2 rounded-lg italic mt-1 leading-relaxed">
-                          "{h.reason}"
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

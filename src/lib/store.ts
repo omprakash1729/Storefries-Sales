@@ -4,12 +4,36 @@ import { SEED_ACCOUNTS, SEED_REPS } from "./seed-data";
 import { supabase } from "./supabase";
 import { toast } from "sonner";
 
+const getMergedAccounts = (accounts: Account[]): Account[] => {
+  if (typeof window === "undefined") return accounts;
+  try {
+    const localRemindersRaw = localStorage.getItem("storefries_reminders") || "{}";
+    const localReminders = JSON.parse(localRemindersRaw);
+    return accounts.map(acc => {
+      const local = localReminders[acc.id];
+      if (local) {
+        return {
+          ...acc,
+          reminderType: acc.reminderType !== undefined ? acc.reminderType : local.reminderType,
+          reminderDate: acc.reminderDate !== undefined ? acc.reminderDate : local.reminderDate,
+          reminderClosed: acc.reminderClosed !== undefined ? acc.reminderClosed : local.reminderClosed,
+        };
+      }
+      return acc;
+    });
+  } catch (e) {
+    console.error("Error reading reminders from local storage", e);
+    return accounts;
+  }
+};
+
 interface State {
   accounts: Account[];
   reps: SalesRep[];
   globalMonths: string[];
   isLoading: boolean;
   isAuthenticated: boolean | null;
+  activeCompanyTimeline: string | null;
   
   fetchData: () => Promise<void>;
   subscribeRealtime: () => (() => void);
@@ -20,15 +44,17 @@ interface State {
   addRep: (r: SalesRep) => Promise<void>;
   setGlobalMonths: (m: string[]) => void;
   setAuthenticated: (val: boolean) => void;
+  setActiveCompanyTimeline: (name: string | null) => void;
   resetData: () => void;
 }
 
 export const useStore = create<State>()((set, get) => ({
-  accounts: SEED_ACCOUNTS,
+  accounts: getMergedAccounts(SEED_ACCOUNTS),
   reps: SEED_REPS,
   globalMonths: [],
   isLoading: false,
   isAuthenticated: null,
+  activeCompanyTimeline: null,
 
   fetchData: async () => {
     set({ isLoading: true });
@@ -65,7 +91,7 @@ export const useStore = create<State>()((set, get) => ({
         ]);
         
         set({
-          accounts: accReload.data as Account[],
+          accounts: getMergedAccounts(accReload.data as Account[]),
           reps: repsReload.data?.length ? repsReload.data as SalesRep[] : SEED_REPS,
           isLoading: false
         });
@@ -74,7 +100,7 @@ export const useStore = create<State>()((set, get) => ({
 
       // Successfully loaded live remote data
       set({ 
-        accounts, 
+        accounts: getMergedAccounts(accounts), 
         reps: reps.length ? reps : SEED_REPS,
         isLoading: false 
       });
@@ -86,6 +112,7 @@ export const useStore = create<State>()((set, get) => ({
       
       if (error.message?.includes("does not exist")) {
         console.log("ℹ️  Supabase tables not detected yet. Falling back to static mode.");
+        set({ accounts: getMergedAccounts(get().accounts) });
       } else {
         console.error("❌ Supabase network error:", error);
       }
@@ -128,20 +155,73 @@ export const useStore = create<State>()((set, get) => ({
       accounts: [optimisticAcc, ...s.accounts],
     }));
 
+    const reminderFields = {
+      reminderType: a.reminderType,
+      reminderDate: a.reminderDate,
+      reminderClosed: a.reminderClosed,
+    };
+
+    let payload = { ...a };
+
     // Fire hose to Database
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from("sales_accounts")
-      .insert(a)
+      .insert(payload)
       .select()
       .single();
+
+    if (error && error.code === "42703") {
+      // Strip reminder fields and retry
+      const cleanPayload = { ...payload };
+      delete cleanPayload.reminderType;
+      delete cleanPayload.reminderDate;
+      delete cleanPayload.reminderClosed;
+
+      const retry = await supabase
+        .from("sales_accounts")
+        .insert(cleanPayload)
+        .select()
+        .single();
+      
+      data = retry.data;
+      error = retry.error;
+
+      if (!error && data) {
+        // Save reminder fields to local storage under the newly generated ID
+        try {
+          const localRemindersRaw = localStorage.getItem("storefries_reminders") || "{}";
+          const localReminders = JSON.parse(localRemindersRaw);
+          localReminders[data.id] = reminderFields;
+          localStorage.setItem("storefries_reminders", JSON.stringify(localReminders));
+        } catch (e) {
+          console.error("LocalStorage write failed:", e);
+        }
+      }
+    } else if (!error && data && (reminderFields.reminderType || reminderFields.reminderDate || reminderFields.reminderClosed !== undefined)) {
+      try {
+        const localRemindersRaw = localStorage.getItem("storefries_reminders") || "{}";
+        const localReminders = JSON.parse(localRemindersRaw);
+        localReminders[data.id] = reminderFields;
+        localStorage.setItem("storefries_reminders", JSON.stringify(localReminders));
+      } catch (e) {
+        console.error("LocalStorage write failed:", e);
+      }
+    }
 
     if (error) {
       toast.error("Cloud Sync failed: Account was not saved to database.");
       get().fetchData(); // Revert to truth
     } else {
       // Swap placeholder object with final persisted database response
+      const dbAcc = data as Account;
+      const mergedAcc: Account = {
+        ...dbAcc,
+        reminderType: dbAcc.reminderType !== undefined ? dbAcc.reminderType : reminderFields.reminderType,
+        reminderDate: dbAcc.reminderDate !== undefined ? dbAcc.reminderDate : reminderFields.reminderDate,
+        reminderClosed: dbAcc.reminderClosed !== undefined ? dbAcc.reminderClosed : reminderFields.reminderClosed,
+      };
       set((s) => ({
-        accounts: s.accounts.map((acc) => (acc.id === tempId ? (data as Account) : acc)),
+        accounts: s.accounts.map((acc) => (acc.id === tempId ? mergedAcc : acc)),
       }));
     }
   },
@@ -152,15 +232,55 @@ export const useStore = create<State>()((set, get) => ({
       accounts: s.accounts.map((a) => (a.id === id ? { ...a, ...patch } : a)),
     }));
 
+    const reminderFields = ["reminderType", "reminderDate", "reminderClosed"];
+    const hasReminderFields = reminderFields.some(k => k in patch);
+
+    if (hasReminderFields) {
+      try {
+        const localRemindersRaw = localStorage.getItem("storefries_reminders") || "{}";
+        const localReminders = JSON.parse(localRemindersRaw);
+        const existing = localReminders[id] || {};
+        localReminders[id] = {
+          reminderType: patch.reminderType !== undefined ? patch.reminderType : existing.reminderType,
+          reminderDate: patch.reminderDate !== undefined ? patch.reminderDate : existing.reminderDate,
+          reminderClosed: patch.reminderClosed !== undefined ? patch.reminderClosed : existing.reminderClosed,
+        };
+        localStorage.setItem("storefries_reminders", JSON.stringify(localReminders));
+      } catch (e) {
+        console.error("LocalStorage update failed:", e);
+      }
+    }
+
     const { error } = await supabase
       .from("sales_accounts")
       .update(patch)
       .eq("id", id);
 
     if (error) {
-      console.error("Update failed:", error);
-      toast.error("Failed to persist update to Cloud.");
-      get().fetchData(); // Force pull clean snapshot 
+      if (error.code === "42703") {
+        // Strip reminder fields and retry
+        const cleanPatch = { ...patch };
+        delete cleanPatch.reminderType;
+        delete cleanPatch.reminderDate;
+        delete cleanPatch.reminderClosed;
+        
+        if (Object.keys(cleanPatch).length > 0) {
+          const { error: retryError } = await supabase
+            .from("sales_accounts")
+            .update(cleanPatch)
+            .eq("id", id);
+            
+          if (retryError) {
+            console.error("Retry update failed:", retryError);
+            toast.error("Failed to persist update to Cloud.");
+            get().fetchData();
+          }
+        }
+      } else {
+        console.error("Update failed:", error);
+        toast.error("Failed to persist update to Cloud.");
+        get().fetchData(); // Force pull clean snapshot 
+      }
     }
   },
 
@@ -169,6 +289,18 @@ export const useStore = create<State>()((set, get) => ({
     set((s) => ({
       accounts: s.accounts.filter((a) => a.id !== id),
     }));
+
+    // Clean up local storage reminder for this account if it exists
+    try {
+      const localRemindersRaw = localStorage.getItem("storefries_reminders") || "{}";
+      const localReminders = JSON.parse(localRemindersRaw);
+      if (localReminders[id]) {
+        delete localReminders[id];
+        localStorage.setItem("storefries_reminders", JSON.stringify(localReminders));
+      }
+    } catch (e) {
+      console.error(e);
+    }
 
     const { error } = await supabase
       .from("sales_accounts")
@@ -192,10 +324,11 @@ export const useStore = create<State>()((set, get) => ({
 
   setGlobalMonths: (m) => set({ globalMonths: m }),
   setAuthenticated: (val) => set({ isAuthenticated: val }),
+  setActiveCompanyTimeline: (name) => set({ activeCompanyTimeline: name }),
   
   resetData: () => {
     // Purge local memory override back to seeds
-    set({ accounts: SEED_ACCOUNTS, reps: SEED_REPS, globalMonths: [] });
+    set({ accounts: getMergedAccounts(SEED_ACCOUNTS), reps: SEED_REPS, globalMonths: [] });
   },
 }));
 
