@@ -274,6 +274,7 @@ function AccountsPage() {
   const [showAddRep, setShowAddRep] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [ownerFilter, setOwnerFilter] = useState<string>("all");
+  const [reminderFilter, setReminderFilter] = useState<string>("all");
   const [prefillData, setPrefillData] = useState<Partial<Account> | null>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
@@ -284,6 +285,7 @@ function AccountsPage() {
                     statusFilter !== "all" || 
                     industryFilter !== "all" || 
                     ownerFilter !== "all" || 
+                    reminderFilter !== "all" ||
                     dateRange !== undefined || 
                     globalMonths.length > 0;
 
@@ -292,6 +294,7 @@ function AccountsPage() {
     setStatusFilter("all");
     setIndustryFilter("all");
     setOwnerFilter("all");
+    setReminderFilter("all");
     setDateRange(undefined);
     useStore.getState().setGlobalMonths([]);
     toast.success("Filters cleared");
@@ -322,8 +325,20 @@ function AccountsPage() {
   }, [accounts, search, statusFilter, industryFilter, globalMonths, ownerFilter, dateRange]);
 
   const filteredUnique = useMemo(() => {
-    return groupAccountsByCompany(filtered);
-  }, [filtered]);
+    let result = groupAccountsByCompany(filtered);
+    if (reminderFilter !== "all") {
+      result = result.filter((uc) => {
+        const activeReminder = uc.history.find(
+          (h) => h.reminderType && h.reminderType !== "none" && !h.reminderClosed
+        );
+        if (!activeReminder) return false;
+        if (reminderFilter === "reach_again" && activeReminder.reminderType !== "reach_again") return false;
+        if (reminderFilter === "followup" && activeReminder.reminderType !== "followup") return false;
+        return true;
+      });
+    }
+    return result;
+  }, [filtered, reminderFilter]);
 
   const exportData = (rows: Account[], fmt: "csv" | "xlsx") => {
     const data = rows.map(({ id: _id, ...rest }) => rest);
@@ -388,7 +403,7 @@ function AccountsPage() {
       <div className="rounded-xl border border-slate-200/70 bg-card shadow-card overflow-hidden flex flex-col">
         
         {/* Seamless Integrated High-End Toolbar */}
-        <div className="bg-slate-50/40 px-4 py-3 border-b border-slate-200/60 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-2.5 items-center">
+        <div className="bg-slate-50/40 px-4 py-3 border-b border-slate-200/60 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-9 gap-2.5 items-center">
           <div className="relative sm:col-span-2 xl:col-span-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input 
@@ -472,6 +487,18 @@ function AccountsPage() {
             <SelectContent>
               <SelectItem value="all">All Industries</SelectItem>
               {industries.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}
+            </SelectContent>
+          </Select>
+
+          <Select value={reminderFilter} onValueChange={setReminderFilter}>
+            <SelectTrigger className="bg-rose-50/50 border border-rose-200 border-t-[3px] border-t-rose-500 hover:border-rose-300 hover:border-t-rose-600 hover:bg-rose-100/50 shadow-xs transition-all text-rose-700">
+              <SelectValue placeholder="Reminders" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Accounts</SelectItem>
+              <SelectItem value="has_reminder">Reminders Only</SelectItem>
+              <SelectItem value="reach_again">Reach Again</SelectItem>
+              <SelectItem value="followup">Follow Up</SelectItem>
             </SelectContent>
           </Select>
 
