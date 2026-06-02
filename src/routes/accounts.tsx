@@ -571,7 +571,7 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, 
 }) {
   const [name, setName] = useState("");
   const [industry, setIndustry] = useState(industries[0] ?? "Other");
-  const [owner, setOwner] = useState(reps[0] ?? "");
+  const [owner, setOwner] = useState(() => reps.includes("Bhuvaneshwari") ? "Bhuvaneshwari" : (reps[0] ?? ""));
   const [status, setStatus] = useState<AccountStatus>("new_lead");
   const [date, setDate] = useState<Date>(new Date());
   const [reason, setReason] = useState("");
@@ -584,7 +584,7 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, 
     if (open) {
       setName(prefill?.name ?? "");
       setIndustry(prefill?.industry ?? industries[0] ?? "Other");
-      setOwner(prefill?.owner ?? reps[0] ?? "");
+      setOwner(prefill?.owner ?? (reps.includes("Bhuvaneshwari") ? "Bhuvaneshwari" : (reps[0] ?? "")));
       setStatus(prefill?.status ?? "new_lead");
       setReason("");
       setFollowUpCount(prefill?.followUpCount ?? 0);
