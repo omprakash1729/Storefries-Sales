@@ -281,7 +281,11 @@ const newDataRaw = [
   { name: "Wellness Forever Medicare", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "new_lead", createdAt: "2026-05-26T12:00:00.000Z", followUpCount: 0 },
   { name: "Sahyadri Hospitals", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "new_lead", createdAt: "2026-05-26T12:00:00.000Z", followUpCount: 0 },
   { name: "Vecura Wellness clinic", owner: "Bhuvaneshwari", industry: "Beauty & Wellness", month: "May 2026", status: "new_lead", createdAt: "2026-05-26T12:00:00.000Z", followUpCount: 0 },
-  { name: "Dr. Batra's Homeopathy", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "new_lead", createdAt: "2026-05-26T12:00:00.000Z", followUpCount: 0 }
+  { name: "Dr. Batra's Homeopathy", owner: "Bhuvaneshwari", industry: "Healthcare", month: "May 2026", status: "new_lead", createdAt: "2026-05-26T12:00:00.000Z", followUpCount: 0 },
+  { name: "Redcliffe Labs", owner: "Bhuvaneshwari", industry: "Healthcare", month: "June 2026", status: "demo", reason: "Need one more session and he asked for the source of keyword", createdAt: "2026-06-02T13:43:32.966Z", followUpCount: 0 },
+  { name: "Zero4Studio (BNI Harmony)", owner: "Om Prakash", industry: "Digital Marketing", month: "June 2026", status: "demo", reason: "Follow back with him 05.06.2026", createdAt: "2026-06-02T12:00:00.000Z", followUpCount: 0, reminderType: "followup", reminderDate: "2026-06-05T12:00:00.000Z", reminderClosed: false },
+  { name: "Sri Krishna Silks", owner: "Bhuvaneshwari", industry: "Apparel & Footwear", month: "June 2026", status: "demo", reason: "Connect with his social media manager", createdAt: "2026-06-02T13:42:38.172Z", followUpCount: 0 },
+  { name: "Enlight Web Services (BNI Solitaire)", owner: "Om Prakash", industry: "Digital Marketing", month: "June 2026", status: "demo", reason: "Further Discussion - Venkat Sir need to send Whatsapp message to Manisha . She asked for a recorded video", createdAt: "2026-06-03T12:00:00.000Z", followUpCount: 0 }
 ];
 
 export const PATCH_ACCOUNTS: Account[] = newDataRaw.map((a, i) => ({
