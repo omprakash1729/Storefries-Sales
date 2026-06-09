@@ -291,6 +291,7 @@ const newDataRaw = [
 export const PATCH_ACCOUNTS: Account[] = newDataRaw.map((a, i) => ({
   ...a,
   status: a.status as AccountStatus,
+  reminderType: a.reminderType as "none" | "reach_again" | "followup" | undefined,
   id: `patch-v3-${i}`
 }));
 

@@ -2,14 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { MonthFilter } from "@/components/MonthFilter";
 import { useMemo, useState, useEffect, memo } from "react";
 import * as XLSX from "xlsx";
-import { Plus, Search, Trash2, Download, UserPlus, CalendarIcon, X, FilterX, Clock, CalendarClock } from "lucide-react";
+import { Plus, Search, Trash2, Download, UserPlus, CalendarIcon, X, FilterX, Clock, CalendarClock, Users, User, Upload } from "lucide-react";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { useStore } from "@/lib/store";
-import type { Account, AccountStatus, RepColor } from "@/lib/types";
+import type { Account, AccountStatus, RepColor, AccountContact } from "@/lib/types";
 import { groupAccountsByCompany, UniqueCompany } from "@/lib/crm-utils";
 import { INDUSTRIES, STATUS_LABEL } from "@/lib/types";
 import { ALL_MONTHS } from "@/lib/seed-data";
@@ -24,6 +24,8 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { RepAvatar } from "@/components/dashboard-utils";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
+import { AccountContactsDialog } from "@/components/AccountContactsDialog";
+import { ImportContactsDialog } from "@/components/ImportContactsDialog";
 
 export const Route = createFileRoute("/accounts")({
   head: () => ({
@@ -101,29 +103,36 @@ const AccountRow = memo(function AccountRow({
   uc,
   isEditMode,
   reps,
+  contacts,
   updateCompanyField,
   updateAccount,
   deleteAccount,
   setActiveCompanyTimeline,
   setPrefillData,
   setShowAdd,
+  setContactsCompany,
 }: {
   uc: UniqueCompany;
   isEditMode: boolean;
   reps: any[];
+  contacts: import("@/lib/types").AccountContact[];
   updateCompanyField: (oldName: string, patch: Partial<Account>) => void;
   updateAccount: (id: string, patch: Partial<Account>) => Promise<void>;
   deleteAccount: (id: string) => Promise<void>;
   setActiveCompanyTimeline: (name: string | null) => void;
   setPrefillData: (data: any) => void;
   setShowAdd: (show: boolean) => void;
+  setContactsCompany: (name: string) => void;
 }) {
   const a = uc.mostRecent;
   const activeReminder = uc.history.find(h => h.reminderType && h.reminderType !== "none" && !h.reminderClosed);
+  const contactCount = contacts.filter(
+    (c) => c.accountName.toLowerCase() === uc.name.toLowerCase()
+  ).length;
 
   return (
     <tr className="hover:bg-slate-50/40 transition-colors group/row">
-      <td className="px-5 py-3.5">
+      <td className="px-7 py-4.5">
         <EditableCell
           value={uc.name}
           isEditMode={isEditMode}
@@ -137,6 +146,16 @@ const AccountRow = memo(function AccountRow({
               >
                 {uc.name}
               </span>
+              {contactCount > 0 && (
+                <button
+                  onClick={() => !isEditMode && setContactsCompany(uc.name)}
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border leading-none shadow-3xs bg-indigo-50 text-indigo-600 border-indigo-200 hover:bg-indigo-100 transition-colors cursor-pointer"
+                  title={`${contactCount} contact${contactCount !== 1 ? 's' : ''} — click to view`}
+                >
+                  <Users className="h-2.5 w-2.5 shrink-0" />
+                  {contactCount}
+                </button>
+              )}
               {activeReminder && (
                 <span 
                   className={cn(
@@ -157,14 +176,14 @@ const AccountRow = memo(function AccountRow({
           }
         />
       </td>
-      <td className="px-5 py-3.5 text-slate-500 font-medium">
+      <td className="px-7 py-4.5 text-slate-500 font-medium">
         <EditableCell
           value={uc.industry}
           isEditMode={isEditMode}
           onSave={(val) => updateCompanyField(uc.name, { industry: val })}
         />
       </td>
-      <td className="px-5 py-3.5">
+      <td className="px-7 py-4.5">
         {!isEditMode ? (
           <div className="flex items-center gap-2 h-8 text-slate-700 font-medium">
             <RepAvatar name={a.owner} />
@@ -183,14 +202,14 @@ const AccountRow = memo(function AccountRow({
           </div>
         )}
       </td>
-      <td className="px-5 py-3.5 text-slate-500 font-medium text-xs">
+      <td className="px-7 py-4.5 text-slate-500 font-medium text-xs">
         <EditableCell
           value={a.month}
           isEditMode={isEditMode}
           onSave={(val) => updateAccount(a.id, { month: val })}
         />
       </td>
-      <td className="px-5 py-3.5">
+      <td className="px-7 py-4.5">
         {!isEditMode ? (
           <div className="h-8 flex items-center">
             <StatusBadge status={a.status} className="shadow-xs border-slate-200/20" />
@@ -213,7 +232,7 @@ const AccountRow = memo(function AccountRow({
           </select>
         )}
       </td>
-      <td className="px-5 py-3.5 text-center">
+      <td className="px-7 py-4.5 text-center">
         <div className="flex items-center justify-center">
           {!isEditMode ? (
             <div 
@@ -233,7 +252,7 @@ const AccountRow = memo(function AccountRow({
           )}
         </div>
       </td>
-      <td className="px-5 py-3.5 text-xs text-slate-500 font-medium max-w-xs truncate italic group-hover/row:text-slate-600 transition-colors">
+      <td className="px-7 py-4.5 text-xs text-slate-500 font-medium max-w-xs truncate italic group-hover/row:text-slate-600 transition-colors">
         <EditableCell
           value={a.reason ?? ""}
           isEditMode={isEditMode}
@@ -241,8 +260,15 @@ const AccountRow = memo(function AccountRow({
           displayNode={a.reason ?? "—"}
         />
       </td>
-      <td className="pl-5 py-3.5 text-right w-px whitespace-nowrap" style={{ paddingRight: '24px' }}>
-        <div className="flex items-center justify-end gap-1 opacity-60 group-hover/row:opacity-100 transition-opacity ml-auto" style={{ width: '72px' }}>
+      <td className="pl-7 py-4.5 text-right w-px whitespace-nowrap" style={{ paddingRight: '24px' }}>
+        <div className="flex items-center justify-end gap-1 opacity-60 group-hover/row:opacity-100 transition-opacity ml-auto" style={{ width: '96px' }}>
+          <Button 
+            variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-indigo-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+            title="View / manage contacts"
+            onClick={() => setContactsCompany(uc.name)}
+          >
+            <Users className="h-4 w-4" />
+          </Button>
           <Button 
             variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
             title="Log new interaction"
@@ -266,17 +292,19 @@ const AccountRow = memo(function AccountRow({
 });
 
 function AccountsPage() {
-  const { accounts, reps, addAccount, updateAccount, deleteAccount, addRep, globalMonths, setActiveCompanyTimeline } = useStore();
+  const { accounts, reps, addAccount, updateAccount, deleteAccount, addRep, globalMonths, setActiveCompanyTimeline, contacts } = useStore();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [industryFilter, setIndustryFilter] = useState<string>("all");
   const [showAdd, setShowAdd] = useState(false);
   const [showAddRep, setShowAddRep] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [ownerFilter, setOwnerFilter] = useState<string>("all");
   const [reminderFilter, setReminderFilter] = useState<string>("all");
   const [prefillData, setPrefillData] = useState<Partial<Account> | null>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [contactsCompany, setContactsCompany] = useState<string | null>(null);
 
   const months = Array.from(new Set([...ALL_MONTHS, ...accounts.map((a) => a.month)]));
   const industries = Array.from(new Set([...INDUSTRIES, ...accounts.map((a) => a.industry)])).sort();
@@ -368,7 +396,7 @@ function AccountsPage() {
   const allUniqueCount = useMemo(() => groupAccountsByCompany(accounts).length, [accounts]);
 
   return (
-    <div className="mx-auto max-w-7xl space-y-5">
+    <div className="mx-auto max-w-[1600px] w-full px-8 py-8 space-y-6 md:space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Accounts</h1>
@@ -376,6 +404,9 @@ function AccountsPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => setShowAddRep(true)}><UserPlus className="h-4 w-4" />Add Rep</Button>
+          <Button variant="outline" onClick={() => setShowImport(true)}>
+            <Upload className="h-4 w-4" />Import Contacts
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline"><Download className="h-4 w-4" />Export</Button>
@@ -403,7 +434,7 @@ function AccountsPage() {
       <div className="rounded-xl border border-slate-200/70 bg-card shadow-card overflow-hidden flex flex-col">
         
         {/* Seamless Integrated High-End Toolbar */}
-        <div className="bg-slate-50/40 px-4 py-3 border-b border-slate-200/60 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-9 gap-2.5 items-center">
+        <div className="bg-slate-50/40 px-6 py-4.5 border-b border-slate-200/60 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-9 gap-3.5 items-center">
           <div className="relative sm:col-span-2 xl:col-span-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input 
@@ -523,14 +554,14 @@ function AccountsPage() {
           <table className="w-full text-sm border-collapse">
             <thead className="bg-slate-50/80 border-b border-slate-200/60 text-[11px] font-bold uppercase tracking-wider text-slate-500">
               <tr>
-                <th className="text-left px-5 py-3 font-bold tracking-wider">Company</th>
-                <th className="text-left px-5 py-3 font-bold tracking-wider">Industry</th>
-                <th className="text-left px-5 py-3 font-bold tracking-wider">Owner</th>
-                <th className="text-left px-5 py-3 font-bold tracking-wider">Month</th>
-                <th className="text-left px-5 py-3 font-bold tracking-wider">Status</th>
-                <th className="text-center px-5 py-3 font-bold tracking-wider">Follow Ups</th>
-                <th className="text-left px-5 py-3 font-bold tracking-wider">Remark</th>
-                <th className="pl-5 py-3 text-right w-px whitespace-nowrap" style={{ paddingRight: '24px' }}></th>
+                <th className="text-left px-7 py-4.5 font-bold tracking-wider">Company</th>
+                <th className="text-left px-7 py-4.5 font-bold tracking-wider">Industry</th>
+                <th className="text-left px-7 py-4.5 font-bold tracking-wider">Owner</th>
+                <th className="text-left px-7 py-4.5 font-bold tracking-wider">Month</th>
+                <th className="text-left px-7 py-4.5 font-bold tracking-wider">Status</th>
+                <th className="text-center px-7 py-4.5 font-bold tracking-wider">Follow Ups</th>
+                <th className="text-left px-7 py-4.5 font-bold tracking-wider">Remark</th>
+                <th className="pl-7 py-4.5 text-right w-px whitespace-nowrap" style={{ paddingRight: '24px' }}></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100/70">
@@ -540,12 +571,14 @@ function AccountsPage() {
                   uc={uc}
                   isEditMode={isEditMode}
                   reps={reps}
+                  contacts={contacts}
                   updateCompanyField={updateCompanyField}
                   updateAccount={updateAccount}
                   deleteAccount={deleteAccount}
                   setActiveCompanyTimeline={setActiveCompanyTimeline}
                   setPrefillData={setPrefillData}
                   setShowAdd={setShowAdd}
+                  setContactsCompany={setContactsCompany}
                 />
               ))}
               {filteredUnique.length === 0 && (
@@ -559,6 +592,12 @@ function AccountsPage() {
       <AddAccountModal open={showAdd} onOpenChange={setShowAdd} onAdd={addAccount} prefill={prefillData}
         industries={industries} months={months} reps={reps.map((r) => r.name)} />
       <AddRepModal open={showAddRep} onOpenChange={setShowAddRep} onAdd={addRep} existing={reps.map((r) => r.name)} />
+      <AccountContactsDialog
+        companyName={contactsCompany}
+        open={!!contactsCompany}
+        onOpenChange={(v) => { if (!v) setContactsCompany(null); }}
+      />
+      <ImportContactsDialog open={showImport} onOpenChange={setShowImport} />
     </div>
   );
 }
@@ -580,6 +619,14 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, 
   const [reminderType, setReminderType] = useState<"none" | "reach_again" | "followup">("none");
   const [reminderDate, setReminderDate] = useState<Date | undefined>(undefined);
 
+  // Draft contacts state
+  const [draftContacts, setDraftContacts] = useState<Omit<AccountContact, "id" | "accountName">[]>([]);
+  const [cName, setCName] = useState("");
+  const [cPhone, setCPhone] = useState("");
+  const [cDesig, setCDesig] = useState("");
+  const [cLinkedin, setCLinkedin] = useState("");
+  const [cRemark, setCRemark] = useState("");
+
   useEffect(() => {
     if (open) {
       setName(prefill?.name ?? "");
@@ -592,8 +639,37 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, 
       setIsCustomIndustry(false); // Reset to standard select mode on fresh open
       setReminderType("none");
       setReminderDate(undefined);
+      setDraftContacts([]);
+      
+      setCName("");
+      setCPhone("");
+      setCDesig("");
+      setCLinkedin("");
+      setCRemark("");
     }
   }, [open, prefill, industries, reps]);
+
+  const handleAddDraftContact = () => {
+    if (!cName.trim()) {
+      return toast.error("Contact name is required");
+    }
+    setDraftContacts([
+      ...draftContacts,
+      {
+        contactName: cName.trim(),
+        phone: cPhone.trim() || undefined,
+        designation: cDesig.trim() || undefined,
+        linkedin: cLinkedin.trim() || undefined,
+        remark: cRemark.trim() || undefined,
+      },
+    ]);
+    setCName("");
+    setCPhone("");
+    setCDesig("");
+    setCLinkedin("");
+    setCRemark("");
+    toast.success("Contact added to draft list");
+  };
  
   const submit = () => {
     if (!name.trim()) return toast.error("Account name required");
@@ -622,160 +698,275 @@ function AddAccountModal({ open, onOpenChange, onAdd, industries, months, reps, 
       reminderDate: reminderDateIso,
       reminderClosed: reminderType !== "none" ? false : undefined
     });
+
+    // Save staged contacts
+    if (draftContacts.length > 0) {
+      const addContact = useStore.getState().addContact;
+      draftContacts.forEach((dc) => {
+        addContact({
+          ...dc,
+          accountName: name.trim(),
+        });
+      });
+    }
     
     toast.success("Account added");
     setName(""); setReason(""); setFollowUpCount(0);
+    setDraftContacts([]);
     onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <DialogHeader>
-          <DialogTitle>Add Account</DialogTitle>
-          <DialogDescription>Create a new prospect or lead in your pipeline.</DialogDescription>
+      <DialogContent className="max-w-4xl w-[95vw] max-h-[92vh] overflow-y-auto p-6 md:p-8 custom-scrollbar">
+        <DialogHeader className="pb-4 border-b border-slate-100">
+          <DialogTitle className="text-xl font-bold text-slate-900">Add Account</DialogTitle>
+          <DialogDescription className="text-slate-500">Create a new prospect or lead in your pipeline and optionally associate contacts.</DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
-          <div><Label>Company name</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Account Name" /></div>
-          <div className="grid grid-cols-2 gap-3">
-            <div><Label>Industry</Label>
-              {isCustomIndustry ? (
-                <div className="relative group">
-                  <Input 
-                     value={industry} 
-                     onChange={(e) => setIndustry(e.target.value)} 
-                     placeholder="E.g. Software" 
-                     autoFocus 
-                     className="h-10 pr-9 border-emerald-200 focus-visible:ring-emerald-500"
-                  />
-                  <Button 
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => { setIsCustomIndustry(false); setIndustry(industries[0]); }}
-                    className="h-8 w-8 absolute right-1 top-1 text-muted-foreground hover:text-slate-800"
-                    title="Cancel custom entry"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
-                <Select value={industry} onValueChange={(v) => {
-                  if (v === "CREATE_NEW") {
-                    setIsCustomIndustry(true);
-                    setIndustry("");
-                  } else {
-                    setIndustry(v);
-                  }
-                }}>
-                  <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="CREATE_NEW" className="text-emerald-600 font-bold flex items-center gap-1.5 border-b border-slate-100 bg-emerald-50/30 hover:bg-emerald-50">
-                      <Plus className="inline h-3 w-3 mr-1" /> Add new industry
-                    </SelectItem>
-                    {industries.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-            <div><Label>Owner</Label>
-              <Select value={owner} onValueChange={setOwner}>
-                <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
-                <SelectContent>{reps.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            <div><Label>Status</Label>
-              <Select value={status} onValueChange={(v) => setStatus(v as AccountStatus)}>
-                <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
-                <SelectContent>{STATUSES.map((s) => <SelectItem key={s} value={s}>{STATUS_LABEL[s]}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            <div><Label className="mb-1 block">Date</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full justify-start text-left font-normal h-10",
-                      !date && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={(d) => d && setDate(d)}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div>
-              <Label>Follow Ups</Label>
-              <Input 
-                type="number" 
-                min="0" 
-                value={followUpCount} 
-                onChange={(e) => setFollowUpCount(parseInt(e.target.value) || 0)} 
-                className="h-10 font-bold"
-              />
-            </div>
-          </div>
-          <div><Label>Remark</Label><Textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="e.g. Interested in trial next week" /></div>
-          
-          <div className="border-t border-slate-100 pt-3 mt-3 space-y-2">
-            <Label className="font-bold text-slate-800 flex items-center gap-1.5">
-              <CalendarClock className="h-4 w-4 text-primary" /> Follow Up Reminder
-            </Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-4">
+          {/* Left Column: Account Details */}
+          <div className="space-y-4 md:pr-6 md:border-r border-slate-100">
+            <h3 className="font-bold text-slate-800 text-sm border-b border-slate-50 pb-2">Account Details</h3>
+            
+            <div className="space-y-3">
               <div>
-                <Label>Reminder Action</Label>
-                <Select value={reminderType} onValueChange={(v) => setReminderType(v as any)}>
-                  <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No Reminder</SelectItem>
-                    <SelectItem value="reach_again">Reach Again (No Answer)</SelectItem>
-                    <SelectItem value="followup">Follow Up (Needs Action)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label className="text-xs font-semibold text-slate-600">Company name</Label>
+                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Account Name" className="h-10 mt-1" />
               </div>
-              {reminderType !== "none" && (
+              
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label>Reminder Date</Label>
+                  <Label className="text-xs font-semibold text-slate-600">Industry</Label>
+                  <div className="mt-1">
+                    {isCustomIndustry ? (
+                      <div className="relative group">
+                        <Input 
+                           value={industry} 
+                           onChange={(e) => setIndustry(e.target.value)} 
+                           placeholder="E.g. Software" 
+                           autoFocus 
+                           className="h-10 pr-9 border-emerald-200 focus-visible:ring-emerald-500"
+                        />
+                        <Button 
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => { setIsCustomIndustry(false); setIndustry(industries[0]); }}
+                          className="h-8 w-8 absolute right-1 top-1 text-muted-foreground hover:text-slate-800"
+                          title="Cancel custom entry"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Select value={industry} onValueChange={(v) => {
+                        if (v === "CREATE_NEW") {
+                          setIsCustomIndustry(true);
+                          setIndustry("");
+                        } else {
+                          setIndustry(v);
+                        }
+                      }}>
+                        <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="CREATE_NEW" className="text-emerald-600 font-bold flex items-center gap-1.5 border-b border-slate-100 bg-emerald-50/30 hover:bg-emerald-50">
+                            <Plus className="inline h-3 w-3 mr-1" /> Add new industry
+                          </SelectItem>
+                          {industries.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+                </div>
+                
+                <div>
+                  <Label className="text-xs font-semibold text-slate-600">Owner</Label>
+                  <Select value={owner} onValueChange={setOwner}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>{reps.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label className="text-xs font-semibold text-slate-600">Status</Label>
+                  <Select value={status} onValueChange={(v) => setStatus(v as AccountStatus)}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>{STATUSES.map((s) => <SelectItem key={s} value={s}>{STATUS_LABEL[s]}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label className="text-xs font-semibold text-slate-600">Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full justify-start text-left font-normal h-10",
-                          !reminderDate && "text-muted-foreground"
+                          "w-full justify-start text-left font-normal h-10 mt-1",
+                          !date && "text-muted-foreground"
                         )}
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {reminderDate ? format(reminderDate, "PPP") : <span>Pick a date</span>}
+                        <CalendarIcon className="mr-2 h-4 w-4 text-slate-400" />
+                        {date ? format(date, "PPP") : <span>Pick a date</span>}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
-                        selected={reminderDate}
-                        onSelect={(d) => d && setReminderDate(d)}
+                        selected={date}
+                        onSelect={(d) => d && setDate(d)}
                         initialFocus
                       />
                     </PopoverContent>
                   </Popover>
                 </div>
+                
+                <div className="col-span-2">
+                  <Label className="text-xs font-semibold text-slate-600">Follow Ups</Label>
+                  <Input 
+                    type="number" 
+                    min="0" 
+                    value={followUpCount} 
+                    onChange={(e) => setFollowUpCount(parseInt(e.target.value) || 0)} 
+                    className="h-10 mt-1 font-bold"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <Label className="text-xs font-semibold text-slate-600">Remark</Label>
+                <Textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="e.g. Interested in trial next week" className="mt-1 resize-none" />
+              </div>
+              
+              <div className="border-t border-slate-100 pt-3 mt-3 space-y-2">
+                <Label className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                  <CalendarClock className="h-4 w-4 text-primary" /> Follow Up Reminder
+                </Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-500">Reminder Action</Label>
+                    <Select value={reminderType} onValueChange={(v) => setReminderType(v as any)}>
+                      <SelectTrigger className="h-10 mt-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No Reminder</SelectItem>
+                        <SelectItem value="reach_again">Reach Again</SelectItem>
+                        <SelectItem value="followup">Follow Up</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {reminderType !== "none" && (
+                    <div>
+                      <Label className="text-xs font-semibold text-slate-500">Reminder Date</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full justify-start text-left font-normal h-10 mt-1",
+                              !reminderDate && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4 text-slate-400" />
+                            {reminderDate ? format(reminderDate, "PPP") : <span>Pick a date</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={reminderDate}
+                            onSelect={(d) => d && setReminderDate(d)}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Right Column: Contacts builder */}
+          <div className="space-y-4 flex flex-col justify-between">
+            <div className="space-y-4">
+              <h3 className="font-bold text-slate-800 text-sm border-b border-slate-50 pb-2">Contacts (Optional)</h3>
+              
+              {/* List of staged contacts */}
+              {draftContacts.length > 0 ? (
+                <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                  {draftContacts.map((c, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 bg-indigo-50/40 border border-indigo-100 rounded-xl text-xs">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-indigo-950 truncate flex items-center gap-1.5">
+                          <User className="h-3 w-3 text-indigo-500" />
+                          {c.contactName}
+                        </div>
+                        <div className="text-indigo-700/80 truncate mt-0.5">
+                          {c.designation && <span>{c.designation}</span>}
+                          {c.phone && <span> · {c.phone}</span>}
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-rose-500 hover:bg-rose-50 rounded-lg shrink-0 ml-2"
+                        onClick={() => setDraftContacts(draftContacts.filter((_, i) => i !== idx))}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-4 bg-slate-50 border border-dashed border-slate-200 rounded-xl text-center text-xs text-slate-400">
+                  No contacts staged yet. Add some using the form below.
+                </div>
               )}
+              
+              {/* Form to add a new contact */}
+              <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/20 space-y-3">
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Add a Contact to Staging</p>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="col-span-2">
+                    <Label className="text-[10px] font-semibold text-slate-500">Contact Name *</Label>
+                    <Input value={cName} onChange={(e) => setCName(e.target.value)} placeholder="e.g. Rahul Kumar" className="h-9 mt-0.5 text-xs" />
+                  </div>
+                  <div>
+                    <Label className="text-[10px] font-semibold text-slate-500">Phone</Label>
+                    <Input value={cPhone} onChange={(e) => setCPhone(e.target.value)} placeholder="+91..." className="h-9 mt-0.5 text-xs" />
+                  </div>
+                  <div>
+                    <Label className="text-[10px] font-semibold text-slate-500">Designation</Label>
+                    <Input value={cDesig} onChange={(e) => setCDesig(e.target.value)} placeholder="e.g. Director" className="h-9 mt-0.5 text-xs" />
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-[10px] font-semibold text-slate-500">LinkedIn Profile URL</Label>
+                    <Input value={cLinkedin} onChange={(e) => setCLinkedin(e.target.value)} placeholder="https://linkedin.com/..." className="h-9 mt-0.5 text-xs" />
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-[10px] font-semibold text-slate-500">Remark</Label>
+                    <Input value={cRemark} onChange={(e) => setCRemark(e.target.value)} placeholder="e.g. Decision maker" className="h-9 mt-0.5 text-xs" />
+                  </div>
+                </div>
+                <Button 
+                  type="button" 
+                  onClick={handleAddDraftContact} 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full mt-1 border-indigo-200 text-indigo-700 bg-indigo-50/30 hover:bg-indigo-50 text-xs font-semibold h-9"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Contact to List
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={submit} className="bg-gradient-brand text-white border-0 hover:opacity-90">Save Account</Button>
+
+        <DialogFooter className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2 shrink-0">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="h-10">Cancel</Button>
+          <Button onClick={submit} className="bg-gradient-brand text-white border-0 hover:opacity-90 h-10 px-6 font-semibold">Save Account & Contacts</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

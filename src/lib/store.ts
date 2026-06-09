@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Account, SalesRep } from "./types";
+import type { Account, SalesRep, AccountContact } from "./types";
 import { SEED_ACCOUNTS, SEED_REPS } from "./seed-data";
 import { supabase } from "./supabase";
 import { toast } from "sonner";
@@ -30,18 +30,24 @@ const getMergedAccounts = (accounts: Account[]): Account[] => {
 interface State {
   accounts: Account[];
   reps: SalesRep[];
+  contacts: AccountContact[];
   globalMonths: string[];
   isLoading: boolean;
   isAuthenticated: boolean | null;
   activeCompanyTimeline: string | null;
-  
+
   fetchData: () => Promise<void>;
+  fetchContacts: () => Promise<void>;
   subscribeRealtime: () => (() => void);
 
   addAccount: (a: Omit<Account, "id">) => Promise<void>;
   updateAccount: (id: string, patch: Partial<Account>) => Promise<void>;
   deleteAccount: (id: string) => Promise<void>;
   addRep: (r: SalesRep) => Promise<void>;
+  addContact: (c: Omit<AccountContact, "id">) => Promise<void>;
+  updateContact: (id: string, patch: Partial<AccountContact>) => Promise<void>;
+  deleteContact: (id: string) => Promise<void>;
+  importContacts: (contactsList: Omit<AccountContact, "id">[]) => Promise<void>;
   setGlobalMonths: (m: string[]) => void;
   setAuthenticated: (val: boolean) => void;
   setActiveCompanyTimeline: (name: string | null) => void;
@@ -51,6 +57,7 @@ interface State {
 export const useStore = create<State>()((set, get) => ({
   accounts: getMergedAccounts(SEED_ACCOUNTS),
   reps: SEED_REPS,
+  contacts: [],
   globalMonths: [],
   isLoading: false,
   isAuthenticated: null,
@@ -119,7 +126,31 @@ export const useStore = create<State>()((set, get) => ({
     }
   },
 
+  fetchContacts: async () => {
+    try {
+      const { data, error } = await supabase
+        .from("account_contacts")
+        .select("*")
+        .order("createdAt", { ascending: true });
+      if (error) {
+        if (error.code === "42P01") {
+          // Table doesn't exist yet — run the migration SQL in Supabase
+          console.warn("account_contacts table not found. Run the migration SQL.");
+        } else {
+          console.error("fetchContacts error:", error);
+        }
+        return;
+      }
+      set({ contacts: (data ?? []) as AccountContact[] });
+    } catch (e) {
+      console.error("fetchContacts exception:", e);
+    }
+  },
+
   subscribeRealtime: () => {
+    // Fetch contacts immediately on subscription start
+    get().fetchContacts();
+
     // Establish real-time listener channel
     const channel = supabase
       .channel("sales_dashboard_feed")
@@ -136,6 +167,13 @@ export const useStore = create<State>()((set, get) => ({
         { event: "*", schema: "public", table: "sales_reps" },
         () => {
           get().fetchData();
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "account_contacts" },
+        () => {
+          get().fetchContacts();
         }
       )
       .subscribe();
@@ -322,13 +360,110 @@ export const useStore = create<State>()((set, get) => ({
     }
   },
 
+  addContact: async (c) => {
+    const tempId = `optimistic-contact-${Math.random()}`;
+    const optimistic: AccountContact = { ...c, id: tempId };
+    set((s) => ({ contacts: [...s.contacts, optimistic] }));
+
+    const { data, error } = await supabase
+      .from("account_contacts")
+      .insert(c)
+      .select()
+      .single();
+
+    if (error) {
+      toast.error("Failed to save contact.");
+      set((s) => ({ contacts: s.contacts.filter((x) => x.id !== tempId) }));
+    } else {
+      set((s) => ({
+        contacts: s.contacts.map((x) => (x.id === tempId ? (data as AccountContact) : x)),
+      }));
+    }
+  },
+
+  updateContact: async (id, patch) => {
+    set((s) => ({
+      contacts: s.contacts.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+    }));
+    const { error } = await supabase.from("account_contacts").update(patch).eq("id", id);
+    if (error) {
+      toast.error("Failed to update contact.");
+      get().fetchContacts();
+    }
+  },
+
+  deleteContact: async (id) => {
+    set((s) => ({ contacts: s.contacts.filter((c) => c.id !== id) }));
+    const { error } = await supabase.from("account_contacts").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to delete contact.");
+      get().fetchContacts();
+    }
+  },
+
+  importContacts: async (contactsList) => {
+    set({ isLoading: true });
+    try {
+      const { accounts, reps } = get();
+
+      // Find unique company names from the imported list that do not exist yet (case-insensitive)
+      const existingNames = new Set(accounts.map((a) => a.name.toLowerCase()));
+      const missingAccountNames = Array.from(
+        new Set(
+          contactsList
+            .map((c) => c.accountName.trim())
+            .filter((name) => name && !existingNames.has(name.toLowerCase()))
+        )
+      );
+
+      // Bulk create missing accounts first
+      if (missingAccountNames.length > 0) {
+        const newAccounts = missingAccountNames.map((name) => ({
+          name,
+          industry: "Other",
+          owner: reps[0]?.name || "Bhuvaneshwari",
+          status: "new_lead" as const,
+          month: new Date().toLocaleString("en-US", { month: "long", year: "numeric" }),
+          createdAt: new Date().toISOString(),
+          followUpCount: 0,
+        }));
+
+        const { error: accError } = await supabase
+          .from("sales_accounts")
+          .insert(newAccounts);
+
+        if (accError) throw accError;
+      }
+
+      // Bulk insert contacts
+      const { error: contactsError } = await supabase
+        .from("account_contacts")
+        .insert(contactsList);
+
+      if (contactsError) throw contactsError;
+
+      toast.success(`Successfully imported ${contactsList.length} contacts!`);
+
+      // Refresh data feed
+      await Promise.all([
+        get().fetchData(),
+        get().fetchContacts(),
+      ]);
+    } catch (err: any) {
+      console.error("Bulk import error:", err);
+      toast.error(err.message || "Failed to import contacts.");
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
   setGlobalMonths: (m) => set({ globalMonths: m }),
   setAuthenticated: (val) => set({ isAuthenticated: val }),
   setActiveCompanyTimeline: (name) => set({ activeCompanyTimeline: name }),
   
   resetData: () => {
     // Purge local memory override back to seeds
-    set({ accounts: getMergedAccounts(SEED_ACCOUNTS), reps: SEED_REPS, globalMonths: [] });
+    set({ accounts: getMergedAccounts(SEED_ACCOUNTS), reps: SEED_REPS, contacts: [], globalMonths: [] });
   },
 }));
 

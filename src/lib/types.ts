@@ -15,6 +15,17 @@ export interface Account {
   reminderClosed?: boolean;
 }
 
+export interface AccountContact {
+  id: string;
+  accountName: string;
+  contactName: string;
+  phone?: string;
+  designation?: string;
+  linkedin?: string;
+  remark?: string;
+  createdAt?: string;
+}
+
 export type RepColor = "blue" | "green" | "amber" | "teal" | "purple" | "red";
 
 export interface SalesRep {
