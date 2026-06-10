@@ -838,6 +838,12 @@ function AddAccountModal({
     setReminderDate(undefined);
     setDraftContacts([]);
     setIsRestored(false);
+
+    setCName("");
+    setCPhone("");
+    setCDesig("");
+    setCLinkedin("");
+    setCRemark("");
   }, [industries, reps]);
 
   // Load draft from localStorage on open
@@ -857,6 +863,13 @@ function AddAccountModal({
         setReminderType("none");
         setReminderDate(undefined);
         setDraftContacts([]);
+
+        setCName("");
+        setCPhone("");
+        setCDesig("");
+        setCLinkedin("");
+        setCRemark("");
+
         setIsRestored(false);
         setIsLoaded(true);
       } else {
@@ -894,6 +907,13 @@ function AddAccountModal({
             );
 
             setDraftContacts(draft.draftContacts ?? []);
+
+            setCName(draft.cName ?? "");
+            setCPhone(draft.cPhone ?? "");
+            setCDesig(draft.cDesig ?? "");
+            setCLinkedin(draft.cLinkedin ?? "");
+            setCRemark(draft.cRemark ?? "");
+
             setIsRestored(true);
             setIsLoaded(true);
           } catch (e) {
@@ -906,12 +926,6 @@ function AddAccountModal({
           setIsLoaded(true);
         }
       }
-
-      setCName("");
-      setCPhone("");
-      setCDesig("");
-      setCLinkedin("");
-      setCRemark("");
     } else {
       setIsLoaded(false);
       setIsRestored(false);
@@ -932,6 +946,11 @@ function AddAccountModal({
         reminderType,
         reminderDate: reminderDate?.toISOString(),
         draftContacts,
+        cName,
+        cPhone,
+        cDesig,
+        cLinkedin,
+        cRemark,
       };
       localStorage.setItem("prospect_pulse_add_account_draft", JSON.stringify(draft));
     }
@@ -946,6 +965,11 @@ function AddAccountModal({
     reminderType,
     reminderDate,
     draftContacts,
+    cName,
+    cPhone,
+    cDesig,
+    cLinkedin,
+    cRemark,
     open,
     isLoaded,
   ]);
