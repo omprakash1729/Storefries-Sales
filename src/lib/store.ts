@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Account, SalesRep, AccountContact } from "./types";
+import type { Account, SalesRep, AccountContact, BniContact, FranchiseConsultant } from "./types";
 import { SEED_ACCOUNTS, SEED_REPS } from "./seed-data";
 import { supabase } from "./supabase";
 import { toast } from "sonner";
@@ -27,10 +27,39 @@ const getMergedAccounts = (accounts: Account[]): Account[] => {
   }
 };
 
+const promoteToSalesAccountIfNeeded = async (
+  company: string | undefined,
+  owner: string,
+  contactName: string,
+  source: "BNI" | "Franchise",
+  get: any
+) => {
+  if (!company) return;
+  const accounts = get.accounts;
+  const exists = accounts.some(
+    (acc: any) => acc.name.toLowerCase() === company.toLowerCase()
+  );
+  if (!exists) {
+    await get.addAccount({
+      name: company,
+      owner: owner,
+      industry: "Other",
+      month: new Date().toLocaleString("en-US", { month: "long", year: "numeric" }),
+      status: "demo",
+      reason: `Auto-promoted from ${source} Contact demo booking (${contactName})`,
+      createdAt: new Date().toISOString(),
+      followUpCount: 1,
+    });
+    toast.success(`Automatically created Sales Account for "${company}"!`);
+  }
+};
+
 interface State {
   accounts: Account[];
   reps: SalesRep[];
   contacts: AccountContact[];
+  bniContacts: BniContact[];
+  franchiseConsultants: FranchiseConsultant[];
   globalMonths: string[];
   isLoading: boolean;
   isAuthenticated: boolean | null;
@@ -38,6 +67,8 @@ interface State {
 
   fetchData: () => Promise<void>;
   fetchContacts: () => Promise<void>;
+  fetchBniContacts: () => Promise<void>;
+  fetchFranchiseConsultants: () => Promise<void>;
   subscribeRealtime: () => (() => void);
 
   addAccount: (a: Omit<Account, "id">) => Promise<void>;
@@ -48,6 +79,17 @@ interface State {
   updateContact: (id: string, patch: Partial<AccountContact>) => Promise<void>;
   deleteContact: (id: string) => Promise<void>;
   importContacts: (contactsList: Omit<AccountContact, "id">[]) => Promise<void>;
+  
+  addBniContact: (c: Omit<BniContact, "id">) => Promise<void>;
+  updateBniContact: (id: string, patch: Partial<BniContact>) => Promise<void>;
+  deleteBniContact: (id: string) => Promise<void>;
+  importBniContacts: (list: Omit<BniContact, "id">[]) => Promise<void>;
+  
+  addFranchiseConsultant: (c: Omit<FranchiseConsultant, "id">) => Promise<void>;
+  updateFranchiseConsultant: (id: string, patch: Partial<FranchiseConsultant>) => Promise<void>;
+  deleteFranchiseConsultant: (id: string) => Promise<void>;
+  importFranchiseConsultants: (list: Omit<FranchiseConsultant, "id">[]) => Promise<void>;
+
   setGlobalMonths: (m: string[]) => void;
   setAuthenticated: (val: boolean) => void;
   setActiveCompanyTimeline: (name: string | null) => void;
@@ -58,6 +100,8 @@ export const useStore = create<State>()((set, get) => ({
   accounts: getMergedAccounts(SEED_ACCOUNTS),
   reps: SEED_REPS,
   contacts: [],
+  bniContacts: [],
+  franchiseConsultants: [],
   globalMonths: [],
   isLoading: false,
   isAuthenticated: null,
@@ -150,6 +194,8 @@ export const useStore = create<State>()((set, get) => ({
   subscribeRealtime: () => {
     // Fetch contacts immediately on subscription start
     get().fetchContacts();
+    get().fetchBniContacts();
+    get().fetchFranchiseConsultants();
 
     // Establish real-time listener channel
     const channel = supabase
@@ -174,6 +220,20 @@ export const useStore = create<State>()((set, get) => ({
         { event: "*", schema: "public", table: "account_contacts" },
         () => {
           get().fetchContacts();
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "bni_contacts" },
+        () => {
+          get().fetchBniContacts();
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "franchise_consultants" },
+        () => {
+          get().fetchFranchiseConsultants();
         }
       )
       .subscribe();
@@ -460,10 +520,170 @@ export const useStore = create<State>()((set, get) => ({
   setGlobalMonths: (m) => set({ globalMonths: m }),
   setAuthenticated: (val) => set({ isAuthenticated: val }),
   setActiveCompanyTimeline: (name) => set({ activeCompanyTimeline: name }),
+
+  fetchBniContacts: async () => {
+    try {
+      const { data, error } = await supabase
+        .from("bni_contacts")
+        .select("*")
+        .order("createdAt", { ascending: false });
+      if (error) {
+        console.error("fetchBniContacts error:", error);
+        return;
+      }
+      set({ bniContacts: (data ?? []) as BniContact[] });
+    } catch (e) {
+      console.error("fetchBniContacts exception:", e);
+    }
+  },
+
+  fetchFranchiseConsultants: async () => {
+    try {
+      const { data, error } = await supabase
+        .from("franchise_consultants")
+        .select("*")
+        .order("createdAt", { ascending: false });
+      if (error) {
+        console.error("fetchFranchiseConsultants error:", error);
+        return;
+      }
+      set({ franchiseConsultants: (data ?? []) as FranchiseConsultant[] });
+    } catch (e) {
+      console.error("fetchFranchiseConsultants exception:", e);
+    }
+  },
+
+  addBniContact: async (c) => {
+    const tempId = `optimistic-bni-${Math.random()}`;
+    const optimistic: BniContact = { ...c, id: tempId } as BniContact;
+    set((s) => ({ bniContacts: [optimistic, ...s.bniContacts] }));
+
+    const { data, error } = await supabase
+      .from("bni_contacts")
+      .insert(c)
+      .select()
+      .single();
+
+    if (error) {
+      toast.error("Failed to save BNI contact.");
+      set((s) => ({ bniContacts: s.bniContacts.filter((x) => x.id !== tempId) }));
+    } else {
+      set((s) => ({
+        bniContacts: s.bniContacts.map((x) => (x.id === tempId ? (data as BniContact) : x)),
+      }));
+      if (c.status === "demo_booked") {
+        await promoteToSalesAccountIfNeeded(c.company, c.owner, c.name, "BNI", get());
+      }
+    }
+  },
+
+  updateBniContact: async (id, patch) => {
+    set((s) => ({
+      bniContacts: s.bniContacts.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+    }));
+    const { error } = await supabase.from("bni_contacts").update(patch).eq("id", id);
+    if (error) {
+      toast.error("Failed to update BNI contact.");
+      get().fetchBniContacts();
+    } else if (patch.status === "demo_booked") {
+      const contact = get().bniContacts.find(c => c.id === id);
+      if (contact) {
+        await promoteToSalesAccountIfNeeded(contact.company, contact.owner, contact.name, "BNI", get());
+      }
+    }
+  },
+
+  deleteBniContact: async (id) => {
+    set((s) => ({ bniContacts: s.bniContacts.filter((c) => c.id !== id) }));
+    const { error } = await supabase.from("bni_contacts").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to delete BNI contact.");
+      get().fetchBniContacts();
+    }
+  },
+
+  importBniContacts: async (list) => {
+    set({ isLoading: true });
+    try {
+      const { error } = await supabase.from("bni_contacts").insert(list);
+      if (error) throw error;
+      toast.success(`Successfully imported ${list.length} BNI contacts!`);
+      await get().fetchBniContacts();
+    } catch (err: any) {
+      console.error("Bulk BNI import error:", err);
+      toast.error(err.message || "Failed to import BNI contacts.");
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  addFranchiseConsultant: async (c) => {
+    const tempId = `optimistic-franchise-${Math.random()}`;
+    const optimistic: FranchiseConsultant = { ...c, id: tempId } as FranchiseConsultant;
+    set((s) => ({ franchiseConsultants: [optimistic, ...s.franchiseConsultants] }));
+
+    const { data, error } = await supabase
+      .from("franchise_consultants")
+      .insert(c)
+      .select()
+      .single();
+
+    if (error) {
+      toast.error("Failed to save Franchise Consultant.");
+      set((s) => ({ franchiseConsultants: s.franchiseConsultants.filter((x) => x.id !== tempId) }));
+    } else {
+      set((s) => ({
+        franchiseConsultants: s.franchiseConsultants.map((x) => (x.id === tempId ? (data as FranchiseConsultant) : x)),
+      }));
+      if (c.status === "demo_booked") {
+        await promoteToSalesAccountIfNeeded(c.company, c.owner, c.name, "Franchise", get());
+      }
+    }
+  },
+
+  updateFranchiseConsultant: async (id, patch) => {
+    set((s) => ({
+      franchiseConsultants: s.franchiseConsultants.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+    }));
+    const { error } = await supabase.from("franchise_consultants").update(patch).eq("id", id);
+    if (error) {
+      toast.error("Failed to update Franchise Consultant.");
+      get().fetchFranchiseConsultants();
+    } else if (patch.status === "demo_booked") {
+      const contact = get().franchiseConsultants.find(c => c.id === id);
+      if (contact) {
+        await promoteToSalesAccountIfNeeded(contact.company, contact.owner, contact.name, "Franchise", get());
+      }
+    }
+  },
+
+  deleteFranchiseConsultant: async (id) => {
+    set((s) => ({ franchiseConsultants: s.franchiseConsultants.filter((c) => c.id !== id) }));
+    const { error } = await supabase.from("franchise_consultants").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to delete Franchise Consultant.");
+      get().fetchFranchiseConsultants();
+    }
+  },
+
+  importFranchiseConsultants: async (list) => {
+    set({ isLoading: true });
+    try {
+      const { error } = await supabase.from("franchise_consultants").insert(list);
+      if (error) throw error;
+      toast.success(`Successfully imported ${list.length} Franchise Consultants!`);
+      await get().fetchFranchiseConsultants();
+    } catch (err: any) {
+      console.error("Bulk Franchise import error:", err);
+      toast.error(err.message || "Failed to import Franchise Consultants.");
+    } finally {
+      set({ isLoading: false });
+    }
+  },
   
   resetData: () => {
     // Purge local memory override back to seeds
-    set({ accounts: getMergedAccounts(SEED_ACCOUNTS), reps: SEED_REPS, contacts: [], globalMonths: [] });
+    set({ accounts: getMergedAccounts(SEED_ACCOUNTS), reps: SEED_REPS, contacts: [], bniContacts: [], franchiseConsultants: [], globalMonths: [] });
   },
 }));
 

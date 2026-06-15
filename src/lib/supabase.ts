@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import type { Account, SalesRep } from "./types";
+import type { Account, SalesRep, BniContact, FranchiseConsultant } from "./types";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
@@ -23,6 +23,17 @@ export interface Database {
         Insert: SalesRep;
         Update: Partial<SalesRep>;
       };
+      bni_contacts: {
+        Row: BniContact;
+        Insert: Omit<BniContact, "id">;
+        Update: Partial<Omit<BniContact, "id">>;
+      };
+      franchise_consultants: {
+        Row: FranchiseConsultant;
+        Insert: Omit<FranchiseConsultant, "id">;
+        Update: Partial<Omit<FranchiseConsultant, "id">>;
+      };
     };
   };
 }
+

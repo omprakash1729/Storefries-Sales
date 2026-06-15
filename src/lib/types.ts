@@ -83,3 +83,46 @@ export const INDUSTRIES = [
   "Construction",
   "Other",
 ];
+
+export type OutreachStatus = "reached_out" | "medium" | "read" | "replied" | "demo_booked";
+
+export interface BniContact {
+  id: string;
+  createdAt?: string;
+  name: string;
+  company?: string;
+  designation?: string;
+  bniChapter?: string;
+  phone?: string;
+  email?: string;
+  linkedin?: string;
+  status: OutreachStatus;
+  medium?: "LinkedIn" | "WhatsApp" | "Email" | "Call";
+  owner: string;
+  remark?: string;
+}
+
+export interface FranchiseConsultant {
+  id: string;
+  createdAt?: string;
+  name: string;
+  company?: string;
+  designation?: string;
+  region?: string;
+  phone?: string;
+  email?: string;
+  linkedin?: string;
+  status: OutreachStatus;
+  medium?: "LinkedIn" | "WhatsApp" | "Email" | "Call";
+  owner: string;
+  remark?: string;
+}
+
+export const OUTREACH_STATUS_LABEL: Record<OutreachStatus, string> = {
+  reached_out: "Reached Out",
+  medium: "Medium",
+  read: "Read",
+  replied: "Replied",
+  demo_booked: "Demo Booked",
+};
+

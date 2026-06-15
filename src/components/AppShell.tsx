@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { MonthFilter } from "./MonthFilter";
-import { LayoutDashboard, Users, BarChart3, XCircle, Save, Cloud, RefreshCcw, LogOut, CalendarClock, Clock } from "lucide-react";
+import { LayoutDashboard, Users, BarChart3, XCircle, Save, Cloud, RefreshCcw, LogOut, CalendarClock, Clock, Network, Briefcase } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
 import { ALL_MONTHS } from "@/lib/seed-data";
@@ -19,6 +19,8 @@ import type { Account } from "@/lib/types";
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/accounts", label: "Accounts", icon: Users },
+  { to: "/bni", label: "BNI Contacts", icon: Network },
+  { to: "/franchise", label: "Franchise", icon: Briefcase },
   { to: "/rejected", label: "Rejected", icon: XCircle },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
 ] as const;

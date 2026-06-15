@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RejectedRouteImport } from './routes/rejected'
+import { Route as FranchiseRouteImport } from './routes/franchise'
+import { Route as BniRouteImport } from './routes/bni'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AccountsRouteImport } from './routes/accounts'
 import { Route as IndexRouteImport } from './routes/index'
@@ -17,6 +19,16 @@ import { Route as IndexRouteImport } from './routes/index'
 const RejectedRoute = RejectedRouteImport.update({
   id: '/rejected',
   path: '/rejected',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FranchiseRoute = FranchiseRouteImport.update({
+  id: '/franchise',
+  path: '/franchise',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BniRoute = BniRouteImport.update({
+  id: '/bni',
+  path: '/bni',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnalyticsRoute = AnalyticsRouteImport.update({
@@ -39,12 +51,16 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accounts': typeof AccountsRoute
   '/analytics': typeof AnalyticsRoute
+  '/bni': typeof BniRoute
+  '/franchise': typeof FranchiseRoute
   '/rejected': typeof RejectedRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accounts': typeof AccountsRoute
   '/analytics': typeof AnalyticsRoute
+  '/bni': typeof BniRoute
+  '/franchise': typeof FranchiseRoute
   '/rejected': typeof RejectedRoute
 }
 export interface FileRoutesById {
@@ -52,20 +68,37 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/accounts': typeof AccountsRoute
   '/analytics': typeof AnalyticsRoute
+  '/bni': typeof BniRoute
+  '/franchise': typeof FranchiseRoute
   '/rejected': typeof RejectedRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/accounts' | '/analytics' | '/rejected'
+  fullPaths:
+    | '/'
+    | '/accounts'
+    | '/analytics'
+    | '/bni'
+    | '/franchise'
+    | '/rejected'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/accounts' | '/analytics' | '/rejected'
-  id: '__root__' | '/' | '/accounts' | '/analytics' | '/rejected'
+  to: '/' | '/accounts' | '/analytics' | '/bni' | '/franchise' | '/rejected'
+  id:
+    | '__root__'
+    | '/'
+    | '/accounts'
+    | '/analytics'
+    | '/bni'
+    | '/franchise'
+    | '/rejected'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountsRoute: typeof AccountsRoute
   AnalyticsRoute: typeof AnalyticsRoute
+  BniRoute: typeof BniRoute
+  FranchiseRoute: typeof FranchiseRoute
   RejectedRoute: typeof RejectedRoute
 }
 
@@ -76,6 +109,20 @@ declare module '@tanstack/react-router' {
       path: '/rejected'
       fullPath: '/rejected'
       preLoaderRoute: typeof RejectedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/franchise': {
+      id: '/franchise'
+      path: '/franchise'
+      fullPath: '/franchise'
+      preLoaderRoute: typeof FranchiseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bni': {
+      id: '/bni'
+      path: '/bni'
+      fullPath: '/bni'
+      preLoaderRoute: typeof BniRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/analytics': {
@@ -106,6 +153,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountsRoute: AccountsRoute,
   AnalyticsRoute: AnalyticsRoute,
+  BniRoute: BniRoute,
+  FranchiseRoute: FranchiseRoute,
   RejectedRoute: RejectedRoute,
 }
 export const routeTree = rootRouteImport
