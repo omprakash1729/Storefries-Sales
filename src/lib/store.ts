@@ -531,7 +531,28 @@ export const useStore = create<State>()((set, get) => ({
         console.error("fetchBniContacts error:", error);
         return;
       }
-      set({ bniContacts: (data ?? []) as BniContact[] });
+      
+      const list = (data ?? []) as BniContact[];
+      
+      if (list.length === 0) {
+        const initialSeeds = [
+          { name: 'Santosh Patil', company: 'Formec Media LLP', designation: 'Digital/Advertising', bniChapter: 'BNI Bhoomi', status: 'replied' as const, medium: 'Call' as const, owner: 'Om Prakash', remark: 'He will share his timing for meeting on 06/06/2026' },
+          { name: 'Manisha', company: 'Enlight Web Services', designation: 'Member', bniChapter: 'BNI Solitaire', status: 'demo_booked' as const, medium: 'WhatsApp' as const, owner: 'Om Prakash', remark: 'Further Discussion - Venkat Sir need to send Whatsapp message to Manisha. She asked for a recorded video' },
+          { name: 'Zero4Studio Contact', company: 'Zero4Studio', designation: 'Member', bniChapter: 'BNI Harmony', status: 'demo_booked' as const, medium: 'Call' as const, owner: 'Om Prakash', remark: 'Follow back with him 05.06.2026' }
+        ];
+        
+        await supabase.from("bni_contacts").insert(initialSeeds);
+        
+        const reload = await supabase
+          .from("bni_contacts")
+          .select("*")
+          .order("createdAt", { ascending: false });
+          
+        set({ bniContacts: (reload.data ?? []) as BniContact[] });
+        return;
+      }
+      
+      set({ bniContacts: list });
     } catch (e) {
       console.error("fetchBniContacts exception:", e);
     }
@@ -547,7 +568,36 @@ export const useStore = create<State>()((set, get) => ({
         console.error("fetchFranchiseConsultants error:", error);
         return;
       }
-      set({ franchiseConsultants: (data ?? []) as FranchiseConsultant[] });
+      
+      const list = (data ?? []) as FranchiseConsultant[];
+      
+      if (list.length === 0) {
+        const initialSeeds = [
+          { name: 'Arshi Khan', company: 'Self', designation: 'Franchise consultant', phone: '917415599049', linkedin: 'https://www.linkedin.com/in/arshi-khan-2abb911a2/', status: 'replied' as const, medium: 'Call' as const, owner: 'Om Prakash', remark: 'Call Outreach: Attended - Send pitch through Whatsapp. [Log: WhatsApp outreach before Call: Message Sent, Not Replied, Not Attended]' },
+          { name: 'Javeed A. Khan', company: 'Self', designation: 'Franchise consultant', phone: '917619688070', linkedin: 'https://www.linkedin.com/in/javeedahamedkhan/', status: 'replied' as const, medium: 'Call' as const, owner: 'Om Prakash', remark: 'Call Outreach: Attended - Send pitch through Whatsapp. [Log: WhatsApp outreach before Call: Message Sent, Not Replied, Not Attended]' },
+          { name: 'Sumanth shetty', company: 'Self', designation: 'Franchise consultant', phone: '919900701201', linkedin: 'https://www.linkedin.com/in/sumanth-shetty-70905a148/', status: 'reached_out' as const, medium: 'Call' as const, owner: 'Om Prakash', remark: "Call Outreach: Didn't pick the call. [Log: WhatsApp outreach before Call: Message Sent, Not Replied, Not Attended]" },
+          { name: 'Vimal V', company: 'Self', designation: 'Franchise consultant', phone: '919946557100', linkedin: 'https://www.linkedin.com/in/vimalv1/', status: 'replied' as const, medium: 'Call' as const, owner: 'Om Prakash', remark: 'Call Outreach: Attended - Send pitch through Whatsapp. [Log: WhatsApp outreach before Call: Message Sent, Not Replied, Not Attended]' },
+          { name: 'Priyanka Panchal', company: 'Self', designation: 'Franchise consultant', phone: '918140038080', linkedin: 'https://www.linkedin.com/in/priyanka-panchal-3a9b94232/', status: 'replied' as const, medium: 'WhatsApp' as const, owner: 'Om Prakash', remark: 'WhatsApp Outreach: Message Sent - Replied - Not Attended' },
+          { name: 'Amar Lunia', company: 'Self', designation: 'Franchise consultant', phone: '919035027699', linkedin: 'https://www.linkedin.com/in/amar-lunia-058273121/', status: 'reached_out' as const, medium: 'WhatsApp' as const, owner: 'Om Prakash', remark: 'WhatsApp Outreach: Message Sent - Not Replied - Not Attended' },
+          { name: 'Nilesh khatod', company: 'Self', designation: 'Franchise consultant', phone: '919161225877', linkedin: 'https://www.linkedin.com/in/nilesh-khatod-715145b1/', status: 'replied' as const, medium: 'WhatsApp' as const, owner: 'Om Prakash', remark: 'WhatsApp Outreach: Message Sent - Replied - Scheduled demo' },
+          { name: 'Kishin Thakur', company: 'Self', designation: 'Franchise consultant', phone: '919930384641', linkedin: 'https://www.linkedin.com/in/kishinthakur/', status: 'demo_booked' as const, medium: 'WhatsApp' as const, owner: 'Om Prakash', remark: 'WhatsApp Outreach: Message Sent - Replied - Attended' },
+          { name: 'Vijayasaradhi Kolasani', company: 'Self', designation: 'Franchise consultant', phone: '919100094361', linkedin: 'https://www.linkedin.com/in/vijayasaradhi-kolasani-71421325/', status: 'replied' as const, medium: 'WhatsApp' as const, owner: 'Om Prakash', remark: 'WhatsApp Outreach: Message Sent - Replied - Not Attended' },
+          { name: 'Anupam Srivastava', company: 'Self', designation: 'Franchise consultant', phone: '919819523666', linkedin: 'https://www.linkedin.com/in/chefanupamsrivastava/', status: 'replied' as const, medium: 'WhatsApp' as const, owner: 'Om Prakash', remark: 'WhatsApp Outreach: Message Sent - Replied - Not Attended' },
+          { name: 'Ravikumar Chandrashekar', company: 'Self', designation: 'Franchise consultant', phone: '919847012317', linkedin: 'https://www.linkedin.com/in/raavikumaar/', status: 'demo_booked' as const, medium: 'WhatsApp' as const, owner: 'Om Prakash', remark: 'WhatsApp Outreach: Message Sent - Replied - Attended' }
+        ];
+        
+        await supabase.from("franchise_consultants").insert(initialSeeds);
+        
+        const reload = await supabase
+          .from("franchise_consultants")
+          .select("*")
+          .order("createdAt", { ascending: false });
+          
+        set({ franchiseConsultants: (reload.data ?? []) as FranchiseConsultant[] });
+        return;
+      }
+      
+      set({ franchiseConsultants: list });
     } catch (e) {
       console.error("fetchFranchiseConsultants exception:", e);
     }
