@@ -287,7 +287,7 @@ const newDataRaw = [
   { name: "Sri Krishna Silks", owner: "Bhuvaneshwari", industry: "Apparel & Footwear", month: "June 2026", status: "rejected", reason: "Price seems bit high for them and they dont want to exploit the existing system", createdAt: "2026-06-16T12:00:00.000Z", followUpCount: 0 },
   { name: "California Burrito", owner: "Bhuvaneshwari", industry: "Food & Beverage", month: "June 2026", status: "prospect", reason: "Send product deck to kamsali via whatsapp", createdAt: "2026-06-16T12:00:00.000Z", followUpCount: 0 },
   { name: "Shree Anandhaas Sweets and Snacks", owner: "Bhuvaneshwari", industry: "Food & Beverage", month: "June 2026", status: "prospect", reason: "Send email to Ravi, he said he will revert if needed", createdAt: "2026-06-16T12:00:00.000Z", followUpCount: 0 },
-  { name: "Donne Briyani", owner: "Bhuvaneshwari", industry: "Food & Beverage", month: "June 2026", status: "prospect", reason: "Need to follow Pradeep TK up on 18.06.2026 afternoon", createdAt: "2026-06-16T12:00:00.000Z", followUpCount: 0, reminderType: "followup", reminderDate: "2026-06-18T12:00:00.000Z", reminderClosed: false },
+  { name: "Donne Briyani", owner: "Bhuvaneshwari", industry: "Food & Beverage", month: "June 2026", status: "prospect", reason: "Need to follow Pradeep TK up on 18.06.2026 afternoon", createdAt: "2026-06-16T12:00:00.000Z", followUpCount: 0, reminderType: "followup", reminderDate: "2026-06-18T12:00:00.000Z", reminderClosed: true },
   { name: "KPN", owner: "Bhuvaneshwari", industry: "Retail (General)", month: "June 2026", status: "rejected", reason: "Previously Srinivasan said they dont want, so i tries other two gowtham didnot picked, sahil is not working there", createdAt: "2026-06-16T12:00:00.000Z", followUpCount: 0 },
   { name: "Cakebee", owner: "Bhuvaneshwari", industry: "Food & Beverage", month: "June 2026", status: "prospect", reason: "Called to the number got from website = call back on 17.06.2026", createdAt: "2026-06-16T12:00:00.000Z", followUpCount: 0, reminderType: "followup", reminderDate: "2026-06-17T12:00:00.000Z", reminderClosed: false },
   { name: "Page 3", owner: "Bhuvaneshwari", industry: "Beauty & Wellness", month: "June 2026", status: "prospect", reason: "Revanth roy is busy", createdAt: "2026-06-16T12:00:00.000Z", followUpCount: 0 },
@@ -298,7 +298,17 @@ const newDataRaw = [
   { name: "Royal Orchid", owner: "Bhuvaneshwari", industry: "Hospitality", month: "June 2026", status: "rejected", reason: "Not interested", createdAt: "2026-06-16T12:00:00.000Z", followUpCount: 0 },
   { name: "Evolve back", owner: "Bhuvaneshwari", industry: "Hospitality", month: "June 2026", status: "prospect", reason: "Email sent to nikhil.p@evolveback.com", createdAt: "2026-06-16T12:00:00.000Z", followUpCount: 0 },
   { name: "Laundrokart", owner: "Bhuvaneshwari", industry: "Laundry Services", month: "June 2026", status: "rejected", reason: "Nagarjun said no need", createdAt: "2026-06-16T12:00:00.000Z", followUpCount: 0 },
-  { name: "Pommys", owner: "Bhuvaneshwari", industry: "Apparel & Footwear", month: "June 2026", status: "prospect", reason: "Did not pick", createdAt: "2026-06-16T12:00:00.000Z", followUpCount: 0 }
+  { name: "Pommys", owner: "Bhuvaneshwari", industry: "Apparel & Footwear", month: "June 2026", status: "prospect", reason: "Did not pick", createdAt: "2026-06-16T12:00:00.000Z", followUpCount: 0 },
+  
+  // June 18, 2026 Updates
+  { name: "California Burrito", owner: "Bhuvaneshwari", industry: "Food & Beverage", month: "June 2026", status: "prospect", reason: "Follow up message sent on whatsapp", createdAt: "2026-06-18T10:00:00.000Z", followUpCount: 1 },
+  { name: "Sri Krishna Silks", owner: "Bhuvaneshwari", industry: "Apparel & Footwear", month: "June 2026", status: "demo", reason: "3rd demo for them conducted to Mr. Varun", createdAt: "2026-06-18T11:00:00.000Z", followUpCount: 1 },
+  { name: "Donne Briyani", owner: "Bhuvaneshwari", industry: "Food & Beverage", month: "June 2026", status: "prospect", reason: "shared deck , need to talk wih md , but i will only get back if we require the product", createdAt: "2026-06-18T12:00:00.000Z", followUpCount: 1 },
+  { name: "Rayalaseema Ruchulu", owner: "Bhuvaneshwari", industry: "Food & Beverage", month: "June 2026", status: "prospect", reason: "did not pick up - uttam reddy - 9849018737", createdAt: "2026-06-18T13:00:00.000Z", followUpCount: 0 },
+  { name: "sport hood", owner: "Bhuvaneshwari", industry: "Fitness & Wellness", month: "June 2026", status: "prospect", reason: "not reachable- rahul -8129997908", createdAt: "2026-06-18T14:00:00.000Z", followUpCount: 0 },
+  { name: "Decathalon play", owner: "Bhuvaneshwari", industry: "Retail (General)", month: "June 2026", status: "prospect", reason: "no body answered", createdAt: "2026-06-18T15:00:00.000Z", followUpCount: 0 },
+  { name: "The Quad fitness", owner: "Bhuvaneshwari", industry: "Fitness & Wellness", month: "June 2026", status: "prospect", reason: "gukan@thequad.in he will redirectwithe respective person", createdAt: "2026-06-18T16:00:00.000Z", followUpCount: 0 },
+  { name: "Page 3", owner: "Bhuvaneshwari", industry: "Beauty & Wellness", month: "June 2026", status: "prospect", reason: "followup message replied saing he is held up", createdAt: "2026-06-18T17:00:00.000Z", followUpCount: 1 }
 ];
 
 export const PATCH_ACCOUNTS: Account[] = newDataRaw.map((a, i) => ({
