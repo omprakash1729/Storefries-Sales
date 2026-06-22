@@ -26,6 +26,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -339,9 +344,9 @@ function BniPage() {
   } = useStore();
 
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [mediumFilter, setMediumFilter] = useState<string>("all");
-  const [ownerFilter, setOwnerFilter] = useState<string>("all");
+  const [statusRules, setStatusRules] = useState<Record<string, "include" | "exclude">>({});
+  const [mediumRules, setMediumRules] = useState<Record<string, "include" | "exclude">>({});
+  const [ownerRules, setOwnerRules] = useState<Record<string, "include" | "exclude">>({});
   const [isEditMode, setIsEditMode] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [showImport, setShowImport] = useState(false);
@@ -361,10 +366,25 @@ function BniPage() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
+    
+    const toSets = (rules: Record<string, "include" | "exclude">) => ({
+      inc: new Set(Object.entries(rules).filter(([, m]) => m === "include").map(([k]) => k)),
+      exc: new Set(Object.entries(rules).filter(([, m]) => m === "exclude").map(([k]) => k)),
+    });
+    const status = toSets(statusRules);
+    const medium = toSets(mediumRules);
+    const owner = toSets(ownerRules);
+
     return bniContacts.filter((c) => {
-      if (statusFilter !== "all" && c.status !== statusFilter) return false;
-      if (mediumFilter !== "all" && c.medium !== mediumFilter) return false;
-      if (ownerFilter !== "all" && c.owner !== ownerFilter) return false;
+      if (status.inc.size > 0 && !status.inc.has(c.status)) return false;
+      if (status.exc.has(c.status)) return false;
+
+      if (medium.inc.size > 0 && (!c.medium || !medium.inc.has(c.medium))) return false;
+      if (c.medium && medium.exc.has(c.medium)) return false;
+
+      if (owner.inc.size > 0 && !owner.inc.has(c.owner)) return false;
+      if (owner.exc.has(c.owner)) return false;
+
       if (
         q &&
         !(
@@ -378,7 +398,7 @@ function BniPage() {
       }
       return true;
     });
-  }, [bniContacts, search, statusFilter, mediumFilter, ownerFilter]);
+  }, [bniContacts, search, statusRules, mediumRules, ownerRules]);
 
   const metrics = useMemo(() => {
     const m = {
@@ -400,7 +420,14 @@ function BniPage() {
   }, [bniContacts]);
 
   const handleToggleFilter = (status: string) => {
-    setStatusFilter((prev) => (prev === status ? "all" : status));
+    setStatusRules((prev) => {
+      if (prev[status] === "include") {
+        const next = { ...prev };
+        delete next[status];
+        return next;
+      }
+      return { ...prev, [status]: "include" };
+    });
   };
 
   const funnelData = {
@@ -588,8 +615,8 @@ function BniPage() {
           value={metrics.total}
           sub="Network audience"
           theme="indigo"
-          onClick={() => setStatusFilter("all")}
-          active={statusFilter === "all"}
+          onClick={() => setStatusRules({})}
+          active={Object.keys(statusRules).length === 0}
         />
         <KpiCard
           label="Reached Out"
@@ -598,7 +625,7 @@ function BniPage() {
           theme="violet"
           progress={(metrics.reached_out / Math.max(1, metrics.total)) * 100}
           onClick={() => handleToggleFilter("reached_out")}
-          active={statusFilter === "reached_out"}
+          active={statusRules["reached_out"] === "include"}
         />
         <KpiCard
           label="Medium Status"
@@ -607,7 +634,7 @@ function BniPage() {
           theme="slate"
           progress={(metrics.medium / Math.max(1, metrics.total)) * 100}
           onClick={() => handleToggleFilter("medium")}
-          active={statusFilter === "medium"}
+          active={statusRules["medium"] === "include"}
         />
         <KpiCard
           label="Read"
@@ -616,7 +643,7 @@ function BniPage() {
           theme="blue"
           progress={(metrics.read / Math.max(1, metrics.total)) * 100}
           onClick={() => handleToggleFilter("read")}
-          active={statusFilter === "read"}
+          active={statusRules["read"] === "include"}
         />
         <KpiCard
           label="Replied"
@@ -625,7 +652,7 @@ function BniPage() {
           theme="teal"
           progress={(metrics.replied / Math.max(1, metrics.total)) * 100}
           onClick={() => handleToggleFilter("replied")}
-          active={statusFilter === "replied"}
+          active={statusRules["replied"] === "include"}
         />
         <KpiCard
           label="Demo Booked"
@@ -634,7 +661,7 @@ function BniPage() {
           theme="amber"
           progress={(metrics.demo_booked / Math.max(1, metrics.total)) * 100}
           onClick={() => handleToggleFilter("demo_booked")}
-          active={statusFilter === "demo_booked"}
+          active={statusRules["demo_booked"] === "include"}
         />
         <KpiCard
           label="Conversion"
@@ -683,46 +710,162 @@ function BniPage() {
             />
           </div>
 
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="bg-amber-50/50 border border-amber-200 border-t-[3px] border-t-amber-500 text-amber-700 hover:bg-amber-100/50 transition-all">
-              <SelectValue placeholder="All Statuses" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              {STATUSES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {OUTREACH_STATUS_LABEL[s]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Per-status Include / Exclude Filter */}
+          {(() => {
+            const activeCount = Object.keys(statusRules).length;
+            const summaryParts = Object.entries(statusRules).map(([s, mode]) =>
+              `${mode === "exclude" ? "−" : "+"}${OUTREACH_STATUS_LABEL[s as OutreachStatus]}`
+            );
+            return (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal bg-amber-50/50 border border-amber-200 border-t-[3px] border-t-amber-500 hover:border-amber-300 hover:border-t-amber-600 hover:bg-amber-100/50 shadow-xs transition-all text-amber-700 h-9 px-3"
+                  >
+                    <span className="truncate flex-1 text-xs">
+                      {activeCount === 0 ? "All Statuses" : summaryParts.join(", ")}
+                    </span>
+                    {activeCount > 0 && (
+                      <div role="button" onClick={(e) => { e.stopPropagation(); setStatusRules({}); }} className="ml-1 p-0.5 hover:bg-amber-100 rounded-full">
+                        <X className="h-3 w-3 opacity-60 hover:opacity-100 text-amber-700" />
+                      </div>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-0 rounded-xl border border-slate-200 shadow-xl bg-white z-50" align="start">
+                  <div className="px-3.5 py-2.5 border-b border-slate-100 bg-slate-50/60">
+                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Filter by Status</p>
+                  </div>
+                  <div className="p-2 space-y-1">
+                    {STATUSES.map((s) => {
+                      const rule = statusRules[s];
+                      const setRule = (mode: "include" | "exclude" | null) => {
+                        setStatusRules((prev) => { const next = { ...prev }; if (mode === null) delete next[s]; else next[s] = mode; return next; });
+                      };
+                      return (
+                        <div key={s} className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all ${rule === "include" ? "bg-emerald-50" : rule === "exclude" ? "bg-rose-50" : "hover:bg-slate-50"}`}>
+                          <span className={`flex-1 text-xs font-semibold ${rule === "include" ? "text-emerald-700" : rule === "exclude" ? "text-rose-700" : "text-slate-600"}`}>{OUTREACH_STATUS_LABEL[s]}</span>
+                          <button onClick={() => setRule(rule === "include" ? null : "include")} className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${rule === "include" ? "bg-emerald-500 border-emerald-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50"}`}>Include</button>
+                          <button onClick={() => setRule(rule === "exclude" ? null : "exclude")} className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${rule === "exclude" ? "bg-rose-500 border-rose-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-rose-400 hover:text-rose-600 hover:bg-rose-50"}`}>Exclude</button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {activeCount > 0 && (
+                    <div className="px-2 pb-2">
+                      <button onClick={() => setStatusRules({})} className="w-full text-[10px] font-semibold text-slate-400 hover:text-slate-600 py-1 rounded hover:bg-slate-50 transition-all border border-dashed border-slate-200">Clear all</button>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
+            );
+          })()}
 
-          <Select value={mediumFilter} onValueChange={setMediumFilter}>
-            <SelectTrigger className="bg-blue-50/50 border border-blue-200 border-t-[3px] border-t-blue-500 text-blue-700 hover:bg-blue-100/50 transition-all">
-              <SelectValue placeholder="All Mediums" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Mediums</SelectItem>
-              <SelectItem value="LinkedIn">LinkedIn</SelectItem>
-              <SelectItem value="WhatsApp">WhatsApp</SelectItem>
-              <SelectItem value="Email">Email</SelectItem>
-              <SelectItem value="Call">Call</SelectItem>
-            </SelectContent>
-          </Select>
+          {/* Per-medium Include / Exclude Filter */}
+          {(() => {
+            const MEDIUMS = ["LinkedIn", "WhatsApp", "Email", "Call"];
+            const activeCount = Object.keys(mediumRules).length;
+            const summaryParts = Object.entries(mediumRules).map(([k, mode]) =>
+              `${mode === "exclude" ? "−" : "+"}${k}`
+            );
+            return (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal bg-blue-50/50 border border-blue-200 border-t-[3px] border-t-blue-500 hover:border-blue-300 hover:border-t-blue-600 hover:bg-blue-100/50 shadow-xs transition-all text-blue-700 h-9 px-3"
+                  >
+                    <span className="truncate flex-1 text-xs">
+                      {activeCount === 0 ? "All Mediums" : summaryParts.join(", ")}
+                    </span>
+                    {activeCount > 0 && (
+                      <div role="button" onClick={(e) => { e.stopPropagation(); setMediumRules({}); }} className="ml-1 p-0.5 hover:bg-blue-100 rounded-full">
+                        <X className="h-3 w-3 opacity-60 hover:opacity-100 text-blue-700" />
+                      </div>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-0 rounded-xl border border-slate-200 shadow-xl bg-white z-50" align="start">
+                  <div className="px-3.5 py-2.5 border-b border-slate-100 bg-slate-50/60">
+                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Filter by Medium</p>
+                  </div>
+                  <div className="p-2 space-y-1">
+                    {MEDIUMS.map((m) => {
+                      const rule = mediumRules[m];
+                      const setRule = (mode: "include" | "exclude" | null) => {
+                        setMediumRules((prev) => { const next = { ...prev }; if (mode === null) delete next[m]; else next[m] = mode; return next; });
+                      };
+                      return (
+                        <div key={m} className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all ${rule === "include" ? "bg-emerald-50" : rule === "exclude" ? "bg-rose-50" : "hover:bg-slate-50"}`}>
+                          <span className={`flex-1 text-xs font-semibold ${rule === "include" ? "text-emerald-700" : rule === "exclude" ? "text-rose-700" : "text-slate-600"}`}>{m}</span>
+                          <button onClick={() => setRule(rule === "include" ? null : "include")} className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${rule === "include" ? "bg-emerald-500 border-emerald-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50"}`}>Include</button>
+                          <button onClick={() => setRule(rule === "exclude" ? null : "exclude")} className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${rule === "exclude" ? "bg-rose-500 border-rose-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-rose-400 hover:text-rose-600 hover:bg-rose-50"}`}>Exclude</button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {activeCount > 0 && (
+                    <div className="px-2 pb-2">
+                      <button onClick={() => setMediumRules({})} className="w-full text-[10px] font-semibold text-slate-400 hover:text-slate-600 py-1 rounded hover:bg-slate-50 transition-all border border-dashed border-slate-200">Clear all</button>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
+            );
+          })()}
 
-          <Select value={ownerFilter} onValueChange={setOwnerFilter}>
-            <SelectTrigger className="bg-indigo-50/50 border border-indigo-200 border-t-[3px] border-t-indigo-500 text-indigo-700 hover:bg-indigo-100/50 transition-all">
-              <SelectValue placeholder="All Owners" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Owners</SelectItem>
-              {reps.map((r) => (
-                <SelectItem key={r.name} value={r.name}>
-                  {r.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Per-owner Include / Exclude Filter */}
+          {(() => {
+            const activeCount = Object.keys(ownerRules).length;
+            const summaryParts = Object.entries(ownerRules).map(([k, mode]) =>
+              `${mode === "exclude" ? "−" : "+"}${k}`
+            );
+            return (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal bg-indigo-50/50 border border-indigo-200 border-t-[3px] border-t-indigo-500 hover:border-indigo-300 hover:border-t-indigo-600 hover:bg-indigo-100/50 shadow-xs transition-all text-indigo-700 h-9 px-3"
+                  >
+                    <span className="truncate flex-1 text-xs">
+                      {activeCount === 0 ? "All Owners" : summaryParts.join(", ")}
+                    </span>
+                    {activeCount > 0 && (
+                      <div role="button" onClick={(e) => { e.stopPropagation(); setOwnerRules({}); }} className="ml-1 p-0.5 hover:bg-indigo-100 rounded-full">
+                        <X className="h-3 w-3 opacity-60 hover:opacity-100 text-indigo-700" />
+                      </div>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-0 rounded-xl border border-slate-200 shadow-xl bg-white z-50" align="start">
+                  <div className="px-3.5 py-2.5 border-b border-slate-100 bg-slate-50/60">
+                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Filter by Owner</p>
+                  </div>
+                  <div className="p-2 space-y-1 max-h-60 overflow-y-auto">
+                    {reps.map((r) => {
+                      const rule = ownerRules[r.name];
+                      const setRule = (mode: "include" | "exclude" | null) => {
+                        setOwnerRules((prev) => { const next = { ...prev }; if (mode === null) delete next[r.name]; else next[r.name] = mode; return next; });
+                      };
+                      return (
+                        <div key={r.name} className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all ${rule === "include" ? "bg-emerald-50" : rule === "exclude" ? "bg-rose-50" : "hover:bg-slate-50"}`}>
+                          <span className={`flex-1 text-xs font-semibold ${rule === "include" ? "text-emerald-700" : rule === "exclude" ? "text-rose-700" : "text-slate-600"}`}>{r.name}</span>
+                          <button onClick={() => setRule(rule === "include" ? null : "include")} className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${rule === "include" ? "bg-emerald-500 border-emerald-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50"}`}>Include</button>
+                          <button onClick={() => setRule(rule === "exclude" ? null : "exclude")} className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${rule === "exclude" ? "bg-rose-500 border-rose-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-rose-400 hover:text-rose-600 hover:bg-rose-50"}`}>Exclude</button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {activeCount > 0 && (
+                    <div className="px-2 pb-2">
+                      <button onClick={() => setOwnerRules({})} className="w-full text-[10px] font-semibold text-slate-400 hover:text-slate-600 py-1 rounded hover:bg-slate-50 transition-all border border-dashed border-slate-200">Clear all</button>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
+            );
+          })()}
         </div>
 
         {/* Data Table */}
