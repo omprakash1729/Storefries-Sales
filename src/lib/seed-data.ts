@@ -2701,6 +2701,51 @@ const newDataRaw = [
     createdAt: "2026-06-22T10:50:00.000Z",
     followUpCount: 0,
   },
+  {
+    name: "VST Motors",
+    owner: "Bhuvaneshwari",
+    industry: "Automotive",
+    month: "June 2026",
+    status: "new_lead",
+    reason: "did not pick the call",
+    createdAt: "2026-06-23T10:00:00.000Z",
+  },
+  {
+    name: "KUN Exclusive",
+    owner: "Bhuvaneshwari",
+    industry: "Automotive",
+    month: "June 2026",
+    status: "new_lead",
+    reason: "Dayanand - digital marketing - 9043722013 Share deck via whatsapp, followup call by 2pm . Tomorrow im litttle busy",
+    createdAt: "2026-06-23T10:00:00.000Z",
+  },
+  {
+    name: "asian Footwear pvt ltd",
+    owner: "Bhuvaneshwari",
+    industry: "Apparel & Footwear",
+    month: "June 2026",
+    status: "new_lead",
+    reason: "speaking with someone else",
+    createdAt: "2026-06-23T10:00:00.000Z",
+  },
+  {
+    name: "California Burrito",
+    owner: "Bhuvaneshwari",
+    industry: "Food & Beverage",
+    month: "June 2026",
+    status: "demo",
+    reason: "confirmed meeting by 10am on wednesday",
+    createdAt: "2026-06-23T10:00:00.000Z",
+  },
+  {
+    name: "Absolute Barbecue",
+    owner: "Bhuvaneshwari",
+    industry: "Food & Beverage",
+    month: "June 2026",
+    status: "new_lead",
+    reason: "Follow up message on Whatsapp did not pick the call",
+    createdAt: "2026-06-23T10:00:00.000Z",
+  }
 ];
 
 export const PATCH_ACCOUNTS: Account[] = newDataRaw.map((a, i) => ({
