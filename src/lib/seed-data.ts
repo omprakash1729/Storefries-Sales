@@ -4,6 +4,38 @@ type Seed = Omit<Account, "id"> & { status: AccountStatus };
 
 const raw: Seed[] = [
   {
+    name: "california burrito",
+    owner: "Bhuvaneshwari",
+    industry: "Food & Beverage",
+    month: "June 2026",
+    status: "demo",
+    reason: "Demo completed to kamsa",
+  },
+  {
+    name: "Aster Medcity",
+    owner: "Bhuvaneshwari",
+    industry: "Healthcare",
+    month: "June 2026",
+    status: "prospect",
+    reason: "Share deck through whatsapp to muhammad - 9809001690 - pitch deck shared",
+  },
+  {
+    name: "Geetham",
+    owner: "Bhuvaneshwari",
+    industry: "Food & Beverage",
+    month: "June 2026",
+    status: "prospect",
+    reason: "Prerecorded video sent",
+  },
+  {
+    name: "Cascad",
+    owner: "Bhuvaneshwari",
+    industry: "Other",
+    month: "June 2026",
+    status: "prospect",
+    reason: "Pre recorded video sent",
+  },
+  {
     name: "Adinn Advertising",
     owner: "Bhuvaneshwari",
     industry: "Digital Marketing",
