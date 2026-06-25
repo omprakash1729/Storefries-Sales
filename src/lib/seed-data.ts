@@ -10,6 +10,7 @@ const raw: Seed[] = [
     month: "June 2026",
     status: "demo",
     reason: "Demo completed to kamsa",
+    createdAt: "2026-06-24T10:00:00.000Z",
   },
   {
     name: "Aster Medcity",
@@ -18,6 +19,7 @@ const raw: Seed[] = [
     month: "June 2026",
     status: "prospect",
     reason: "Share deck through whatsapp to muhammad - 9809001690 - pitch deck shared",
+    createdAt: "2026-06-24T10:00:00.000Z",
   },
   {
     name: "Geetham",
@@ -26,6 +28,7 @@ const raw: Seed[] = [
     month: "June 2026",
     status: "prospect",
     reason: "Prerecorded video sent",
+    createdAt: "2026-06-24T10:00:00.000Z",
   },
   {
     name: "Cascad",
@@ -34,6 +37,7 @@ const raw: Seed[] = [
     month: "June 2026",
     status: "prospect",
     reason: "Pre recorded video sent",
+    createdAt: "2026-06-24T10:00:00.000Z",
   },
   {
     name: "Adinn Advertising",
