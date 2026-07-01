@@ -4,12 +4,114 @@ type Seed = Omit<Account, "id"> & { status: AccountStatus };
 
 const raw: Seed[] = [
   {
+    name: "Sparsh Hospital",
+    owner: "Bhuvaneshwari",
+    industry: "Healthcare",
+    month: "June 2026",
+    status: "prospect",
+    reason:
+      "visited website - spoke with srinivas he said the only way to connect is through mail with nawaz - sent followup mail to nawaz",
+    createdAt: "2026-06-30T10:00:00.000Z",
+  },
+  {
+    name: "Indira IVF",
+    owner: "Bhuvaneshwari",
+    industry: "Healthcare",
+    month: "June 2026",
+    status: "demo",
+    reason: "Prasoontomar meeting booked at 6.30 pm - 9044433270",
+    createdAt: "2026-06-30T10:05:00.000Z",
+  },
+  {
+    name: "Narayana Health",
+    owner: "Bhuvaneshwari",
+    industry: "Healthcare",
+    month: "June 2026",
+    status: "prospect",
+    reason:
+      "Ashutosh - 8422912155- called but did not speak - udit singh-9874573737 - we can connect on monday , will condirm availability thorugh whatsapp",
+    createdAt: "2026-06-30T10:10:00.000Z",
+  },
+  {
+    name: "Sakhiya Skin Clinic",
+    owner: "Bhuvaneshwari",
+    industry: "Healthcare",
+    month: "June 2026",
+    status: "prospect",
+    reason: "did not pick the call, need to call back later",
+    createdAt: "2026-06-30T10:15:00.000Z",
+  },
+  {
+    name: "Cloudnine",
+    owner: "Bhuvaneshwari",
+    industry: "Healthcare",
+    month: "June 2026",
+    status: "prospect",
+    reason: "called but no response, will try calling again after some time",
+    createdAt: "2026-06-30T10:20:00.000Z",
+  },
+  {
+    name: "Yatharth Hospitals",
+    owner: "Bhuvaneshwari",
+    industry: "Healthcare",
+    month: "June 2026",
+    status: "prospect",
+    reason: "did not answer, follow up later in the day",
+    createdAt: "2026-06-30T10:25:00.000Z",
+  },
+  {
+    name: "Dava India Pharmacy",
+    owner: "Bhuvaneshwari",
+    industry: "Healthcare",
+    month: "June 2026",
+    status: "prospect",
+    reason: "no response, call back after some time",
+    createdAt: "2026-06-30T10:30:00.000Z",
+  },
+  {
+    name: "Enamor",
+    owner: "Bhuvaneshwari",
+    industry: "Apparel & Footwear",
+    month: "June 2026",
+    status: "prospect",
+    reason: "did not pick up the call, try connecting later",
+    createdAt: "2026-06-30T10:35:00.000Z",
+  },
+  {
+    name: "Zivame",
+    owner: "Bhuvaneshwari",
+    industry: "Apparel & Footwear",
+    month: "June 2026",
+    status: "prospect",
+    reason: "call went unanswered, need to connect later",
+    createdAt: "2026-06-30T10:40:00.000Z",
+  },
+  {
+    name: "Neerus",
+    owner: "Bhuvaneshwari",
+    industry: "Apparel & Footwear",
+    month: "June 2026",
+    status: "prospect",
+    reason: "did not pick up, call back after some time",
+    createdAt: "2026-06-30T10:45:00.000Z",
+  },
+  {
+    name: "Kankatala",
+    owner: "Bhuvaneshwari",
+    industry: "Apparel & Footwear",
+    month: "June 2026",
+    status: "prospect",
+    reason: "no reply on the call, will retry after a short interval",
+    createdAt: "2026-06-30T10:50:00.000Z",
+  },
+  {
     name: "Aster Medcity",
     owner: "Bhuvaneshwari",
     industry: "Healthcare",
     month: "June 2026",
     status: "prospect",
-    reason: "followup message sent on whatsapp - he said will get back to you - Muhammad HOM 9809001690",
+    reason:
+      "followup message sent on whatsapp - he said will get back to you - Muhammad HOM 9809001690",
     createdAt: "2026-06-29T10:00:00.000Z",
   },
   {
@@ -27,7 +129,8 @@ const raw: Seed[] = [
     industry: "Food & Beverage",
     month: "June 2026",
     status: "prospect",
-    reason: "Follow message on whatsapp sent asking the update on pre recorded video sent earlier - did not pick my call - he himself called back again and cut the call after intro - Muthukumar - 9142000500",
+    reason:
+      "Follow message on whatsapp sent asking the update on pre recorded video sent earlier - did not pick my call - he himself called back again and cut the call after intro - Muthukumar - 9142000500",
     createdAt: "2026-06-29T10:00:00.000Z",
   },
   {
@@ -36,7 +139,8 @@ const raw: Seed[] = [
     industry: "Apparel & Footwear",
     month: "June 2026",
     status: "rejected",
-    reason: "Udayam 9029009916- Marketing Lead - no we are not looking for any product - sent pitch deck",
+    reason:
+      "Udayam 9029009916- Marketing Lead - no we are not looking for any product - sent pitch deck",
     createdAt: "2026-06-29T10:00:00.000Z",
   },
   {
@@ -45,7 +149,8 @@ const raw: Seed[] = [
     industry: "Apparel & Footwear",
     month: "June 2026",
     status: "prospect",
-    reason: "Jagadeesh Mng Partner 941032524- did not pick up , sent message on whatsapp , linkedin",
+    reason:
+      "Jagadeesh Mng Partner 941032524- did not pick up , sent message on whatsapp , linkedin",
     createdAt: "2026-06-29T10:00:00.000Z",
   },
   {
@@ -72,7 +177,8 @@ const raw: Seed[] = [
     industry: "Food & Beverage",
     month: "June 2026",
     status: "prospect",
-    reason: "whatsapp followup message sent - Ratheesh told to call diljit - 9645311333 diljit - did not pick the call",
+    reason:
+      "whatsapp followup message sent - Ratheesh told to call diljit - 9645311333 diljit - did not pick the call",
     createdAt: "2026-06-25T10:00:00.000Z",
   },
   {
@@ -117,7 +223,8 @@ const raw: Seed[] = [
     industry: "Food & Beverage",
     month: "June 2026",
     status: "prospect",
-    reason: "called madhapur branch and they told to call after 30 minutes - 8712990029 - picked but did not responded and cut",
+    reason:
+      "called madhapur branch and they told to call after 30 minutes - 8712990029 - picked but did not responded and cut",
     createdAt: "2026-06-25T10:00:00.000Z",
   },
   {
@@ -2887,7 +2994,8 @@ const newDataRaw = [
     industry: "Automotive",
     month: "June 2026",
     status: "new_lead",
-    reason: "Dayanand - digital marketing - 9043722013 Share deck via whatsapp, followup call by 2pm . Tomorrow im litttle busy",
+    reason:
+      "Dayanand - digital marketing - 9043722013 Share deck via whatsapp, followup call by 2pm . Tomorrow im litttle busy",
     createdAt: "2026-06-23T10:00:00.000Z",
   },
   {
@@ -2916,7 +3024,7 @@ const newDataRaw = [
     status: "new_lead",
     reason: "Follow up message on Whatsapp did not pick the call",
     createdAt: "2026-06-23T10:00:00.000Z",
-  }
+  },
 ];
 
 export const PATCH_ACCOUNTS: Account[] = newDataRaw.map((a, i) => ({

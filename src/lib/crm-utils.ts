@@ -13,19 +13,19 @@ const MONTH_ORDER = [
   "September 2026",
   "October 2026",
   "November 2026",
-  "December 2026"
+  "December 2026",
 ];
 
 export function getMonthRank(month: string): number {
   const index = MONTH_ORDER.indexOf(month.trim());
   if (index !== -1) return index;
-  
+
   // Fallback for custom months: try parsing year and month
   const match = month.match(/(\w+)\s+(\d{4})/);
   if (match) {
     const [_, mName, yName] = match;
     const yVal = parseInt(yName, 10);
-    const mVal = MONTH_ORDER.findIndex(o => o.startsWith(mName));
+    const mVal = MONTH_ORDER.findIndex((o) => o.startsWith(mName));
     return yVal * 12 + (mVal !== -1 ? mVal : 0);
   }
   return 0;
@@ -76,7 +76,7 @@ export function groupAccountsByCompany(accounts: Account[]): UniqueCompany[] {
       name: mostRecent.name, // keep correct capitalization
       industry: mostRecent.industry,
       mostRecent,
-      history: sorted
+      history: sorted,
     });
   }
 

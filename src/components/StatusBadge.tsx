@@ -26,7 +26,7 @@ export function StatusBadge({ status, className }: { status: AccountStatus; clas
       className={cn(
         "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wide whitespace-nowrap shadow-xs transition-colors duration-200",
         STYLES[status],
-        className
+        className,
       )}
     >
       <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", DOTS[status])} />

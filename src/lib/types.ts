@@ -1,4 +1,10 @@
-export type AccountStatus = "new_lead" | "prospect" | "demo" | "proposal_sent" | "trial" | "rejected";
+export type AccountStatus =
+  | "new_lead"
+  | "prospect"
+  | "demo"
+  | "proposal_sent"
+  | "trial"
+  | "rejected";
 
 export interface Account {
   id: string;
@@ -125,4 +131,3 @@ export const OUTREACH_STATUS_LABEL: Record<OutreachStatus, string> = {
   replied: "Replied",
   demo_booked: "Demo Booked",
 };
-

@@ -25,7 +25,6 @@ export default defineConfig(({ command }) => {
     react(),
   ];
 
-
   return {
     plugins,
     resolve: {

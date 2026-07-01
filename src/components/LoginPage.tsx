@@ -79,10 +79,10 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
         {/* Branding header */}
         <div className="text-center mb-8 animate-fade-in">
           <div className="inline-flex items-center justify-center p-3 mb-4 rounded-2xl bg-white/5 border border-white/10 shadow-xl backdrop-blur-md">
-            <img 
-              src="/app-logo.png" 
-              alt="Storefries Logo" 
-              className="h-16 w-auto rounded-xl object-contain bg-slate-900/50 p-1" 
+            <img
+              src="/app-logo.png"
+              alt="Storefries Logo"
+              className="h-16 w-auto rounded-xl object-contain bg-slate-900/50 p-1"
             />
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight text-white">Storefries Sales</h1>
@@ -90,7 +90,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
         </div>
 
         {/* Login Card */}
-        <div 
+        <div
           className={`w-full rounded-2xl border border-white/10 bg-slate-900/40 p-8 shadow-2xl backdrop-blur-xl transition-all duration-300 ${
             shake ? "animate-bounce" : ""
           }`}

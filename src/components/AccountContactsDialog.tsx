@@ -88,7 +88,7 @@ function EditCell({
             placeholder={placeholder}
             className={cn(
               "flex-1 text-xs px-2 py-1 rounded border border-primary/40 ring-2 ring-primary/10 bg-white text-slate-800 focus:outline-none resize-none",
-              className
+              className,
             )}
           />
         ) : (
@@ -100,7 +100,7 @@ function EditCell({
             placeholder={placeholder}
             className={cn(
               "flex-1 text-xs px-2 py-1 rounded border border-primary/40 ring-2 ring-primary/10 bg-white text-slate-800 focus:outline-none",
-              className
+              className,
             )}
           />
         )}
@@ -126,7 +126,7 @@ function EditCell({
       className={cn(
         "cursor-pointer text-xs px-1.5 py-1 rounded hover:bg-primary/5 hover:ring-1 ring-primary/20 transition-all min-h-[28px] flex items-center",
         !value && "text-slate-300 italic",
-        className
+        className,
       )}
       title="Click to edit"
     >
@@ -136,13 +136,7 @@ function EditCell({
 }
 
 // ─── Add Contact Form Row ─────────────────────────────────────────────────────
-function AddContactForm({
-  accountName,
-  onDone,
-}: {
-  accountName: string;
-  onDone: () => void;
-}) {
+function AddContactForm({ accountName, onDone }: { accountName: string; onDone: () => void }) {
   const addContact = useStore((s) => s.addContact);
   const [contactName, setContactName] = useState("");
   const [phone, setPhone] = useState("");
@@ -300,7 +294,11 @@ function ContactRow({
           />
           {contact.linkedin && (
             <a
-              href={contact.linkedin.startsWith("http") ? contact.linkedin : `https://${contact.linkedin}`}
+              href={
+                contact.linkedin.startsWith("http")
+                  ? contact.linkedin
+                  : `https://${contact.linkedin}`
+              }
               target="_blank"
               rel="noopener noreferrer"
               className="h-6 w-6 rounded flex items-center justify-center bg-sky-50 text-sky-600 hover:bg-sky-100 transition-colors shrink-0 ml-1"
@@ -361,7 +359,7 @@ export function AccountContactsDialog({ companyName, open, onOpenChange }: Props
   const [showAddForm, setShowAddForm] = useState(false);
 
   const companyContacts = contacts.filter(
-    (c) => c.accountName.toLowerCase() === companyName?.toLowerCase()
+    (c) => c.accountName.toLowerCase() === companyName?.toLowerCase(),
   );
 
   const handleClose = () => {
@@ -405,10 +403,7 @@ export function AccountContactsDialog({ companyName, open, onOpenChange }: Props
           {/* Add form */}
           {showAddForm && companyName && (
             <div className="p-6 border-b border-slate-100 bg-slate-50/40">
-              <AddContactForm
-                accountName={companyName}
-                onDone={() => setShowAddForm(false)}
-              />
+              <AddContactForm accountName={companyName} onDone={() => setShowAddForm(false)} />
             </div>
           )}
 
@@ -471,7 +466,8 @@ export function AccountContactsDialog({ companyName, open, onOpenChange }: Props
                 </div>
                 <p className="text-sm font-semibold text-slate-600 mb-1">No contacts added yet</p>
                 <p className="text-xs text-slate-400 mb-5 max-w-xs">
-                  Add contacts for this account — name, phone, designation, LinkedIn and individual remarks.
+                  Add contacts for this account — name, phone, designation, LinkedIn and individual
+                  remarks.
                 </p>
                 <Button
                   size="sm"

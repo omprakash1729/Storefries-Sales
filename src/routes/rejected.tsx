@@ -3,7 +3,14 @@ import { useMemo } from "react";
 import { useFilteredAccounts } from "@/lib/store";
 import { KpiCard, RepChip, RepAvatar } from "@/components/dashboard-utils";
 import { Bar } from "react-chartjs-2";
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Legend } from "chart.js";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
@@ -11,7 +18,10 @@ export const Route = createFileRoute("/rejected")({
   head: () => ({
     meta: [
       { title: "Rejected Accounts — Storefries Sales" },
-      { name: "description", content: "Analyze why leads were lost — by industry, rep, and reason." },
+      {
+        name: "description",
+        content: "Analyze why leads were lost — by industry, rep, and reason.",
+      },
     ],
   }),
   component: RejectedPage,
@@ -35,7 +45,9 @@ function RejectedPage() {
 
   const topReason = useMemo(() => {
     const m = new Map<string, number>();
-    rejected.forEach((a) => { if (a.reason) m.set(a.reason, (m.get(a.reason) ?? 0) + 1); });
+    rejected.forEach((a) => {
+      if (a.reason) m.set(a.reason, (m.get(a.reason) ?? 0) + 1);
+    });
     const top = Array.from(m.entries()).sort((a, b) => b[1] - a[1])[0];
     return top?.[0] ?? "—";
   }, [rejected]);
@@ -44,14 +56,29 @@ function RejectedPage() {
     <div className="mx-auto max-w-7xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Rejected Accounts</h1>
-        <p className="text-sm text-muted-foreground">Analyze lost leads to refine outbound strategy.</p>
+        <p className="text-sm text-muted-foreground">
+          Analyze lost leads to refine outbound strategy.
+        </p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard label="Total Rejections" value={rejected.length} theme="rose" />
-        <KpiCard label="Top Industry" value={byIndustry[0]?.[0] ?? "—"} sub={byIndustry[0] ? `${byIndustry[0][1]} accounts` : ""} theme="blue" />
-        <KpiCard label="Top Remark" value={topReason.length > 30 ? topReason.slice(0, 30) + "…" : topReason} theme="slate" />
-        <KpiCard label="Rejection Rate" value={`${all.length ? Math.round((rejected.length / all.length) * 1000) / 10 : 0}%`} theme="brand" />
+        <KpiCard
+          label="Top Industry"
+          value={byIndustry[0]?.[0] ?? "—"}
+          sub={byIndustry[0] ? `${byIndustry[0][1]} accounts` : ""}
+          theme="blue"
+        />
+        <KpiCard
+          label="Top Remark"
+          value={topReason.length > 30 ? topReason.slice(0, 30) + "…" : topReason}
+          theme="slate"
+        />
+        <KpiCard
+          label="Rejection Rate"
+          value={`${all.length ? Math.round((rejected.length / all.length) * 1000) / 10 : 0}%`}
+          theme="brand"
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -61,9 +88,21 @@ function RejectedPage() {
             <Bar
               data={{
                 labels: byIndustry.map((b) => b[0]),
-                datasets: [{ label: "Rejected", data: byIndustry.map((b) => b[1]), backgroundColor: "#f43f5e", borderRadius: 6 }],
+                datasets: [
+                  {
+                    label: "Rejected",
+                    data: byIndustry.map((b) => b[1]),
+                    backgroundColor: "#f43f5e",
+                    borderRadius: 6,
+                  },
+                ],
               }}
-              options={{ indexAxis: "y", responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }}
+              options={{
+                indexAxis: "y",
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+              }}
             />
           </div>
         </section>
@@ -74,12 +113,17 @@ function RejectedPage() {
               <li key={owner} className="flex items-center gap-3">
                 <RepChip name={owner} />
                 <div className="ml-auto h-1.5 w-40 overflow-hidden rounded-full bg-muted">
-                  <div className="h-full rounded-full bg-rose-400" style={{ width: `${(count / Math.max(...byOwner.map((b) => b[1]))) * 100}%` }} />
+                  <div
+                    className="h-full rounded-full bg-rose-400"
+                    style={{ width: `${(count / Math.max(...byOwner.map((b) => b[1]))) * 100}%` }}
+                  />
                 </div>
                 <span className="w-8 text-right text-sm font-semibold">{count}</span>
               </li>
             ))}
-            {byOwner.length === 0 && <li className="text-sm text-muted-foreground">No rejections.</li>}
+            {byOwner.length === 0 && (
+              <li className="text-sm text-muted-foreground">No rejections.</li>
+            )}
           </ul>
         </section>
       </div>
@@ -115,7 +159,11 @@ function RejectedPage() {
                 </tr>
               ))}
               {rejected.length === 0 && (
-                <tr><td colSpan={5} className="px-4 py-12 text-center text-sm text-muted-foreground">No rejected accounts.</td></tr>
+                <tr>
+                  <td colSpan={5} className="px-4 py-12 text-center text-sm text-muted-foreground">
+                    No rejected accounts.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>

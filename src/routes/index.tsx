@@ -1,15 +1,34 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useFilteredAccounts, useStore } from "@/lib/store";
-import { KpiCard, useMetrics, RepAvatar, RepChip, RepAvatarMini, computeMetrics } from "@/components/dashboard-utils";
+import {
+  KpiCard,
+  useMetrics,
+  RepAvatar,
+  RepChip,
+  RepAvatarMini,
+  computeMetrics,
+} from "@/components/dashboard-utils";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Bar } from "react-chartjs-2";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { groupAccountsByCompany, UniqueCompany } from "@/lib/crm-utils";
 import type { AccountStatus } from "@/lib/types";
 import {
-  Chart as ChartJS, CategoryScale, LinearScale, BarElement,
-  Title, Tooltip, Legend, ArcElement,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
 } from "chart.js";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
@@ -18,7 +37,10 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Dashboard — Storefries Sales" },
-      { name: "description", content: "Cold calling sales pipeline overview, KPIs, funnel and rep performance." },
+      {
+        name: "description",
+        content: "Cold calling sales pipeline overview, KPIs, funnel and rep performance.",
+      },
     ],
   }),
   component: Dashboard,
@@ -40,14 +62,14 @@ function Dashboard() {
   const filteredUniqueCompanies = useMemo(() => {
     if (statusFilter === "all") return uniqueCompanies;
     return uniqueCompanies.filter((uc) => {
-      const historyStatuses = new Set(uc.history.map(h => h.status));
-      
+      const historyStatuses = new Set(uc.history.map((h) => h.status));
+
       // ⛔ EXCLUSIONARY RULE: Parity with counting engine. A rejected company shouldn't be listed in early-funnel filters.
       if (historyStatuses.has("rejected")) {
         historyStatuses.delete("prospect");
         historyStatuses.delete("new_lead");
       }
-      
+
       return historyStatuses.has(statusFilter as any);
     });
   }, [uniqueCompanies, statusFilter]);
@@ -77,13 +99,15 @@ function Dashboard() {
 
   const funnelData = {
     labels: ["New Lead", "Prospect", "Demo", "Proposal", "Trial", "Rejected"],
-    datasets: [{
-      label: "Accounts",
-      data: [m.new_lead, m.prospect, m.demo, m.proposal_sent, m.trial, m.rejected],
-      backgroundColor: ["#8b5cf6", "#94a3b8", "#0073c8", "#14b8a6", "#f59e0b", "#f43f5e"],
-      borderRadius: 8,
-      borderWidth: 0,
-    }],
+    datasets: [
+      {
+        label: "Accounts",
+        data: [m.new_lead, m.prospect, m.demo, m.proposal_sent, m.trial, m.rejected],
+        backgroundColor: ["#8b5cf6", "#94a3b8", "#0073c8", "#14b8a6", "#f59e0b", "#f43f5e"],
+        borderRadius: 8,
+        borderWidth: 0,
+      },
+    ],
   };
 
   return (
@@ -92,25 +116,87 @@ function Dashboard() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Sales Intelligence Hub</h1>
           <p className="text-sm text-muted-foreground">
-            {globalMonths.length === 0 
-              ? "All months" 
-              : globalMonths.length === 1 
-                ? globalMonths[0] 
-                : `${globalMonths.length} Months selected`} · {m.total} accounts
+            {globalMonths.length === 0
+              ? "All months"
+              : globalMonths.length === 1
+                ? globalMonths[0]
+                : `${globalMonths.length} Months selected`}{" "}
+            · {m.total} accounts
           </p>
         </div>
       </div>
 
       {/* KPI strip */}
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-8 gap-3">
-        <KpiCard label="Total Accounts" value={m.total} sub="Active pipeline" theme="indigo" onClick={() => setStatusFilter("all")} active={statusFilter === "all"} />
-        <KpiCard label="New Leads" value={m.new_lead} sub="Initial outreach" theme="violet" progress={(m.new_lead / Math.max(1, m.total)) * 100} onClick={() => handleToggleFilter("new_lead")} active={statusFilter === "new_lead"} />
-        <KpiCard label="Prospects" value={m.prospect} sub="In pipeline" theme="slate" progress={(m.prospect / Math.max(1, m.total)) * 100} onClick={() => handleToggleFilter("prospect")} active={statusFilter === "prospect"} />
-        <KpiCard label="Demos" value={m.demo} sub="Demos attended" theme="blue" progress={(m.demo / Math.max(1, m.total)) * 100} onClick={() => handleToggleFilter("demo")} active={statusFilter === "demo"} />
-        <KpiCard label="Proposals" value={m.proposal_sent} sub="Offers sent" theme="teal" progress={(m.proposal_sent / Math.max(1, m.total)) * 100} onClick={() => handleToggleFilter("proposal_sent")} active={statusFilter === "proposal_sent"} />
-        <KpiCard label="Trials" value={m.trial} sub="Trials started" theme="amber" progress={(m.trial / Math.max(1, m.total)) * 100} onClick={() => handleToggleFilter("trial")} active={statusFilter === "trial"} />
-        <KpiCard label="Rejected" value={m.rejected} sub="Lost leads" theme="rose" progress={(m.rejected / Math.max(1, m.total)) * 100} onClick={() => handleToggleFilter("rejected")} active={statusFilter === "rejected"} />
-        <KpiCard label="Conversion" value={`${m.conversion}%`} sub="Demo + Trial rate" theme="brand" progress={m.conversion} />
+        <KpiCard
+          label="Total Accounts"
+          value={m.total}
+          sub="Active pipeline"
+          theme="indigo"
+          onClick={() => setStatusFilter("all")}
+          active={statusFilter === "all"}
+        />
+        <KpiCard
+          label="New Leads"
+          value={m.new_lead}
+          sub="Initial outreach"
+          theme="violet"
+          progress={(m.new_lead / Math.max(1, m.total)) * 100}
+          onClick={() => handleToggleFilter("new_lead")}
+          active={statusFilter === "new_lead"}
+        />
+        <KpiCard
+          label="Prospects"
+          value={m.prospect}
+          sub="In pipeline"
+          theme="slate"
+          progress={(m.prospect / Math.max(1, m.total)) * 100}
+          onClick={() => handleToggleFilter("prospect")}
+          active={statusFilter === "prospect"}
+        />
+        <KpiCard
+          label="Demos"
+          value={m.demo}
+          sub="Demos attended"
+          theme="blue"
+          progress={(m.demo / Math.max(1, m.total)) * 100}
+          onClick={() => handleToggleFilter("demo")}
+          active={statusFilter === "demo"}
+        />
+        <KpiCard
+          label="Proposals"
+          value={m.proposal_sent}
+          sub="Offers sent"
+          theme="teal"
+          progress={(m.proposal_sent / Math.max(1, m.total)) * 100}
+          onClick={() => handleToggleFilter("proposal_sent")}
+          active={statusFilter === "proposal_sent"}
+        />
+        <KpiCard
+          label="Trials"
+          value={m.trial}
+          sub="Trials started"
+          theme="amber"
+          progress={(m.trial / Math.max(1, m.total)) * 100}
+          onClick={() => handleToggleFilter("trial")}
+          active={statusFilter === "trial"}
+        />
+        <KpiCard
+          label="Rejected"
+          value={m.rejected}
+          sub="Lost leads"
+          theme="rose"
+          progress={(m.rejected / Math.max(1, m.total)) * 100}
+          onClick={() => handleToggleFilter("rejected")}
+          active={statusFilter === "rejected"}
+        />
+        <KpiCard
+          label="Conversion"
+          value={`${m.conversion}%`}
+          sub="Demo + Trial rate"
+          theme="brand"
+          progress={m.conversion}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -118,7 +204,9 @@ function Dashboard() {
         <section className="lg:col-span-2 rounded-xl border bg-card p-5 shadow-card">
           <header className="mb-3">
             <h2 className="text-lg font-semibold">Conversion Funnel</h2>
-            <p className="text-xs text-muted-foreground">New Lead → Prospect → Demo → Proposal → Trial</p>
+            <p className="text-xs text-muted-foreground">
+              New Lead → Prospect → Demo → Proposal → Trial
+            </p>
           </header>
           <div className="h-72">
             <Bar
@@ -128,7 +216,10 @@ function Dashboard() {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
-                scales: { x: { beginAtZero: true, grid: { color: "#f1f5f9" } }, y: { grid: { display: false } } },
+                scales: {
+                  x: { beginAtZero: true, grid: { color: "#f1f5f9" } },
+                  y: { grid: { display: false } },
+                },
               }}
             />
           </div>
@@ -139,7 +230,10 @@ function Dashboard() {
               { l: "Trial", v: m.trial, c: "bg-amber-500" },
               { l: "Rejected", v: m.rejected, c: "bg-rose-500" },
             ].map((s) => (
-              <div key={s.l} className="flex items-center gap-2 rounded-md border bg-background px-2 py-1.5">
+              <div
+                key={s.l}
+                className="flex items-center gap-2 rounded-md border bg-background px-2 py-1.5"
+              >
                 <span className={`h-2 w-2 rounded-full ${s.c}`} />
                 <span className="text-muted-foreground">{s.l}</span>
                 <span className="ml-auto font-semibold">{s.v}</span>
@@ -160,16 +254,23 @@ function Dashboard() {
                   <RepAvatar name={rep.name} />
                   <div className="flex-1">
                     <div className="text-sm font-medium leading-tight">{rep.name}</div>
-                    <div className="text-[11px] text-muted-foreground">{total} accounts · {demo} demo · {trial} trial · {rejected} rej</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {total} accounts · {demo} demo · {trial} trial · {rejected} rej
+                    </div>
                   </div>
                   <div className="text-sm font-bold text-gradient-brand">{conversion}%</div>
                 </div>
                 <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                  <div className="h-full rounded-full bg-gradient-brand" style={{ width: `${Math.min(100, conversion * 2)}%` }} />
+                  <div
+                    className="h-full rounded-full bg-gradient-brand"
+                    style={{ width: `${Math.min(100, conversion * 2)}%` }}
+                  />
                 </div>
               </div>
             ))}
-            {repStats.length === 0 && <div className="text-sm text-muted-foreground">No reps yet.</div>}
+            {repStats.length === 0 && (
+              <div className="text-sm text-muted-foreground">No reps yet.</div>
+            )}
           </div>
         </section>
       </div>
@@ -186,20 +287,35 @@ function Dashboard() {
                 </span>
               )}
             </h2>
-            <p className="text-xs text-muted-foreground/90">Pipeline volume grouped by industry verticals</p>
+            <p className="text-xs text-muted-foreground/90">
+              Pipeline volume grouped by industry verticals
+            </p>
           </div>
           {statusFilter !== "all" && (
-            <button onClick={() => setStatusFilter("all")} className="text-xs font-semibold text-primary hover:underline bg-primary/5 px-2.5 py-1 rounded-lg transition">
+            <button
+              onClick={() => setStatusFilter("all")}
+              className="text-xs font-semibold text-primary hover:underline bg-primary/5 px-2.5 py-1 rounded-lg transition"
+            >
               Reset Filter
             </button>
           )}
         </header>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {byIndustry.map(([industry, list]) => (
-            <div key={industry} className="group rounded-xl border border-slate-100/80 bg-white p-3.5 shadow-xs hover:shadow-md hover:border-slate-200/80 transition-all duration-300 hover:-translate-y-0.5">
+            <div
+              key={industry}
+              className="group rounded-xl border border-slate-100/80 bg-white p-3.5 shadow-xs hover:shadow-md hover:border-slate-200/80 transition-all duration-300 hover:-translate-y-0.5"
+            >
               <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-100">
-                <h3 className="text-xs font-bold text-slate-800 truncate group-hover:text-primary transition-colors" title={industry}>{industry}</h3>
-                <span className="rounded-full bg-gradient-soft text-primary px-2 py-0.5 text-[10px] font-extrabold">{list.length}</span>
+                <h3
+                  className="text-xs font-bold text-slate-800 truncate group-hover:text-primary transition-colors"
+                  title={industry}
+                >
+                  {industry}
+                </h3>
+                <span className="rounded-full bg-gradient-soft text-primary px-2 py-0.5 text-[10px] font-extrabold">
+                  {list.length}
+                </span>
               </div>
               <ul className="mt-2.5 space-y-1 max-h-48 overflow-y-auto pr-1">
                 {list.slice(0, 50).map((uc) => (
@@ -208,14 +324,21 @@ function Dashboard() {
                     onClick={() => setActiveCompanyTimeline(uc.name)}
                     className="flex items-center justify-between gap-2.5 text-xs py-1 px-1.5 rounded-lg hover:bg-indigo-50/50 cursor-pointer transition-colors duration-150 group/item"
                   >
-                    <span className="font-semibold text-slate-700 truncate max-w-[130px] group-hover/item:text-primary" title={uc.name}>
+                    <span
+                      className="font-semibold text-slate-700 truncate max-w-[130px] group-hover/item:text-primary"
+                      title={uc.name}
+                    >
                       {uc.name}
                     </span>
                     <div className="flex items-center gap-1.5 shrink-0 ml-auto">
                       <RepAvatarMini name={uc.mostRecent.owner} />
-                      <StatusBadge 
-                        status={(statusFilter !== "all" ? statusFilter : uc.mostRecent.status) as AccountStatus} 
-                        className="text-[9px] px-1.5 py-0" 
+                      <StatusBadge
+                        status={
+                          (statusFilter !== "all"
+                            ? statusFilter
+                            : uc.mostRecent.status) as AccountStatus
+                        }
+                        className="text-[9px] px-1.5 py-0"
                       />
                     </div>
                   </li>

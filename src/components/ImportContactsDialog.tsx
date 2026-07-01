@@ -47,11 +47,31 @@ interface FieldMapping {
 }
 
 const TARGET_FIELDS = [
-  { key: "accountName", label: "Account / Company Name *", required: true, desc: "Required to link the contact to a company." },
-  { key: "contactName", label: "Contact Name *", required: true, desc: "Required name of the contact person." },
+  {
+    key: "accountName",
+    label: "Account / Company Name *",
+    required: true,
+    desc: "Required to link the contact to a company.",
+  },
+  {
+    key: "contactName",
+    label: "Contact Name *",
+    required: true,
+    desc: "Required name of the contact person.",
+  },
   { key: "phone", label: "Phone Number", required: false, desc: "Optional phone number." },
-  { key: "designation", label: "Designation", required: false, desc: "Optional job title or role." },
-  { key: "linkedin", label: "LinkedIn URL", required: false, desc: "Optional link to LinkedIn profile." },
+  {
+    key: "designation",
+    label: "Designation",
+    required: false,
+    desc: "Optional job title or role.",
+  },
+  {
+    key: "linkedin",
+    label: "LinkedIn URL",
+    required: false,
+    desc: "Optional link to LinkedIn profile.",
+  },
   { key: "remark", label: "Remark", required: false, desc: "Optional notes or personal remarks." },
 ] as const;
 
@@ -104,7 +124,7 @@ export function ImportContactsDialog({ open, onOpenChange }: Props) {
         const workbook = XLSX.read(data, { type: "binary" });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
-        
+
         // Parse rows as raw arrays (header: 1)
         const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as any[][];
         if (rows.length < 2) {
@@ -112,7 +132,7 @@ export function ImportContactsDialog({ open, onOpenChange }: Props) {
           return;
         }
 
-        const parsedHeaders = rows[0].map(h => String(h || "").trim()).filter(Boolean);
+        const parsedHeaders = rows[0].map((h) => String(h || "").trim()).filter(Boolean);
         if (parsedHeaders.length === 0) {
           toast.error("No valid column headers detected in the first row.");
           return;
@@ -123,30 +143,75 @@ export function ImportContactsDialog({ open, onOpenChange }: Props) {
 
         // Auto-mapping logic
         const initialMapping = { ...mapping };
-        
+
         parsedHeaders.forEach((header) => {
           const hLower = header.toLowerCase();
-          
-          if (!initialMapping.accountName && (hLower.includes("account") || hLower.includes("company") || hLower.includes("organisation") || hLower.includes("organization") || hLower.includes("firm") || hLower.includes("business"))) {
+
+          if (
+            !initialMapping.accountName &&
+            (hLower.includes("account") ||
+              hLower.includes("company") ||
+              hLower.includes("organisation") ||
+              hLower.includes("organization") ||
+              hLower.includes("firm") ||
+              hLower.includes("business"))
+          ) {
             initialMapping.accountName = header;
           }
-          if (!initialMapping.contactName && (hLower.includes("contact") || hLower.includes("name") || hLower.includes("person") || hLower.includes("lead"))) {
+          if (
+            !initialMapping.contactName &&
+            (hLower.includes("contact") ||
+              hLower.includes("name") ||
+              hLower.includes("person") ||
+              hLower.includes("lead"))
+          ) {
             if (hLower !== "company name" && hLower !== "account name") {
               initialMapping.contactName = header;
             }
           }
-          if (!initialMapping.phone && (hLower.includes("phone") || hLower.includes("mobile") || hLower.includes("number") || hLower.includes("tel") || hLower.includes("contact number") || hLower.includes("telephone"))) {
+          if (
+            !initialMapping.phone &&
+            (hLower.includes("phone") ||
+              hLower.includes("mobile") ||
+              hLower.includes("number") ||
+              hLower.includes("tel") ||
+              hLower.includes("contact number") ||
+              hLower.includes("telephone"))
+          ) {
             initialMapping.phone = header;
           }
-          if (!initialMapping.designation && (hLower.includes("designation") || hLower.includes("role") || hLower.includes("title") || hLower.includes("job") || hLower.includes("position") || hLower.includes("post"))) {
+          if (
+            !initialMapping.designation &&
+            (hLower.includes("designation") ||
+              hLower.includes("role") ||
+              hLower.includes("title") ||
+              hLower.includes("job") ||
+              hLower.includes("position") ||
+              hLower.includes("post"))
+          ) {
             initialMapping.designation = header;
           }
-          if (!initialMapping.linkedin && (hLower.includes("linkedin") || hLower.includes("profile") || hLower.includes("social") || hLower.includes("url") || hLower.includes("link"))) {
+          if (
+            !initialMapping.linkedin &&
+            (hLower.includes("linkedin") ||
+              hLower.includes("profile") ||
+              hLower.includes("social") ||
+              hLower.includes("url") ||
+              hLower.includes("link"))
+          ) {
             if (hLower.includes("linkedin")) {
               initialMapping.linkedin = header;
             }
           }
-          if (!initialMapping.remark && (hLower.includes("remark") || hLower.includes("note") || hLower.includes("comment") || hLower.includes("info") || hLower.includes("description") || hLower.includes("detail"))) {
+          if (
+            !initialMapping.remark &&
+            (hLower.includes("remark") ||
+              hLower.includes("note") ||
+              hLower.includes("comment") ||
+              hLower.includes("info") ||
+              hLower.includes("description") ||
+              hLower.includes("detail"))
+          ) {
             initialMapping.remark = header;
           }
         });
@@ -175,16 +240,23 @@ export function ImportContactsDialog({ open, onOpenChange }: Props) {
       .map((row) => {
         const accountName = String(row[accountHeaderIndex] || "").trim();
         const contactName = String(row[contactHeaderIndex] || "").trim();
-        
+
         if (!accountName || !contactName) return null;
 
         return {
           accountName,
           contactName,
           phone: phoneIndex !== -1 && row[phoneIndex] ? String(row[phoneIndex]).trim() : undefined,
-          designation: designationIndex !== -1 && row[designationIndex] ? String(row[designationIndex]).trim() : undefined,
-          linkedin: linkedinIndex !== -1 && row[linkedinIndex] ? String(row[linkedinIndex]).trim() : undefined,
-          remark: remarkIndex !== -1 && row[remarkIndex] ? String(row[remarkIndex]).trim() : undefined,
+          designation:
+            designationIndex !== -1 && row[designationIndex]
+              ? String(row[designationIndex]).trim()
+              : undefined,
+          linkedin:
+            linkedinIndex !== -1 && row[linkedinIndex]
+              ? String(row[linkedinIndex]).trim()
+              : undefined,
+          remark:
+            remarkIndex !== -1 && row[remarkIndex] ? String(row[remarkIndex]).trim() : undefined,
         };
       })
       .filter((c): c is NonNullable<typeof c> => c !== null);
@@ -230,7 +302,7 @@ export function ImportContactsDialog({ open, onOpenChange }: Props) {
         {/* STEP 1: Upload File */}
         {step === "upload" && (
           <div className="py-8 space-y-6">
-            <div 
+            <div
               onClick={() => fileInputRef.current?.click()}
               className="border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-2xl p-10 text-center bg-slate-50/50 hover:bg-indigo-50/10 transition-all cursor-pointer flex flex-col items-center justify-center group"
             >
@@ -245,7 +317,9 @@ export function ImportContactsDialog({ open, onOpenChange }: Props) {
                 <Upload className="h-7 w-7" />
               </div>
               <p className="text-sm font-bold text-slate-700">Click to upload file</p>
-              <p className="text-xs text-slate-400 mt-1.5">Supports CSV, Excel (.xlsx, .xls) up to 10MB</p>
+              <p className="text-xs text-slate-400 mt-1.5">
+                Supports CSV, Excel (.xlsx, .xls) up to 10MB
+              </p>
             </div>
           </div>
         )}
@@ -255,10 +329,14 @@ export function ImportContactsDialog({ open, onOpenChange }: Props) {
           <div className="py-6 space-y-6">
             <div className="p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl flex items-center justify-between text-xs text-indigo-950">
               <span className="font-semibold flex items-center gap-1.5">
-                <FileSpreadsheet className="h-4 w-4 text-indigo-500" /> Loaded file: <span className="font-bold underline">{fileName}</span>
+                <FileSpreadsheet className="h-4 w-4 text-indigo-500" /> Loaded file:{" "}
+                <span className="font-bold underline">{fileName}</span>
               </span>
-              <button 
-                onClick={() => { setStep("upload"); setFileName(""); }}
+              <button
+                onClick={() => {
+                  setStep("upload");
+                  setFileName("");
+                }}
                 className="text-indigo-600 hover:text-indigo-800 font-bold"
               >
                 Change File
@@ -266,7 +344,9 @@ export function ImportContactsDialog({ open, onOpenChange }: Props) {
             </div>
 
             <div className="space-y-4">
-              <h3 className="font-bold text-slate-800 text-sm border-b border-slate-50 pb-2">Map Column Names</h3>
+              <h3 className="font-bold text-slate-800 text-sm border-b border-slate-50 pb-2">
+                Map Column Names
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {TARGET_FIELDS.map((field) => (
                   <div key={field.key} className="space-y-1.5">
@@ -275,15 +355,23 @@ export function ImportContactsDialog({ open, onOpenChange }: Props) {
                     </Label>
                     <Select
                       value={mapping[field.key as keyof FieldMapping]}
-                      onValueChange={(val) => setMapping({ ...mapping, [field.key]: val === "none" ? "" : val })}
+                      onValueChange={(val) =>
+                        setMapping({ ...mapping, [field.key]: val === "none" ? "" : val })
+                      }
                     >
                       <SelectTrigger className="h-10 text-xs">
                         <SelectValue placeholder="Select column matching field..." />
                       </SelectTrigger>
                       <SelectContent>
-                        {!field.required && <SelectItem value="none" className="text-slate-400 italic">Do not map</SelectItem>}
+                        {!field.required && (
+                          <SelectItem value="none" className="text-slate-400 italic">
+                            Do not map
+                          </SelectItem>
+                        )}
                         {headers.map((h) => (
-                          <SelectItem key={h} value={h}>{h}</SelectItem>
+                          <SelectItem key={h} value={h}>
+                            {h}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -298,41 +386,66 @@ export function ImportContactsDialog({ open, onOpenChange }: Props) {
         {/* STEP 3: Preview & Verify */}
         {step === "preview" && (
           <div className="py-6 space-y-6">
-            <h3 className="font-bold text-slate-800 text-sm border-b border-slate-50 pb-2">Import Verification Summary</h3>
-            
+            <h3 className="font-bold text-slate-800 text-sm border-b border-slate-50 pb-2">
+              Import Verification Summary
+            </h3>
+
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center gap-3">
                 <CheckCircle2 className="h-8 w-8 text-emerald-500 shrink-0" />
                 <div>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase">Contacts to Import</div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase">
+                    Contacts to Import
+                  </div>
                   <div className="text-xl font-extrabold text-slate-800">{mapped.length}</div>
                 </div>
               </div>
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center gap-3">
                 <FileSpreadsheet className="h-8 w-8 text-indigo-500 shrink-0" />
                 <div>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase">Target Accounts</div>
-                  <div className="text-xl font-extrabold text-slate-800">{uniqueImportAccounts.length}</div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase">
+                    Target Accounts
+                  </div>
+                  <div className="text-xl font-extrabold text-slate-800">
+                    {uniqueImportAccounts.length}
+                  </div>
                 </div>
               </div>
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center gap-3">
-                <AlertCircle className={cn("h-8 w-8 shrink-0", missingAccounts.length > 0 ? "text-amber-500" : "text-slate-400")} />
+                <AlertCircle
+                  className={cn(
+                    "h-8 w-8 shrink-0",
+                    missingAccounts.length > 0 ? "text-amber-500" : "text-slate-400",
+                  )}
+                />
                 <div>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase">New Accounts Created</div>
-                  <div className="text-xl font-extrabold text-slate-800">{missingAccounts.length}</div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase">
+                    New Accounts Created
+                  </div>
+                  <div className="text-xl font-extrabold text-slate-800">
+                    {missingAccounts.length}
+                  </div>
                 </div>
               </div>
             </div>
 
             {missingAccounts.length > 0 && (
               <div className="p-4 rounded-xl border border-amber-100 bg-amber-50/30 text-xs text-amber-800 space-y-1">
-                <p className="font-bold flex items-center gap-1.5"><AlertCircle className="h-4 w-4 text-amber-500" /> Auto-creating {missingAccounts.length} Accounts</p>
-                <p className="text-amber-700">The following company names were not found in your accounts list and will be automatically created: <strong>{missingAccounts.join(", ")}</strong>.</p>
+                <p className="font-bold flex items-center gap-1.5">
+                  <AlertCircle className="h-4 w-4 text-amber-500" /> Auto-creating{" "}
+                  {missingAccounts.length} Accounts
+                </p>
+                <p className="text-amber-700">
+                  The following company names were not found in your accounts list and will be
+                  automatically created: <strong>{missingAccounts.join(", ")}</strong>.
+                </p>
               </div>
             )}
 
             <div className="space-y-3">
-              <Label className="text-xs font-bold text-slate-700">Data Preview (First 5 Rows)</Label>
+              <Label className="text-xs font-bold text-slate-700">
+                Data Preview (First 5 Rows)
+              </Label>
               <div className="overflow-x-auto border border-slate-200/60 rounded-xl shadow-3xs">
                 <table className="w-full text-xs text-left border-collapse">
                   <thead className="bg-slate-50 border-b border-slate-200/80 text-[10px] font-bold uppercase tracking-wider text-slate-500">
@@ -352,8 +465,12 @@ export function ImportContactsDialog({ open, onOpenChange }: Props) {
                         <td className="px-4 py-3 font-bold text-slate-800">{c.contactName}</td>
                         <td className="px-4 py-3 text-slate-500">{c.phone || "—"}</td>
                         <td className="px-4 py-3 text-slate-500">{c.designation || "—"}</td>
-                        <td className="px-4 py-3 text-slate-500 truncate max-w-[150px]">{c.linkedin || "—"}</td>
-                        <td className="px-4 py-3 text-slate-500 italic truncate max-w-[150px]">{c.remark || "—"}</td>
+                        <td className="px-4 py-3 text-slate-500 truncate max-w-[150px]">
+                          {c.linkedin || "—"}
+                        </td>
+                        <td className="px-4 py-3 text-slate-500 italic truncate max-w-[150px]">
+                          {c.remark || "—"}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -378,11 +495,7 @@ export function ImportContactsDialog({ open, onOpenChange }: Props) {
           )}
 
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handleClose}
-              disabled={isProcessing}
-            >
+            <Button variant="outline" onClick={handleClose} disabled={isProcessing}>
               Cancel
             </Button>
 
@@ -407,7 +520,8 @@ export function ImportContactsDialog({ open, onOpenChange }: Props) {
                 disabled={isProcessing}
                 className="bg-gradient-brand text-white border-0 hover:opacity-90 font-semibold flex items-center gap-1.5 px-6"
               >
-                {isProcessing ? "Importing..." : "Confirm & Import"} <ArrowRight className="h-4 w-4" />
+                {isProcessing ? "Importing..." : "Confirm & Import"}{" "}
+                <ArrowRight className="h-4 w-4" />
               </Button>
             )}
           </div>

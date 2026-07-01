@@ -426,8 +426,16 @@ function AccountsPage() {
 
     // Build include/exclude sets for all rule-based filters
     const toSets = (rules: Record<string, "include" | "exclude">) => ({
-      inc: new Set(Object.entries(rules).filter(([, m]) => m === "include").map(([k]) => k)),
-      exc: new Set(Object.entries(rules).filter(([, m]) => m === "exclude").map(([k]) => k)),
+      inc: new Set(
+        Object.entries(rules)
+          .filter(([, m]) => m === "include")
+          .map(([k]) => k),
+      ),
+      exc: new Set(
+        Object.entries(rules)
+          .filter(([, m]) => m === "exclude")
+          .map(([k]) => k),
+      ),
     });
     const status = toSets(statusRules);
     const industry = toSets(industryRules);
@@ -474,8 +482,16 @@ function AccountsPage() {
 
   const filteredUnique = useMemo(() => {
     let result = groupAccountsByCompany(filtered);
-    const reminderInc = new Set(Object.entries(reminderRules).filter(([, m]) => m === "include").map(([k]) => k));
-    const reminderExc = new Set(Object.entries(reminderRules).filter(([, m]) => m === "exclude").map(([k]) => k));
+    const reminderInc = new Set(
+      Object.entries(reminderRules)
+        .filter(([, m]) => m === "include")
+        .map(([k]) => k),
+    );
+    const reminderExc = new Set(
+      Object.entries(reminderRules)
+        .filter(([, m]) => m === "exclude")
+        .map(([k]) => k),
+    );
     const hasReminderFilter = reminderInc.size > 0 || reminderExc.size > 0;
     if (hasReminderFilter) {
       result = result.filter((uc) => {
@@ -486,10 +502,14 @@ function AccountsPage() {
         if (reminderInc.has("has_reminder") && !activeReminder) return false;
         if (reminderExc.has("has_reminder") && activeReminder) return false;
         // type-specific
-        if (reminderInc.has("reach_again") && activeReminder?.reminderType !== "reach_again") return false;
-        if (reminderExc.has("reach_again") && activeReminder?.reminderType === "reach_again") return false;
-        if (reminderInc.has("followup") && activeReminder?.reminderType !== "followup") return false;
-        if (reminderExc.has("followup") && activeReminder?.reminderType === "followup") return false;
+        if (reminderInc.has("reach_again") && activeReminder?.reminderType !== "reach_again")
+          return false;
+        if (reminderExc.has("reach_again") && activeReminder?.reminderType === "reach_again")
+          return false;
+        if (reminderInc.has("followup") && activeReminder?.reminderType !== "followup")
+          return false;
+        if (reminderExc.has("followup") && activeReminder?.reminderType === "followup")
+          return false;
         return true;
       });
     }
@@ -656,8 +676,8 @@ function AccountsPage() {
           {/* Per-owner Include / Exclude Filter */}
           {(() => {
             const activeCount = Object.keys(ownerRules).length;
-            const summaryParts = Object.entries(ownerRules).map(([k, mode]) =>
-              `${mode === "exclude" ? "−" : "+"}${k}`
+            const summaryParts = Object.entries(ownerRules).map(
+              ([k, mode]) => `${mode === "exclude" ? "−" : "+"}${k}`,
             );
             return (
               <Popover>
@@ -670,34 +690,93 @@ function AccountsPage() {
                       {activeCount === 0 ? "All Owners" : summaryParts.join(", ")}
                     </span>
                     {activeCount > 0 && (
-                      <div role="button" onClick={(e) => { e.stopPropagation(); setOwnerRules({}); }} className="ml-1 p-0.5 hover:bg-blue-100 rounded-full">
+                      <div
+                        role="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOwnerRules({});
+                        }}
+                        className="ml-1 p-0.5 hover:bg-blue-100 rounded-full"
+                      >
                         <X className="h-3 w-3 opacity-60 hover:opacity-100 text-blue-700" />
                       </div>
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-64 p-0 rounded-xl border border-slate-200 shadow-xl bg-white z-50" align="start">
+                <PopoverContent
+                  className="w-64 p-0 rounded-xl border border-slate-200 shadow-xl bg-white z-50"
+                  align="start"
+                >
                   <div className="px-3.5 py-2.5 border-b border-slate-100 bg-slate-50/60">
-                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Filter by Owner</p>
+                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      Filter by Owner
+                    </p>
                   </div>
                   <div className="p-2 space-y-1 max-h-60 overflow-y-auto">
                     {reps.map((r) => {
                       const rule = ownerRules[r.name];
                       const setRule = (mode: "include" | "exclude" | null) => {
-                        setOwnerRules((prev) => { const next = { ...prev }; if (mode === null) delete next[r.name]; else next[r.name] = mode; return next; });
+                        setOwnerRules((prev) => {
+                          const next = { ...prev };
+                          if (mode === null) delete next[r.name];
+                          else next[r.name] = mode;
+                          return next;
+                        });
                       };
                       return (
-                        <div key={r.name} className={cn("flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all", rule === "include" && "bg-emerald-50", rule === "exclude" && "bg-rose-50", !rule && "hover:bg-slate-50")}>
-                          <span className={cn("flex-1 text-xs font-semibold", rule === "include" && "text-emerald-700", rule === "exclude" && "text-rose-700", !rule && "text-slate-600")}>{r.name}</span>
-                          <button onClick={() => setRule(rule === "include" ? null : "include")} className={cn("px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all", rule === "include" ? "bg-emerald-500 border-emerald-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50")}>Include</button>
-                          <button onClick={() => setRule(rule === "exclude" ? null : "exclude")} className={cn("px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all", rule === "exclude" ? "bg-rose-500 border-rose-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-rose-400 hover:text-rose-600 hover:bg-rose-50")}>Exclude</button>
+                        <div
+                          key={r.name}
+                          className={cn(
+                            "flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all",
+                            rule === "include" && "bg-emerald-50",
+                            rule === "exclude" && "bg-rose-50",
+                            !rule && "hover:bg-slate-50",
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "flex-1 text-xs font-semibold",
+                              rule === "include" && "text-emerald-700",
+                              rule === "exclude" && "text-rose-700",
+                              !rule && "text-slate-600",
+                            )}
+                          >
+                            {r.name}
+                          </span>
+                          <button
+                            onClick={() => setRule(rule === "include" ? null : "include")}
+                            className={cn(
+                              "px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all",
+                              rule === "include"
+                                ? "bg-emerald-500 border-emerald-500 text-white shadow-sm"
+                                : "bg-white border-slate-200 text-slate-400 hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50",
+                            )}
+                          >
+                            Include
+                          </button>
+                          <button
+                            onClick={() => setRule(rule === "exclude" ? null : "exclude")}
+                            className={cn(
+                              "px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all",
+                              rule === "exclude"
+                                ? "bg-rose-500 border-rose-500 text-white shadow-sm"
+                                : "bg-white border-slate-200 text-slate-400 hover:border-rose-400 hover:text-rose-600 hover:bg-rose-50",
+                            )}
+                          >
+                            Exclude
+                          </button>
                         </div>
                       );
                     })}
                   </div>
                   {activeCount > 0 && (
                     <div className="px-2 pb-2">
-                      <button onClick={() => setOwnerRules({})} className="w-full text-[10px] font-semibold text-slate-400 hover:text-slate-600 py-1 rounded hover:bg-slate-50 transition-all border border-dashed border-slate-200">Clear all</button>
+                      <button
+                        onClick={() => setOwnerRules({})}
+                        className="w-full text-[10px] font-semibold text-slate-400 hover:text-slate-600 py-1 rounded hover:bg-slate-50 transition-all border border-dashed border-slate-200"
+                      >
+                        Clear all
+                      </button>
                     </div>
                   )}
                 </PopoverContent>
@@ -715,8 +794,8 @@ function AccountsPage() {
           {/* Per-status Include / Exclude Filter */}
           {(() => {
             const activeCount = Object.keys(statusRules).length;
-            const summaryParts = Object.entries(statusRules).map(([s, mode]) =>
-              `${mode === "exclude" ? "−" : "+"}${STATUS_LABEL[s as AccountStatus]}`
+            const summaryParts = Object.entries(statusRules).map(
+              ([s, mode]) => `${mode === "exclude" ? "−" : "+"}${STATUS_LABEL[s as AccountStatus]}`,
             );
             return (
               <Popover>
@@ -728,9 +807,7 @@ function AccountsPage() {
                     )}
                   >
                     <span className="truncate flex-1 text-xs">
-                      {activeCount === 0
-                        ? "All Statuses"
-                        : summaryParts.join(", ")}
+                      {activeCount === 0 ? "All Statuses" : summaryParts.join(", ")}
                     </span>
                     {activeCount > 0 && (
                       <div
@@ -746,10 +823,15 @@ function AccountsPage() {
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-64 p-0 rounded-xl border border-slate-200 shadow-xl bg-white z-50" align="start">
+                <PopoverContent
+                  className="w-64 p-0 rounded-xl border border-slate-200 shadow-xl bg-white z-50"
+                  align="start"
+                >
                   {/* Header */}
                   <div className="px-3.5 py-2.5 border-b border-slate-100 bg-slate-50/60">
-                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Filter by Status</p>
+                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      Filter by Status
+                    </p>
                   </div>
                   {/* Per-status rows */}
                   <div className="p-2 space-y-1">
@@ -830,8 +912,8 @@ function AccountsPage() {
           {/* Per-industry Include / Exclude Filter */}
           {(() => {
             const activeCount = Object.keys(industryRules).length;
-            const summaryParts = Object.entries(industryRules).map(([k, mode]) =>
-              `${mode === "exclude" ? "−" : "+"}${k}`
+            const summaryParts = Object.entries(industryRules).map(
+              ([k, mode]) => `${mode === "exclude" ? "−" : "+"}${k}`,
             );
             return (
               <Popover>
@@ -844,34 +926,93 @@ function AccountsPage() {
                       {activeCount === 0 ? "All Industries" : summaryParts.join(", ")}
                     </span>
                     {activeCount > 0 && (
-                      <div role="button" onClick={(e) => { e.stopPropagation(); setIndustryRules({}); }} className="ml-1 p-0.5 hover:bg-indigo-100 rounded-full">
+                      <div
+                        role="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIndustryRules({});
+                        }}
+                        className="ml-1 p-0.5 hover:bg-indigo-100 rounded-full"
+                      >
                         <X className="h-3 w-3 opacity-60 hover:opacity-100 text-indigo-700" />
                       </div>
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-72 p-0 rounded-xl border border-slate-200 shadow-xl bg-white z-50" align="start">
+                <PopoverContent
+                  className="w-72 p-0 rounded-xl border border-slate-200 shadow-xl bg-white z-50"
+                  align="start"
+                >
                   <div className="px-3.5 py-2.5 border-b border-slate-100 bg-slate-50/60">
-                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Filter by Industry</p>
+                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      Filter by Industry
+                    </p>
                   </div>
                   <div className="p-2 space-y-1 max-h-72 overflow-y-auto">
                     {industries.map((ind) => {
                       const rule = industryRules[ind];
                       const setRule = (mode: "include" | "exclude" | null) => {
-                        setIndustryRules((prev) => { const next = { ...prev }; if (mode === null) delete next[ind]; else next[ind] = mode; return next; });
+                        setIndustryRules((prev) => {
+                          const next = { ...prev };
+                          if (mode === null) delete next[ind];
+                          else next[ind] = mode;
+                          return next;
+                        });
                       };
                       return (
-                        <div key={ind} className={cn("flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all", rule === "include" && "bg-emerald-50", rule === "exclude" && "bg-rose-50", !rule && "hover:bg-slate-50")}>
-                          <span className={cn("flex-1 text-xs font-semibold", rule === "include" && "text-emerald-700", rule === "exclude" && "text-rose-700", !rule && "text-slate-600")}>{ind}</span>
-                          <button onClick={() => setRule(rule === "include" ? null : "include")} className={cn("px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all", rule === "include" ? "bg-emerald-500 border-emerald-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50")}>Include</button>
-                          <button onClick={() => setRule(rule === "exclude" ? null : "exclude")} className={cn("px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all", rule === "exclude" ? "bg-rose-500 border-rose-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-rose-400 hover:text-rose-600 hover:bg-rose-50")}>Exclude</button>
+                        <div
+                          key={ind}
+                          className={cn(
+                            "flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all",
+                            rule === "include" && "bg-emerald-50",
+                            rule === "exclude" && "bg-rose-50",
+                            !rule && "hover:bg-slate-50",
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "flex-1 text-xs font-semibold",
+                              rule === "include" && "text-emerald-700",
+                              rule === "exclude" && "text-rose-700",
+                              !rule && "text-slate-600",
+                            )}
+                          >
+                            {ind}
+                          </span>
+                          <button
+                            onClick={() => setRule(rule === "include" ? null : "include")}
+                            className={cn(
+                              "px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all",
+                              rule === "include"
+                                ? "bg-emerald-500 border-emerald-500 text-white shadow-sm"
+                                : "bg-white border-slate-200 text-slate-400 hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50",
+                            )}
+                          >
+                            Include
+                          </button>
+                          <button
+                            onClick={() => setRule(rule === "exclude" ? null : "exclude")}
+                            className={cn(
+                              "px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all",
+                              rule === "exclude"
+                                ? "bg-rose-500 border-rose-500 text-white shadow-sm"
+                                : "bg-white border-slate-200 text-slate-400 hover:border-rose-400 hover:text-rose-600 hover:bg-rose-50",
+                            )}
+                          >
+                            Exclude
+                          </button>
                         </div>
                       );
                     })}
                   </div>
                   {activeCount > 0 && (
                     <div className="px-2 pb-2">
-                      <button onClick={() => setIndustryRules({})} className="w-full text-[10px] font-semibold text-slate-400 hover:text-slate-600 py-1 rounded hover:bg-slate-50 transition-all border border-dashed border-slate-200">Clear all</button>
+                      <button
+                        onClick={() => setIndustryRules({})}
+                        className="w-full text-[10px] font-semibold text-slate-400 hover:text-slate-600 py-1 rounded hover:bg-slate-50 transition-all border border-dashed border-slate-200"
+                      >
+                        Clear all
+                      </button>
                     </div>
                   )}
                 </PopoverContent>
@@ -902,34 +1043,93 @@ function AccountsPage() {
                       {activeCount === 0 ? "All Accounts" : summaryParts.join(", ")}
                     </span>
                     {activeCount > 0 && (
-                      <div role="button" onClick={(e) => { e.stopPropagation(); setReminderRules({}); }} className="ml-1 p-0.5 hover:bg-rose-100 rounded-full">
+                      <div
+                        role="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setReminderRules({});
+                        }}
+                        className="ml-1 p-0.5 hover:bg-rose-100 rounded-full"
+                      >
                         <X className="h-3 w-3 opacity-60 hover:opacity-100 text-rose-700" />
                       </div>
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-64 p-0 rounded-xl border border-slate-200 shadow-xl bg-white z-50" align="start">
+                <PopoverContent
+                  className="w-64 p-0 rounded-xl border border-slate-200 shadow-xl bg-white z-50"
+                  align="start"
+                >
                   <div className="px-3.5 py-2.5 border-b border-slate-100 bg-slate-50/60">
-                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Filter by Reminder</p>
+                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      Filter by Reminder
+                    </p>
                   </div>
                   <div className="p-2 space-y-1">
                     {REMINDER_OPTIONS.map(({ key, label }) => {
                       const rule = reminderRules[key];
                       const setRule = (mode: "include" | "exclude" | null) => {
-                        setReminderRules((prev) => { const next = { ...prev }; if (mode === null) delete next[key]; else next[key] = mode; return next; });
+                        setReminderRules((prev) => {
+                          const next = { ...prev };
+                          if (mode === null) delete next[key];
+                          else next[key] = mode;
+                          return next;
+                        });
                       };
                       return (
-                        <div key={key} className={cn("flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all", rule === "include" && "bg-emerald-50", rule === "exclude" && "bg-rose-50", !rule && "hover:bg-slate-50")}>
-                          <span className={cn("flex-1 text-xs font-semibold", rule === "include" && "text-emerald-700", rule === "exclude" && "text-rose-700", !rule && "text-slate-600")}>{label}</span>
-                          <button onClick={() => setRule(rule === "include" ? null : "include")} className={cn("px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all", rule === "include" ? "bg-emerald-500 border-emerald-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50")}>Include</button>
-                          <button onClick={() => setRule(rule === "exclude" ? null : "exclude")} className={cn("px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all", rule === "exclude" ? "bg-rose-500 border-rose-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-rose-400 hover:text-rose-600 hover:bg-rose-50")}>Exclude</button>
+                        <div
+                          key={key}
+                          className={cn(
+                            "flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all",
+                            rule === "include" && "bg-emerald-50",
+                            rule === "exclude" && "bg-rose-50",
+                            !rule && "hover:bg-slate-50",
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "flex-1 text-xs font-semibold",
+                              rule === "include" && "text-emerald-700",
+                              rule === "exclude" && "text-rose-700",
+                              !rule && "text-slate-600",
+                            )}
+                          >
+                            {label}
+                          </span>
+                          <button
+                            onClick={() => setRule(rule === "include" ? null : "include")}
+                            className={cn(
+                              "px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all",
+                              rule === "include"
+                                ? "bg-emerald-500 border-emerald-500 text-white shadow-sm"
+                                : "bg-white border-slate-200 text-slate-400 hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50",
+                            )}
+                          >
+                            Include
+                          </button>
+                          <button
+                            onClick={() => setRule(rule === "exclude" ? null : "exclude")}
+                            className={cn(
+                              "px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all",
+                              rule === "exclude"
+                                ? "bg-rose-500 border-rose-500 text-white shadow-sm"
+                                : "bg-white border-slate-200 text-slate-400 hover:border-rose-400 hover:text-rose-600 hover:bg-rose-50",
+                            )}
+                          >
+                            Exclude
+                          </button>
                         </div>
                       );
                     })}
                   </div>
                   {activeCount > 0 && (
                     <div className="px-2 pb-2">
-                      <button onClick={() => setReminderRules({})} className="w-full text-[10px] font-semibold text-slate-400 hover:text-slate-600 py-1 rounded hover:bg-slate-50 transition-all border border-dashed border-slate-200">Clear all</button>
+                      <button
+                        onClick={() => setReminderRules({})}
+                        className="w-full text-[10px] font-semibold text-slate-400 hover:text-slate-600 py-1 rounded hover:bg-slate-50 transition-all border border-dashed border-slate-200"
+                      >
+                        Clear all
+                      </button>
                     </div>
                   )}
                 </PopoverContent>

@@ -9,14 +9,15 @@ const getMergedAccounts = (accounts: Account[]): Account[] => {
   try {
     const localRemindersRaw = localStorage.getItem("storefries_reminders") || "{}";
     const localReminders = JSON.parse(localRemindersRaw);
-    return accounts.map(acc => {
+    return accounts.map((acc) => {
       const local = localReminders[acc.id];
       if (local) {
         return {
           ...acc,
           reminderType: acc.reminderType !== undefined ? acc.reminderType : local.reminderType,
           reminderDate: acc.reminderDate !== undefined ? acc.reminderDate : local.reminderDate,
-          reminderClosed: acc.reminderClosed !== undefined ? acc.reminderClosed : local.reminderClosed,
+          reminderClosed:
+            acc.reminderClosed !== undefined ? acc.reminderClosed : local.reminderClosed,
         };
       }
       return acc;
@@ -32,13 +33,11 @@ const promoteToSalesAccountIfNeeded = async (
   owner: string,
   contactName: string,
   source: "BNI" | "Franchise",
-  get: any
+  get: any,
 ) => {
   if (!company) return;
   const accounts = get.accounts;
-  const exists = accounts.some(
-    (acc: any) => acc.name.toLowerCase() === company.toLowerCase()
-  );
+  const exists = accounts.some((acc: any) => acc.name.toLowerCase() === company.toLowerCase());
   if (!exists) {
     await get.addAccount({
       name: company,
@@ -69,7 +68,7 @@ interface State {
   fetchContacts: () => Promise<void>;
   fetchBniContacts: () => Promise<void>;
   fetchFranchiseConsultants: () => Promise<void>;
-  subscribeRealtime: () => (() => void);
+  subscribeRealtime: () => () => void;
 
   addAccount: (a: Omit<Account, "id">) => Promise<void>;
   updateAccount: (id: string, patch: Partial<Account>) => Promise<void>;
@@ -79,12 +78,12 @@ interface State {
   updateContact: (id: string, patch: Partial<AccountContact>) => Promise<void>;
   deleteContact: (id: string) => Promise<void>;
   importContacts: (contactsList: Omit<AccountContact, "id">[]) => Promise<void>;
-  
+
   addBniContact: (c: Omit<BniContact, "id">) => Promise<void>;
   updateBniContact: (id: string, patch: Partial<BniContact>) => Promise<void>;
   deleteBniContact: (id: string) => Promise<void>;
   importBniContacts: (list: Omit<BniContact, "id">[]) => Promise<void>;
-  
+
   addFranchiseConsultant: (c: Omit<FranchiseConsultant, "id">) => Promise<void>;
   updateFranchiseConsultant: (id: string, patch: Partial<FranchiseConsultant>) => Promise<void>;
   deleteFranchiseConsultant: (id: string) => Promise<void>;
@@ -122,45 +121,46 @@ export const useStore = create<State>()((set, get) => ({
       const reps = repsRes.data as SalesRep[];
 
       // Seamless Migration Logic:
-      // If cloud database is perfectly fresh and completely empty, 
+      // If cloud database is perfectly fresh and completely empty,
       // auto-provision it with your existing fallback seed data so you don't lose your demo dataset!
       if (accounts.length === 0 && reps.length === 0) {
-        console.warn("⚡ Database is empty. Auto-initializing shared cloud storage with default seed dataset...");
-        
+        console.warn(
+          "⚡ Database is empty. Auto-initializing shared cloud storage with default seed dataset...",
+        );
+
         // Clean internal IDs off seeds so DB assigns final cloud identifiers
         const seedAccs = SEED_ACCOUNTS.map(({ id: _id, ...rest }) => rest);
-        
+
         await Promise.all([
           supabase.from("sales_accounts").insert(seedAccs),
-          supabase.from("sales_reps").insert(SEED_REPS)
+          supabase.from("sales_reps").insert(SEED_REPS),
         ]);
-        
+
         // Recursive single run-thru to load freshly inserted rows back into cache
         const [accReload, repsReload] = await Promise.all([
           supabase.from("sales_accounts").select("*").order("createdAt", { ascending: false }),
           supabase.from("sales_reps").select("*").order("name"),
         ]);
-        
+
         set({
           accounts: getMergedAccounts(accReload.data as Account[]),
-          reps: repsReload.data?.length ? repsReload.data as SalesRep[] : SEED_REPS,
-          isLoading: false
+          reps: repsReload.data?.length ? (repsReload.data as SalesRep[]) : SEED_REPS,
+          isLoading: false,
         });
         return;
       }
 
       // Successfully loaded live remote data
-      set({ 
-        accounts: getMergedAccounts(accounts), 
+      set({
+        accounts: getMergedAccounts(accounts),
         reps: reps.length ? reps : SEED_REPS,
-        isLoading: false 
+        isLoading: false,
       });
-      
     } catch (error: any) {
-      // Fallback Safely: If table doesn't exist yet (user hasn't run SQL), 
+      // Fallback Safely: If table doesn't exist yet (user hasn't run SQL),
       // we keep the UI running on fallback code instead of crashing.
       set({ isLoading: false });
-      
+
       if (error.message?.includes("does not exist")) {
         console.log("ℹ️  Supabase tables not detected yet. Falling back to static mode.");
         set({ accounts: getMergedAccounts(get().accounts) });
@@ -200,44 +200,28 @@ export const useStore = create<State>()((set, get) => ({
     // Establish real-time listener channel
     const channel = supabase
       .channel("sales_dashboard_feed")
-      .on(
-        "postgres_changes", 
-        { event: "*", schema: "public", table: "sales_accounts" },
-        () => {
-          // Re-sync whenever ANY user modifies our primary data feed
-          get().fetchData();
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "sales_reps" },
-        () => {
-          get().fetchData();
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "account_contacts" },
-        () => {
-          get().fetchContacts();
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "bni_contacts" },
-        () => {
-          get().fetchBniContacts();
-        }
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "sales_accounts" }, () => {
+        // Re-sync whenever ANY user modifies our primary data feed
+        get().fetchData();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "sales_reps" }, () => {
+        get().fetchData();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "account_contacts" }, () => {
+        get().fetchContacts();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "bni_contacts" }, () => {
+        get().fetchBniContacts();
+      })
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "franchise_consultants" },
         () => {
           get().fetchFranchiseConsultants();
-        }
+        },
       )
       .subscribe();
-      
+
     return () => {
       // teardown connection hook on unmount
       supabase.removeChannel(channel);
@@ -262,11 +246,7 @@ export const useStore = create<State>()((set, get) => ({
     let payload = { ...a };
 
     // Fire hose to Database
-    let { data, error } = await supabase
-      .from("sales_accounts")
-      .insert(payload)
-      .select()
-      .single();
+    let { data, error } = await supabase.from("sales_accounts").insert(payload).select().single();
 
     if (error && error.code === "42703") {
       // Strip reminder fields and retry
@@ -275,12 +255,8 @@ export const useStore = create<State>()((set, get) => ({
       delete cleanPayload.reminderDate;
       delete cleanPayload.reminderClosed;
 
-      const retry = await supabase
-        .from("sales_accounts")
-        .insert(cleanPayload)
-        .select()
-        .single();
-      
+      const retry = await supabase.from("sales_accounts").insert(cleanPayload).select().single();
+
       data = retry.data;
       error = retry.error;
 
@@ -295,7 +271,13 @@ export const useStore = create<State>()((set, get) => ({
           console.error("LocalStorage write failed:", e);
         }
       }
-    } else if (!error && data && (reminderFields.reminderType || reminderFields.reminderDate || reminderFields.reminderClosed !== undefined)) {
+    } else if (
+      !error &&
+      data &&
+      (reminderFields.reminderType ||
+        reminderFields.reminderDate ||
+        reminderFields.reminderClosed !== undefined)
+    ) {
       try {
         const localRemindersRaw = localStorage.getItem("storefries_reminders") || "{}";
         const localReminders = JSON.parse(localRemindersRaw);
@@ -314,9 +296,12 @@ export const useStore = create<State>()((set, get) => ({
       const dbAcc = data as Account;
       const mergedAcc: Account = {
         ...dbAcc,
-        reminderType: dbAcc.reminderType !== undefined ? dbAcc.reminderType : reminderFields.reminderType,
-        reminderDate: dbAcc.reminderDate !== undefined ? dbAcc.reminderDate : reminderFields.reminderDate,
-        reminderClosed: dbAcc.reminderClosed !== undefined ? dbAcc.reminderClosed : reminderFields.reminderClosed,
+        reminderType:
+          dbAcc.reminderType !== undefined ? dbAcc.reminderType : reminderFields.reminderType,
+        reminderDate:
+          dbAcc.reminderDate !== undefined ? dbAcc.reminderDate : reminderFields.reminderDate,
+        reminderClosed:
+          dbAcc.reminderClosed !== undefined ? dbAcc.reminderClosed : reminderFields.reminderClosed,
       };
       set((s) => ({
         accounts: s.accounts.map((acc) => (acc.id === tempId ? mergedAcc : acc)),
@@ -331,7 +316,7 @@ export const useStore = create<State>()((set, get) => ({
     }));
 
     const reminderFields = ["reminderType", "reminderDate", "reminderClosed"];
-    const hasReminderFields = reminderFields.some(k => k in patch);
+    const hasReminderFields = reminderFields.some((k) => k in patch);
 
     if (hasReminderFields) {
       try {
@@ -339,9 +324,12 @@ export const useStore = create<State>()((set, get) => ({
         const localReminders = JSON.parse(localRemindersRaw);
         const existing = localReminders[id] || {};
         localReminders[id] = {
-          reminderType: patch.reminderType !== undefined ? patch.reminderType : existing.reminderType,
-          reminderDate: patch.reminderDate !== undefined ? patch.reminderDate : existing.reminderDate,
-          reminderClosed: patch.reminderClosed !== undefined ? patch.reminderClosed : existing.reminderClosed,
+          reminderType:
+            patch.reminderType !== undefined ? patch.reminderType : existing.reminderType,
+          reminderDate:
+            patch.reminderDate !== undefined ? patch.reminderDate : existing.reminderDate,
+          reminderClosed:
+            patch.reminderClosed !== undefined ? patch.reminderClosed : existing.reminderClosed,
         };
         localStorage.setItem("storefries_reminders", JSON.stringify(localReminders));
       } catch (e) {
@@ -349,10 +337,7 @@ export const useStore = create<State>()((set, get) => ({
       }
     }
 
-    const { error } = await supabase
-      .from("sales_accounts")
-      .update(patch)
-      .eq("id", id);
+    const { error } = await supabase.from("sales_accounts").update(patch).eq("id", id);
 
     if (error) {
       if (error.code === "42703") {
@@ -361,13 +346,13 @@ export const useStore = create<State>()((set, get) => ({
         delete cleanPatch.reminderType;
         delete cleanPatch.reminderDate;
         delete cleanPatch.reminderClosed;
-        
+
         if (Object.keys(cleanPatch).length > 0) {
           const { error: retryError } = await supabase
             .from("sales_accounts")
             .update(cleanPatch)
             .eq("id", id);
-            
+
           if (retryError) {
             console.error("Retry update failed:", retryError);
             toast.error("Failed to persist update to Cloud.");
@@ -377,7 +362,7 @@ export const useStore = create<State>()((set, get) => ({
       } else {
         console.error("Update failed:", error);
         toast.error("Failed to persist update to Cloud.");
-        get().fetchData(); // Force pull clean snapshot 
+        get().fetchData(); // Force pull clean snapshot
       }
     }
   },
@@ -400,10 +385,7 @@ export const useStore = create<State>()((set, get) => ({
       console.error(e);
     }
 
-    const { error } = await supabase
-      .from("sales_accounts")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("sales_accounts").delete().eq("id", id);
 
     if (error) {
       toast.error("Could not delete from server.");
@@ -425,11 +407,7 @@ export const useStore = create<State>()((set, get) => ({
     const optimistic: AccountContact = { ...c, id: tempId };
     set((s) => ({ contacts: [...s.contacts, optimistic] }));
 
-    const { data, error } = await supabase
-      .from("account_contacts")
-      .insert(c)
-      .select()
-      .single();
+    const { data, error } = await supabase.from("account_contacts").insert(c).select().single();
 
     if (error) {
       toast.error("Failed to save contact.");
@@ -472,8 +450,8 @@ export const useStore = create<State>()((set, get) => ({
         new Set(
           contactsList
             .map((c) => c.accountName.trim())
-            .filter((name) => name && !existingNames.has(name.toLowerCase()))
-        )
+            .filter((name) => name && !existingNames.has(name.toLowerCase())),
+        ),
       );
 
       // Bulk create missing accounts first
@@ -488,27 +466,20 @@ export const useStore = create<State>()((set, get) => ({
           followUpCount: 0,
         }));
 
-        const { error: accError } = await supabase
-          .from("sales_accounts")
-          .insert(newAccounts);
+        const { error: accError } = await supabase.from("sales_accounts").insert(newAccounts);
 
         if (accError) throw accError;
       }
 
       // Bulk insert contacts
-      const { error: contactsError } = await supabase
-        .from("account_contacts")
-        .insert(contactsList);
+      const { error: contactsError } = await supabase.from("account_contacts").insert(contactsList);
 
       if (contactsError) throw contactsError;
 
       toast.success(`Successfully imported ${contactsList.length} contacts!`);
 
       // Refresh data feed
-      await Promise.all([
-        get().fetchData(),
-        get().fetchContacts(),
-      ]);
+      await Promise.all([get().fetchData(), get().fetchContacts()]);
     } catch (err: any) {
       console.error("Bulk import error:", err);
       toast.error(err.message || "Failed to import contacts.");
@@ -531,27 +502,55 @@ export const useStore = create<State>()((set, get) => ({
         console.error("fetchBniContacts error:", error);
         return;
       }
-      
+
       const list = (data ?? []) as BniContact[];
-      
+
       if (list.length === 0) {
         const initialSeeds = [
-          { name: 'Santosh Patil', company: 'Formec Media LLP', designation: 'Digital/Advertising', bniChapter: 'BNI Bhoomi', status: 'replied' as const, medium: 'Call' as const, owner: 'Om Prakash', remark: 'He will share his timing for meeting on 06/06/2026' },
-          { name: 'Manisha', company: 'Enlight Web Services', designation: 'Member', bniChapter: 'BNI Solitaire', status: 'demo_booked' as const, medium: 'WhatsApp' as const, owner: 'Om Prakash', remark: 'Further Discussion - Venkat Sir need to send Whatsapp message to Manisha. She asked for a recorded video' },
-          { name: 'Zero4Studio Contact', company: 'Zero4Studio', designation: 'Member', bniChapter: 'BNI Harmony', status: 'demo_booked' as const, medium: 'Call' as const, owner: 'Om Prakash', remark: 'Follow back with him 05.06.2026' }
+          {
+            name: "Santosh Patil",
+            company: "Formec Media LLP",
+            designation: "Digital/Advertising",
+            bniChapter: "BNI Bhoomi",
+            status: "replied" as const,
+            medium: "Call" as const,
+            owner: "Om Prakash",
+            remark: "He will share his timing for meeting on 06/06/2026",
+          },
+          {
+            name: "Manisha",
+            company: "Enlight Web Services",
+            designation: "Member",
+            bniChapter: "BNI Solitaire",
+            status: "demo_booked" as const,
+            medium: "WhatsApp" as const,
+            owner: "Om Prakash",
+            remark:
+              "Further Discussion - Venkat Sir need to send Whatsapp message to Manisha. She asked for a recorded video",
+          },
+          {
+            name: "Zero4Studio Contact",
+            company: "Zero4Studio",
+            designation: "Member",
+            bniChapter: "BNI Harmony",
+            status: "demo_booked" as const,
+            medium: "Call" as const,
+            owner: "Om Prakash",
+            remark: "Follow back with him 05.06.2026",
+          },
         ];
-        
+
         await supabase.from("bni_contacts").insert(initialSeeds);
-        
+
         const reload = await supabase
           .from("bni_contacts")
           .select("*")
           .order("createdAt", { ascending: false });
-          
+
         set({ bniContacts: (reload.data ?? []) as BniContact[] });
         return;
       }
-      
+
       set({ bniContacts: list });
     } catch (e) {
       console.error("fetchBniContacts exception:", e);
@@ -568,35 +567,149 @@ export const useStore = create<State>()((set, get) => ({
         console.error("fetchFranchiseConsultants error:", error);
         return;
       }
-      
+
       const list = (data ?? []) as FranchiseConsultant[];
-      
+
       if (list.length === 0) {
         const initialSeeds = [
-          { name: 'Arshi Khan', company: 'Self', designation: 'Franchise consultant', phone: '917415599049', linkedin: 'https://www.linkedin.com/in/arshi-khan-2abb911a2/', status: 'replied' as const, medium: 'Call' as const, owner: 'Om Prakash', remark: 'Call Outreach: Attended - Send pitch through Whatsapp. [Log: WhatsApp outreach before Call: Message Sent, Not Replied, Not Attended]' },
-          { name: 'Javeed A. Khan', company: 'Self', designation: 'Franchise consultant', phone: '917619688070', linkedin: 'https://www.linkedin.com/in/javeedahamedkhan/', status: 'replied' as const, medium: 'Call' as const, owner: 'Om Prakash', remark: 'Call Outreach: Attended - Send pitch through Whatsapp. [Log: WhatsApp outreach before Call: Message Sent, Not Replied, Not Attended]' },
-          { name: 'Sumanth shetty', company: 'Self', designation: 'Franchise consultant', phone: '919900701201', linkedin: 'https://www.linkedin.com/in/sumanth-shetty-70905a148/', status: 'reached_out' as const, medium: 'Call' as const, owner: 'Om Prakash', remark: "Call Outreach: Didn't pick the call. [Log: WhatsApp outreach before Call: Message Sent, Not Replied, Not Attended]" },
-          { name: 'Vimal V', company: 'Self', designation: 'Franchise consultant', phone: '919946557100', linkedin: 'https://www.linkedin.com/in/vimalv1/', status: 'replied' as const, medium: 'Call' as const, owner: 'Om Prakash', remark: 'Call Outreach: Attended - Send pitch through Whatsapp. [Log: WhatsApp outreach before Call: Message Sent, Not Replied, Not Attended]' },
-          { name: 'Priyanka Panchal', company: 'Self', designation: 'Franchise consultant', phone: '918140038080', linkedin: 'https://www.linkedin.com/in/priyanka-panchal-3a9b94232/', status: 'replied' as const, medium: 'WhatsApp' as const, owner: 'Om Prakash', remark: 'WhatsApp Outreach: Message Sent - Replied - Not Attended' },
-          { name: 'Amar Lunia', company: 'Self', designation: 'Franchise consultant', phone: '919035027699', linkedin: 'https://www.linkedin.com/in/amar-lunia-058273121/', status: 'reached_out' as const, medium: 'WhatsApp' as const, owner: 'Om Prakash', remark: 'WhatsApp Outreach: Message Sent - Not Replied - Not Attended' },
-          { name: 'Nilesh khatod', company: 'Self', designation: 'Franchise consultant', phone: '919161225877', linkedin: 'https://www.linkedin.com/in/nilesh-khatod-715145b1/', status: 'replied' as const, medium: 'WhatsApp' as const, owner: 'Om Prakash', remark: 'WhatsApp Outreach: Message Sent - Replied - Scheduled demo' },
-          { name: 'Kishin Thakur', company: 'Self', designation: 'Franchise consultant', phone: '919930384641', linkedin: 'https://www.linkedin.com/in/kishinthakur/', status: 'demo_booked' as const, medium: 'WhatsApp' as const, owner: 'Om Prakash', remark: 'WhatsApp Outreach: Message Sent - Replied - Attended' },
-          { name: 'Vijayasaradhi Kolasani', company: 'Self', designation: 'Franchise consultant', phone: '919100094361', linkedin: 'https://www.linkedin.com/in/vijayasaradhi-kolasani-71421325/', status: 'replied' as const, medium: 'WhatsApp' as const, owner: 'Om Prakash', remark: 'WhatsApp Outreach: Message Sent - Replied - Not Attended' },
-          { name: 'Anupam Srivastava', company: 'Self', designation: 'Franchise consultant', phone: '919819523666', linkedin: 'https://www.linkedin.com/in/chefanupamsrivastava/', status: 'replied' as const, medium: 'WhatsApp' as const, owner: 'Om Prakash', remark: 'WhatsApp Outreach: Message Sent - Replied - Not Attended' },
-          { name: 'Ravikumar Chandrashekar', company: 'Self', designation: 'Franchise consultant', phone: '919847012317', linkedin: 'https://www.linkedin.com/in/raavikumaar/', status: 'demo_booked' as const, medium: 'WhatsApp' as const, owner: 'Om Prakash', remark: 'WhatsApp Outreach: Message Sent - Replied - Attended' }
+          {
+            name: "Arshi Khan",
+            company: "Self",
+            designation: "Franchise consultant",
+            phone: "917415599049",
+            linkedin: "https://www.linkedin.com/in/arshi-khan-2abb911a2/",
+            status: "replied" as const,
+            medium: "Call" as const,
+            owner: "Om Prakash",
+            remark:
+              "Call Outreach: Attended - Send pitch through Whatsapp. [Log: WhatsApp outreach before Call: Message Sent, Not Replied, Not Attended]",
+          },
+          {
+            name: "Javeed A. Khan",
+            company: "Self",
+            designation: "Franchise consultant",
+            phone: "917619688070",
+            linkedin: "https://www.linkedin.com/in/javeedahamedkhan/",
+            status: "replied" as const,
+            medium: "Call" as const,
+            owner: "Om Prakash",
+            remark:
+              "Call Outreach: Attended - Send pitch through Whatsapp. [Log: WhatsApp outreach before Call: Message Sent, Not Replied, Not Attended]",
+          },
+          {
+            name: "Sumanth shetty",
+            company: "Self",
+            designation: "Franchise consultant",
+            phone: "919900701201",
+            linkedin: "https://www.linkedin.com/in/sumanth-shetty-70905a148/",
+            status: "reached_out" as const,
+            medium: "Call" as const,
+            owner: "Om Prakash",
+            remark:
+              "Call Outreach: Didn't pick the call. [Log: WhatsApp outreach before Call: Message Sent, Not Replied, Not Attended]",
+          },
+          {
+            name: "Vimal V",
+            company: "Self",
+            designation: "Franchise consultant",
+            phone: "919946557100",
+            linkedin: "https://www.linkedin.com/in/vimalv1/",
+            status: "replied" as const,
+            medium: "Call" as const,
+            owner: "Om Prakash",
+            remark:
+              "Call Outreach: Attended - Send pitch through Whatsapp. [Log: WhatsApp outreach before Call: Message Sent, Not Replied, Not Attended]",
+          },
+          {
+            name: "Priyanka Panchal",
+            company: "Self",
+            designation: "Franchise consultant",
+            phone: "918140038080",
+            linkedin: "https://www.linkedin.com/in/priyanka-panchal-3a9b94232/",
+            status: "replied" as const,
+            medium: "WhatsApp" as const,
+            owner: "Om Prakash",
+            remark: "WhatsApp Outreach: Message Sent - Replied - Not Attended",
+          },
+          {
+            name: "Amar Lunia",
+            company: "Self",
+            designation: "Franchise consultant",
+            phone: "919035027699",
+            linkedin: "https://www.linkedin.com/in/amar-lunia-058273121/",
+            status: "reached_out" as const,
+            medium: "WhatsApp" as const,
+            owner: "Om Prakash",
+            remark: "WhatsApp Outreach: Message Sent - Not Replied - Not Attended",
+          },
+          {
+            name: "Nilesh khatod",
+            company: "Self",
+            designation: "Franchise consultant",
+            phone: "919161225877",
+            linkedin: "https://www.linkedin.com/in/nilesh-khatod-715145b1/",
+            status: "replied" as const,
+            medium: "WhatsApp" as const,
+            owner: "Om Prakash",
+            remark: "WhatsApp Outreach: Message Sent - Replied - Scheduled demo",
+          },
+          {
+            name: "Kishin Thakur",
+            company: "Self",
+            designation: "Franchise consultant",
+            phone: "919930384641",
+            linkedin: "https://www.linkedin.com/in/kishinthakur/",
+            status: "demo_booked" as const,
+            medium: "WhatsApp" as const,
+            owner: "Om Prakash",
+            remark: "WhatsApp Outreach: Message Sent - Replied - Attended",
+          },
+          {
+            name: "Vijayasaradhi Kolasani",
+            company: "Self",
+            designation: "Franchise consultant",
+            phone: "919100094361",
+            linkedin: "https://www.linkedin.com/in/vijayasaradhi-kolasani-71421325/",
+            status: "replied" as const,
+            medium: "WhatsApp" as const,
+            owner: "Om Prakash",
+            remark: "WhatsApp Outreach: Message Sent - Replied - Not Attended",
+          },
+          {
+            name: "Anupam Srivastava",
+            company: "Self",
+            designation: "Franchise consultant",
+            phone: "919819523666",
+            linkedin: "https://www.linkedin.com/in/chefanupamsrivastava/",
+            status: "replied" as const,
+            medium: "WhatsApp" as const,
+            owner: "Om Prakash",
+            remark: "WhatsApp Outreach: Message Sent - Replied - Not Attended",
+          },
+          {
+            name: "Ravikumar Chandrashekar",
+            company: "Self",
+            designation: "Franchise consultant",
+            phone: "919847012317",
+            linkedin: "https://www.linkedin.com/in/raavikumaar/",
+            status: "demo_booked" as const,
+            medium: "WhatsApp" as const,
+            owner: "Om Prakash",
+            remark: "WhatsApp Outreach: Message Sent - Replied - Attended",
+          },
         ];
-        
+
         await supabase.from("franchise_consultants").insert(initialSeeds);
-        
+
         const reload = await supabase
           .from("franchise_consultants")
           .select("*")
           .order("createdAt", { ascending: false });
-          
+
         set({ franchiseConsultants: (reload.data ?? []) as FranchiseConsultant[] });
         return;
       }
-      
+
       set({ franchiseConsultants: list });
     } catch (e) {
       console.error("fetchFranchiseConsultants exception:", e);
@@ -608,11 +721,7 @@ export const useStore = create<State>()((set, get) => ({
     const optimistic: BniContact = { ...c, id: tempId } as BniContact;
     set((s) => ({ bniContacts: [optimistic, ...s.bniContacts] }));
 
-    const { data, error } = await supabase
-      .from("bni_contacts")
-      .insert(c)
-      .select()
-      .single();
+    const { data, error } = await supabase.from("bni_contacts").insert(c).select().single();
 
     if (error) {
       toast.error("Failed to save BNI contact.");
@@ -636,9 +745,15 @@ export const useStore = create<State>()((set, get) => ({
       toast.error("Failed to update BNI contact.");
       get().fetchBniContacts();
     } else if (patch.status === "demo_booked") {
-      const contact = get().bniContacts.find(c => c.id === id);
+      const contact = get().bniContacts.find((c) => c.id === id);
       if (contact) {
-        await promoteToSalesAccountIfNeeded(contact.company, contact.owner, contact.name, "BNI", get());
+        await promoteToSalesAccountIfNeeded(
+          contact.company,
+          contact.owner,
+          contact.name,
+          "BNI",
+          get(),
+        );
       }
     }
   },
@@ -683,7 +798,9 @@ export const useStore = create<State>()((set, get) => ({
       set((s) => ({ franchiseConsultants: s.franchiseConsultants.filter((x) => x.id !== tempId) }));
     } else {
       set((s) => ({
-        franchiseConsultants: s.franchiseConsultants.map((x) => (x.id === tempId ? (data as FranchiseConsultant) : x)),
+        franchiseConsultants: s.franchiseConsultants.map((x) =>
+          x.id === tempId ? (data as FranchiseConsultant) : x,
+        ),
       }));
       if (c.status === "demo_booked") {
         await promoteToSalesAccountIfNeeded(c.company, c.owner, c.name, "Franchise", get());
@@ -693,16 +810,24 @@ export const useStore = create<State>()((set, get) => ({
 
   updateFranchiseConsultant: async (id, patch) => {
     set((s) => ({
-      franchiseConsultants: s.franchiseConsultants.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+      franchiseConsultants: s.franchiseConsultants.map((c) =>
+        c.id === id ? { ...c, ...patch } : c,
+      ),
     }));
     const { error } = await supabase.from("franchise_consultants").update(patch).eq("id", id);
     if (error) {
       toast.error("Failed to update Franchise Consultant.");
       get().fetchFranchiseConsultants();
     } else if (patch.status === "demo_booked") {
-      const contact = get().franchiseConsultants.find(c => c.id === id);
+      const contact = get().franchiseConsultants.find((c) => c.id === id);
       if (contact) {
-        await promoteToSalesAccountIfNeeded(contact.company, contact.owner, contact.name, "Franchise", get());
+        await promoteToSalesAccountIfNeeded(
+          contact.company,
+          contact.owner,
+          contact.name,
+          "Franchise",
+          get(),
+        );
       }
     }
   },
@@ -730,10 +855,17 @@ export const useStore = create<State>()((set, get) => ({
       set({ isLoading: false });
     }
   },
-  
+
   resetData: () => {
     // Purge local memory override back to seeds
-    set({ accounts: getMergedAccounts(SEED_ACCOUNTS), reps: SEED_REPS, contacts: [], bniContacts: [], franchiseConsultants: [], globalMonths: [] });
+    set({
+      accounts: getMergedAccounts(SEED_ACCOUNTS),
+      reps: SEED_REPS,
+      contacts: [],
+      bniContacts: [],
+      franchiseConsultants: [],
+      globalMonths: [],
+    });
   },
 }));
 

@@ -4,10 +4,7 @@ import type { Account, SalesRep, BniContact, FranchiseConsultant } from "./types
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
-export const supabase = createClient(
-  supabaseUrl, 
-  supabaseAnonKey
-);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Strong types for our tables database interface helper
 export interface Database {
@@ -36,4 +33,3 @@ export interface Database {
     };
   };
 }
-

@@ -11,7 +11,7 @@ import {
   Users,
   Upload,
   Briefcase,
-  Building
+  Building,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import type { FranchiseConsultant, OutreachStatus } from "@/lib/types";
@@ -25,11 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Dialog,
   DialogContent,
@@ -51,8 +47,13 @@ import { RepAvatar, KpiCard } from "@/components/dashboard-utils";
 import { toast } from "sonner";
 import { Bar } from "react-chartjs-2";
 import {
-  Chart as ChartJS, CategoryScale, LinearScale, BarElement,
-  Title, Tooltip, Legend
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
 } from "chart.js";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -67,13 +68,7 @@ export const Route = createFileRoute("/franchise")({
   component: FranchisePage,
 });
 
-const STATUSES: OutreachStatus[] = [
-  "reached_out",
-  "medium",
-  "read",
-  "replied",
-  "demo_booked",
-];
+const STATUSES: OutreachStatus[] = ["reached_out", "medium", "read", "replied", "demo_booked"];
 
 const STATUS_STYLE: Record<OutreachStatus, string> = {
   reached_out: "bg-purple-50 text-purple-700 hover:bg-purple-100",
@@ -92,7 +87,9 @@ function StatusBadge({ status, className = "" }: { status: OutreachStatus; class
     demo_booked: "bg-emerald-500",
   };
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold tracking-wide shadow-3xs ${STATUS_STYLE[status]} ${className}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold tracking-wide shadow-3xs ${STATUS_STYLE[status]} ${className}`}
+    >
       <span className={`h-1.5 w-1.5 rounded-full ${dotColor[status]}`} />
       {OUTREACH_STATUS_LABEL[status]}
     </span>
@@ -264,7 +261,9 @@ const ConsultantRow = memo(function ConsultantRow({
         ) : (
           <select
             value={c.status}
-            onChange={(e) => updateFranchiseConsultant(c.id, { status: e.target.value as OutreachStatus })}
+            onChange={(e) =>
+              updateFranchiseConsultant(c.id, { status: e.target.value as OutreachStatus })
+            }
             className={`h-7 w-[120px] text-xs font-bold rounded-full px-2 py-0.5 border-none focus:outline-none cursor-pointer transition-all ${STATUS_STYLE[c.status]}`}
           >
             {STATUSES.map((s) => (
@@ -352,7 +351,9 @@ function FranchisePage() {
   const [newEmail, setNewEmail] = useState("");
   const [newLinkedin, setNewLinkedin] = useState("");
   const [newStatus, setNewStatus] = useState<OutreachStatus>("reached_out");
-  const [newMedium, setNewMedium] = useState<"LinkedIn" | "WhatsApp" | "Email" | "Call">("LinkedIn");
+  const [newMedium, setNewMedium] = useState<"LinkedIn" | "WhatsApp" | "Email" | "Call">(
+    "LinkedIn",
+  );
   const [newOwner, setNewOwner] = useState(reps[0]?.name || "Bhuvaneshwari");
   const [newRemark, setNewRemark] = useState("");
 
@@ -360,8 +361,16 @@ function FranchisePage() {
     const q = search.toLowerCase();
 
     const toSets = (rules: Record<string, "include" | "exclude">) => ({
-      inc: new Set(Object.entries(rules).filter(([, m]) => m === "include").map(([k]) => k)),
-      exc: new Set(Object.entries(rules).filter(([, m]) => m === "exclude").map(([k]) => k)),
+      inc: new Set(
+        Object.entries(rules)
+          .filter(([, m]) => m === "include")
+          .map(([k]) => k),
+      ),
+      exc: new Set(
+        Object.entries(rules)
+          .filter(([, m]) => m === "exclude")
+          .map(([k]) => k),
+      ),
     });
     const status = toSets(statusRules);
     const medium = toSets(mediumRules);
@@ -510,19 +519,23 @@ function FranchisePage() {
         const ws = wb.Sheets[wsname];
         const raw = XLSX.utils.sheet_to_json(ws) as any[];
 
-        const cleanList = raw.map((row) => ({
-          name: String(row.name || row.Name || "").trim(),
-          company: row.company || row.Company || undefined,
-          designation: row.designation || row.Designation || undefined,
-          region: row.region || row.Region || row.Location || row.location || undefined,
-          phone: row.phone ? String(row.phone) : undefined,
-          email: row.email || row.Email || undefined,
-          linkedin: row.linkedin || row.LinkedIn || undefined,
-          status: (row.status || row.Status || "reached_out").toLowerCase().replace(" ", "_") as OutreachStatus,
-          medium: (row.medium || row.Medium || "LinkedIn") as any,
-          owner: row.owner || row.Owner || reps[0]?.name || "Bhuvaneshwari",
-          remark: row.remark || row.Remark || undefined,
-        })).filter(x => x.name);
+        const cleanList = raw
+          .map((row) => ({
+            name: String(row.name || row.Name || "").trim(),
+            company: row.company || row.Company || undefined,
+            designation: row.designation || row.Designation || undefined,
+            region: row.region || row.Region || row.Location || row.location || undefined,
+            phone: row.phone ? String(row.phone) : undefined,
+            email: row.email || row.Email || undefined,
+            linkedin: row.linkedin || row.LinkedIn || undefined,
+            status: (row.status || row.Status || "reached_out")
+              .toLowerCase()
+              .replace(" ", "_") as OutreachStatus,
+            medium: (row.medium || row.Medium || "LinkedIn") as any,
+            owner: row.owner || row.Owner || reps[0]?.name || "Bhuvaneshwari",
+            remark: row.remark || row.Remark || undefined,
+          }))
+          .filter((x) => x.name);
 
         if (cleanList.length === 0) {
           toast.error("No valid consultants found in sheet.");
@@ -669,7 +682,9 @@ function FranchisePage() {
         <section className="lg:col-span-3 rounded-xl border bg-card p-5 shadow-card">
           <header className="mb-3">
             <h2 className="text-lg font-semibold">Franchise Outreach Funnel</h2>
-            <p className="text-xs text-muted-foreground">Visualizing pipeline distribution from initial message to booked demo</p>
+            <p className="text-xs text-muted-foreground">
+              Visualizing pipeline distribution from initial message to booked demo
+            </p>
           </header>
           <div className="h-64">
             <Bar
@@ -680,7 +695,7 @@ function FranchisePage() {
                 plugins: { legend: { display: false } },
                 scales: {
                   x: { grid: { display: false } },
-                  y: { beginAtZero: true, grid: { color: "#f1f5f9" } }
+                  y: { beginAtZero: true, grid: { color: "#f1f5f9" } },
                 },
               }}
             />
@@ -705,8 +720,9 @@ function FranchisePage() {
           {/* Per-status Include / Exclude Filter */}
           {(() => {
             const activeCount = Object.keys(statusRules).length;
-            const summaryParts = Object.entries(statusRules).map(([s, mode]) =>
-              `${mode === "exclude" ? "−" : "+"}${OUTREACH_STATUS_LABEL[s as OutreachStatus]}`
+            const summaryParts = Object.entries(statusRules).map(
+              ([s, mode]) =>
+                `${mode === "exclude" ? "−" : "+"}${OUTREACH_STATUS_LABEL[s as OutreachStatus]}`,
             );
             return (
               <Popover>
@@ -719,34 +735,73 @@ function FranchisePage() {
                       {activeCount === 0 ? "All Statuses" : summaryParts.join(", ")}
                     </span>
                     {activeCount > 0 && (
-                      <div role="button" onClick={(e) => { e.stopPropagation(); setStatusRules({}); }} className="ml-1 p-0.5 hover:bg-amber-100 rounded-full">
+                      <div
+                        role="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setStatusRules({});
+                        }}
+                        className="ml-1 p-0.5 hover:bg-amber-100 rounded-full"
+                      >
                         <X className="h-3 w-3 opacity-60 hover:opacity-100 text-amber-700" />
                       </div>
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-64 p-0 rounded-xl border border-slate-200 shadow-xl bg-white z-50" align="start">
+                <PopoverContent
+                  className="w-64 p-0 rounded-xl border border-slate-200 shadow-xl bg-white z-50"
+                  align="start"
+                >
                   <div className="px-3.5 py-2.5 border-b border-slate-100 bg-slate-50/60">
-                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Filter by Status</p>
+                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      Filter by Status
+                    </p>
                   </div>
                   <div className="p-2 space-y-1">
                     {STATUSES.map((s) => {
                       const rule = statusRules[s];
                       const setRule = (mode: "include" | "exclude" | null) => {
-                        setStatusRules((prev) => { const next = { ...prev }; if (mode === null) delete next[s]; else next[s] = mode; return next; });
+                        setStatusRules((prev) => {
+                          const next = { ...prev };
+                          if (mode === null) delete next[s];
+                          else next[s] = mode;
+                          return next;
+                        });
                       };
                       return (
-                        <div key={s} className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all ${rule === "include" ? "bg-emerald-50" : rule === "exclude" ? "bg-rose-50" : "hover:bg-slate-50"}`}>
-                          <span className={`flex-1 text-xs font-semibold ${rule === "include" ? "text-emerald-700" : rule === "exclude" ? "text-rose-700" : "text-slate-600"}`}>{OUTREACH_STATUS_LABEL[s]}</span>
-                          <button onClick={() => setRule(rule === "include" ? null : "include")} className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${rule === "include" ? "bg-emerald-500 border-emerald-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50"}`}>Include</button>
-                          <button onClick={() => setRule(rule === "exclude" ? null : "exclude")} className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${rule === "exclude" ? "bg-rose-500 border-rose-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-rose-400 hover:text-rose-600 hover:bg-rose-50"}`}>Exclude</button>
+                        <div
+                          key={s}
+                          className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all ${rule === "include" ? "bg-emerald-50" : rule === "exclude" ? "bg-rose-50" : "hover:bg-slate-50"}`}
+                        >
+                          <span
+                            className={`flex-1 text-xs font-semibold ${rule === "include" ? "text-emerald-700" : rule === "exclude" ? "text-rose-700" : "text-slate-600"}`}
+                          >
+                            {OUTREACH_STATUS_LABEL[s]}
+                          </span>
+                          <button
+                            onClick={() => setRule(rule === "include" ? null : "include")}
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${rule === "include" ? "bg-emerald-500 border-emerald-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50"}`}
+                          >
+                            Include
+                          </button>
+                          <button
+                            onClick={() => setRule(rule === "exclude" ? null : "exclude")}
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${rule === "exclude" ? "bg-rose-500 border-rose-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-rose-400 hover:text-rose-600 hover:bg-rose-50"}`}
+                          >
+                            Exclude
+                          </button>
                         </div>
                       );
                     })}
                   </div>
                   {activeCount > 0 && (
                     <div className="px-2 pb-2">
-                      <button onClick={() => setStatusRules({})} className="w-full text-[10px] font-semibold text-slate-400 hover:text-slate-600 py-1 rounded hover:bg-slate-50 transition-all border border-dashed border-slate-200">Clear all</button>
+                      <button
+                        onClick={() => setStatusRules({})}
+                        className="w-full text-[10px] font-semibold text-slate-400 hover:text-slate-600 py-1 rounded hover:bg-slate-50 transition-all border border-dashed border-slate-200"
+                      >
+                        Clear all
+                      </button>
                     </div>
                   )}
                 </PopoverContent>
@@ -758,8 +813,8 @@ function FranchisePage() {
           {(() => {
             const MEDIUMS = ["LinkedIn", "WhatsApp", "Email", "Call"];
             const activeCount = Object.keys(mediumRules).length;
-            const summaryParts = Object.entries(mediumRules).map(([k, mode]) =>
-              `${mode === "exclude" ? "−" : "+"}${k}`
+            const summaryParts = Object.entries(mediumRules).map(
+              ([k, mode]) => `${mode === "exclude" ? "−" : "+"}${k}`,
             );
             return (
               <Popover>
@@ -772,34 +827,73 @@ function FranchisePage() {
                       {activeCount === 0 ? "All Mediums" : summaryParts.join(", ")}
                     </span>
                     {activeCount > 0 && (
-                      <div role="button" onClick={(e) => { e.stopPropagation(); setMediumRules({}); }} className="ml-1 p-0.5 hover:bg-blue-100 rounded-full">
+                      <div
+                        role="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMediumRules({});
+                        }}
+                        className="ml-1 p-0.5 hover:bg-blue-100 rounded-full"
+                      >
                         <X className="h-3 w-3 opacity-60 hover:opacity-100 text-blue-700" />
                       </div>
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-64 p-0 rounded-xl border border-slate-200 shadow-xl bg-white z-50" align="start">
+                <PopoverContent
+                  className="w-64 p-0 rounded-xl border border-slate-200 shadow-xl bg-white z-50"
+                  align="start"
+                >
                   <div className="px-3.5 py-2.5 border-b border-slate-100 bg-slate-50/60">
-                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Filter by Medium</p>
+                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      Filter by Medium
+                    </p>
                   </div>
                   <div className="p-2 space-y-1">
                     {MEDIUMS.map((m) => {
                       const rule = mediumRules[m];
                       const setRule = (mode: "include" | "exclude" | null) => {
-                        setMediumRules((prev) => { const next = { ...prev }; if (mode === null) delete next[m]; else next[m] = mode; return next; });
+                        setMediumRules((prev) => {
+                          const next = { ...prev };
+                          if (mode === null) delete next[m];
+                          else next[m] = mode;
+                          return next;
+                        });
                       };
                       return (
-                        <div key={m} className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all ${rule === "include" ? "bg-emerald-50" : rule === "exclude" ? "bg-rose-50" : "hover:bg-slate-50"}`}>
-                          <span className={`flex-1 text-xs font-semibold ${rule === "include" ? "text-emerald-700" : rule === "exclude" ? "text-rose-700" : "text-slate-600"}`}>{m}</span>
-                          <button onClick={() => setRule(rule === "include" ? null : "include")} className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${rule === "include" ? "bg-emerald-500 border-emerald-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50"}`}>Include</button>
-                          <button onClick={() => setRule(rule === "exclude" ? null : "exclude")} className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${rule === "exclude" ? "bg-rose-500 border-rose-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-rose-400 hover:text-rose-600 hover:bg-rose-50"}`}>Exclude</button>
+                        <div
+                          key={m}
+                          className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all ${rule === "include" ? "bg-emerald-50" : rule === "exclude" ? "bg-rose-50" : "hover:bg-slate-50"}`}
+                        >
+                          <span
+                            className={`flex-1 text-xs font-semibold ${rule === "include" ? "text-emerald-700" : rule === "exclude" ? "text-rose-700" : "text-slate-600"}`}
+                          >
+                            {m}
+                          </span>
+                          <button
+                            onClick={() => setRule(rule === "include" ? null : "include")}
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${rule === "include" ? "bg-emerald-500 border-emerald-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50"}`}
+                          >
+                            Include
+                          </button>
+                          <button
+                            onClick={() => setRule(rule === "exclude" ? null : "exclude")}
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${rule === "exclude" ? "bg-rose-500 border-rose-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-rose-400 hover:text-rose-600 hover:bg-rose-50"}`}
+                          >
+                            Exclude
+                          </button>
                         </div>
                       );
                     })}
                   </div>
                   {activeCount > 0 && (
                     <div className="px-2 pb-2">
-                      <button onClick={() => setMediumRules({})} className="w-full text-[10px] font-semibold text-slate-400 hover:text-slate-600 py-1 rounded hover:bg-slate-50 transition-all border border-dashed border-slate-200">Clear all</button>
+                      <button
+                        onClick={() => setMediumRules({})}
+                        className="w-full text-[10px] font-semibold text-slate-400 hover:text-slate-600 py-1 rounded hover:bg-slate-50 transition-all border border-dashed border-slate-200"
+                      >
+                        Clear all
+                      </button>
                     </div>
                   )}
                 </PopoverContent>
@@ -810,8 +904,8 @@ function FranchisePage() {
           {/* Per-owner Include / Exclude Filter */}
           {(() => {
             const activeCount = Object.keys(ownerRules).length;
-            const summaryParts = Object.entries(ownerRules).map(([k, mode]) =>
-              `${mode === "exclude" ? "−" : "+"}${k}`
+            const summaryParts = Object.entries(ownerRules).map(
+              ([k, mode]) => `${mode === "exclude" ? "−" : "+"}${k}`,
             );
             return (
               <Popover>
@@ -824,34 +918,73 @@ function FranchisePage() {
                       {activeCount === 0 ? "All Owners" : summaryParts.join(", ")}
                     </span>
                     {activeCount > 0 && (
-                      <div role="button" onClick={(e) => { e.stopPropagation(); setOwnerRules({}); }} className="ml-1 p-0.5 hover:bg-indigo-100 rounded-full">
+                      <div
+                        role="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOwnerRules({});
+                        }}
+                        className="ml-1 p-0.5 hover:bg-indigo-100 rounded-full"
+                      >
                         <X className="h-3 w-3 opacity-60 hover:opacity-100 text-indigo-700" />
                       </div>
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-64 p-0 rounded-xl border border-slate-200 shadow-xl bg-white z-50" align="start">
+                <PopoverContent
+                  className="w-64 p-0 rounded-xl border border-slate-200 shadow-xl bg-white z-50"
+                  align="start"
+                >
                   <div className="px-3.5 py-2.5 border-b border-slate-100 bg-slate-50/60">
-                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Filter by Owner</p>
+                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      Filter by Owner
+                    </p>
                   </div>
                   <div className="p-2 space-y-1 max-h-60 overflow-y-auto">
                     {reps.map((r) => {
                       const rule = ownerRules[r.name];
                       const setRule = (mode: "include" | "exclude" | null) => {
-                        setOwnerRules((prev) => { const next = { ...prev }; if (mode === null) delete next[r.name]; else next[r.name] = mode; return next; });
+                        setOwnerRules((prev) => {
+                          const next = { ...prev };
+                          if (mode === null) delete next[r.name];
+                          else next[r.name] = mode;
+                          return next;
+                        });
                       };
                       return (
-                        <div key={r.name} className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all ${rule === "include" ? "bg-emerald-50" : rule === "exclude" ? "bg-rose-50" : "hover:bg-slate-50"}`}>
-                          <span className={`flex-1 text-xs font-semibold ${rule === "include" ? "text-emerald-700" : rule === "exclude" ? "text-rose-700" : "text-slate-600"}`}>{r.name}</span>
-                          <button onClick={() => setRule(rule === "include" ? null : "include")} className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${rule === "include" ? "bg-emerald-500 border-emerald-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50"}`}>Include</button>
-                          <button onClick={() => setRule(rule === "exclude" ? null : "exclude")} className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${rule === "exclude" ? "bg-rose-500 border-rose-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-rose-400 hover:text-rose-600 hover:bg-rose-50"}`}>Exclude</button>
+                        <div
+                          key={r.name}
+                          className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all ${rule === "include" ? "bg-emerald-50" : rule === "exclude" ? "bg-rose-50" : "hover:bg-slate-50"}`}
+                        >
+                          <span
+                            className={`flex-1 text-xs font-semibold ${rule === "include" ? "text-emerald-700" : rule === "exclude" ? "text-rose-700" : "text-slate-600"}`}
+                          >
+                            {r.name}
+                          </span>
+                          <button
+                            onClick={() => setRule(rule === "include" ? null : "include")}
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${rule === "include" ? "bg-emerald-500 border-emerald-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50"}`}
+                          >
+                            Include
+                          </button>
+                          <button
+                            onClick={() => setRule(rule === "exclude" ? null : "exclude")}
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${rule === "exclude" ? "bg-rose-500 border-rose-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-rose-400 hover:text-rose-600 hover:bg-rose-50"}`}
+                          >
+                            Exclude
+                          </button>
                         </div>
                       );
                     })}
                   </div>
                   {activeCount > 0 && (
                     <div className="px-2 pb-2">
-                      <button onClick={() => setOwnerRules({})} className="w-full text-[10px] font-semibold text-slate-400 hover:text-slate-600 py-1 rounded hover:bg-slate-50 transition-all border border-dashed border-slate-200">Clear all</button>
+                      <button
+                        onClick={() => setOwnerRules({})}
+                        className="w-full text-[10px] font-semibold text-slate-400 hover:text-slate-600 py-1 rounded hover:bg-slate-50 transition-all border border-dashed border-slate-200"
+                      >
+                        Clear all
+                      </button>
                     </div>
                   )}
                 </PopoverContent>
@@ -892,7 +1025,10 @@ function FranchisePage() {
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={12} className="px-5 py-16 text-center text-slate-400 font-medium bg-slate-50/20">
+                  <td
+                    colSpan={12}
+                    className="px-5 py-16 text-center text-slate-400 font-medium bg-slate-50/20"
+                  >
                     No consultants match the filters.
                   </td>
                 </tr>
@@ -907,7 +1043,9 @@ function FranchisePage() {
         <DialogContent className="max-w-md bg-white">
           <DialogHeader>
             <DialogTitle>Add Franchise Consultant</DialogTitle>
-            <DialogDescription>Create a new Franchise consultant entry in the outreach logs.</DialogDescription>
+            <DialogDescription>
+              Create a new Franchise consultant entry in the outreach logs.
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleAddSubmit} className="space-y-4">
             <div className="space-y-1">
@@ -1047,7 +1185,10 @@ function FranchisePage() {
               <Button type="button" variant="outline" onClick={() => setShowAdd(false)}>
                 Cancel
               </Button>
-              <Button type="submit" className="bg-gradient-brand text-white border-0 hover:opacity-90">
+              <Button
+                type="submit"
+                className="bg-gradient-brand text-white border-0 hover:opacity-90"
+              >
                 Save Consultant
               </Button>
             </DialogFooter>
@@ -1073,12 +1214,17 @@ function FranchisePage() {
                 className="absolute inset-0 opacity-0 cursor-pointer"
               />
               <Upload className="mx-auto h-8 w-8 text-slate-400 mb-2" />
-              <p className="text-sm font-semibold text-slate-700">Click to choose a file or drag here</p>
+              <p className="text-sm font-semibold text-slate-700">
+                Click to choose a file or drag here
+              </p>
               <p className="text-xs text-slate-400 mt-1">Supports CSV, XLSX or XLS</p>
             </div>
             <div className="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border">
               <p className="font-bold text-slate-700 mb-1">Expected columns:</p>
-              <p className="font-mono">name *, company, designation, region, phone, email, linkedin, status, medium, owner, remark</p>
+              <p className="font-mono">
+                name *, company, designation, region, phone, email, linkedin, status, medium, owner,
+                remark
+              </p>
               <p className="mt-2 text-slate-400">* Column name is required. Others are optional.</p>
             </div>
           </div>
