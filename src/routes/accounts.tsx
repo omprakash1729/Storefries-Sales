@@ -72,6 +72,7 @@ export const Route = createFileRoute("/accounts")({
 const STATUSES: AccountStatus[] = [
   "new_lead",
   "prospect",
+  "qualified",
   "demo",
   "proposal_sent",
   "trial",
@@ -273,6 +274,7 @@ const AccountRow = memo(function AccountRow({
               "h-7 w-[130px] text-xs font-bold rounded-full px-2.5 py-0.5 border-none focus:outline-none cursor-pointer transition-all",
               a.status === "new_lead" && "bg-purple-50 text-purple-700 hover:bg-purple-100",
               a.status === "prospect" && "bg-sky-50 text-sky-700 hover:bg-sky-100",
+              a.status === "qualified" && "bg-blue-50 text-blue-700 hover:bg-blue-100",
               a.status === "demo" && "bg-indigo-50 text-indigo-700 hover:bg-indigo-100",
               a.status === "proposal_sent" && "bg-emerald-50 text-emerald-700 hover:bg-emerald-100",
               a.status === "trial" && "bg-amber-50 text-amber-700 hover:bg-amber-100",

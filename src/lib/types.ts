@@ -1,6 +1,7 @@
 export type AccountStatus =
   | "new_lead"
   | "prospect"
+  | "qualified"
   | "demo"
   | "proposal_sent"
   | "trial"
@@ -42,6 +43,7 @@ export interface SalesRep {
 export const STATUS_LABEL: Record<AccountStatus, string> = {
   new_lead: "New Lead",
   prospect: "Prospect",
+  qualified: "Qualified",
   demo: "Demo Attended",
   proposal_sent: "Proposal Sent",
   trial: "Trial Started",

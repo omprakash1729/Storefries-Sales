@@ -10,6 +10,7 @@ export interface Metrics {
   total: number;
   new_lead: number;
   prospect: number;
+  qualified: number;
   demo: number;
   proposal_sent: number;
   trial: number;
@@ -26,6 +27,7 @@ export function computeMetrics(accounts: Account[]): Metrics {
     total: uniqueGroups.length,
     new_lead: 0,
     prospect: 0,
+    qualified: 0,
     demo: 0,
     proposal_sent: 0,
     trial: 0,
@@ -40,6 +42,7 @@ export function computeMetrics(accounts: Account[]): Metrics {
 
     // ⛔ EXCLUSIONARY RULE: If a company was ever rejected, it shouldn't inflate early-funnel counts like Prospect
     if (distinctStatuses.has("rejected")) {
+      distinctStatuses.delete("qualified");
       distinctStatuses.delete("prospect");
       distinctStatuses.delete("new_lead");
     }

@@ -66,6 +66,7 @@ function Dashboard() {
 
       // ⛔ EXCLUSIONARY RULE: Parity with counting engine. A rejected company shouldn't be listed in early-funnel filters.
       if (historyStatuses.has("rejected")) {
+        historyStatuses.delete("qualified");
         historyStatuses.delete("prospect");
         historyStatuses.delete("new_lead");
       }
@@ -98,12 +99,12 @@ function Dashboard() {
   }, [filteredUniqueCompanies]);
 
   const funnelData = {
-    labels: ["New Lead", "Prospect", "Demo", "Proposal", "Trial", "Rejected"],
+    labels: ["New Lead", "Prospect", "Qualified", "Demo", "Proposal", "Trial", "Rejected"],
     datasets: [
       {
         label: "Accounts",
-        data: [m.new_lead, m.prospect, m.demo, m.proposal_sent, m.trial, m.rejected],
-        backgroundColor: ["#8b5cf6", "#94a3b8", "#0073c8", "#14b8a6", "#f59e0b", "#f43f5e"],
+        data: [m.new_lead, m.prospect, m.qualified, m.demo, m.proposal_sent, m.trial, m.rejected],
+        backgroundColor: ["#8b5cf6", "#94a3b8", "#6366f1", "#0073c8", "#14b8a6", "#f59e0b", "#f43f5e"],
         borderRadius: 8,
         borderWidth: 0,
       },
@@ -153,6 +154,15 @@ function Dashboard() {
           progress={(m.prospect / Math.max(1, m.total)) * 100}
           onClick={() => handleToggleFilter("prospect")}
           active={statusFilter === "prospect"}
+        />
+        <KpiCard
+          label="Qualified"
+          value={m.qualified}
+          sub="Qualified leads"
+          theme="indigo"
+          progress={(m.qualified / Math.max(1, m.total)) * 100}
+          onClick={() => handleToggleFilter("qualified")}
+          active={statusFilter === "qualified"}
         />
         <KpiCard
           label="Demos"
@@ -226,6 +236,7 @@ function Dashboard() {
           <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             {[
               { l: "Prospect", v: m.prospect, c: "bg-slate-400" },
+              { l: "Qualified", v: m.qualified, c: "bg-indigo-500" },
               { l: "Demo", v: m.demo, c: "bg-sky-500" },
               { l: "Trial", v: m.trial, c: "bg-amber-500" },
               { l: "Rejected", v: m.rejected, c: "bg-rose-500" },
