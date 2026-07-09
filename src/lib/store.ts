@@ -109,15 +109,31 @@ export const useStore = create<State>()((set, get) => ({
   fetchData: async () => {
     set({ isLoading: true });
     try {
-      const [accountsRes, repsRes] = await Promise.all([
-        supabase.from("sales_accounts").select("*").order("createdAt", { ascending: false }),
-        supabase.from("sales_reps").select("*").order("name"),
-      ]);
+      let allAccounts: Account[] = [];
+      let page = 0;
+      const pageSize = 1000;
 
-      if (accountsRes.error) throw accountsRes.error;
+      while (true) {
+        const { data, error } = await supabase
+          .from("sales_accounts")
+          .select("*")
+          .order("createdAt", { ascending: false })
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+
+        if (error) throw error;
+        if (data) {
+          allAccounts.push(...data);
+          if (data.length < pageSize) break;
+        } else {
+          break;
+        }
+        page++;
+      }
+
+      const repsRes = await supabase.from("sales_reps").select("*").order("name");
       if (repsRes.error) throw repsRes.error;
 
-      const accounts = accountsRes.data as Account[];
+      const accounts = allAccounts;
       const reps = repsRes.data as SalesRep[];
 
       // Seamless Migration Logic:

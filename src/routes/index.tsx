@@ -104,7 +104,15 @@ function Dashboard() {
       {
         label: "Accounts",
         data: [m.new_lead, m.prospect, m.qualified, m.demo, m.proposal_sent, m.trial, m.rejected],
-        backgroundColor: ["#8b5cf6", "#94a3b8", "#6366f1", "#0073c8", "#14b8a6", "#f59e0b", "#f43f5e"],
+        backgroundColor: [
+          "#8b5cf6",
+          "#94a3b8",
+          "#6366f1",
+          "#0073c8",
+          "#14b8a6",
+          "#f59e0b",
+          "#f43f5e",
+        ],
         borderRadius: 8,
         borderWidth: 0,
       },
@@ -209,9 +217,9 @@ function Dashboard() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         {/* Funnel */}
-        <section className="lg:col-span-2 rounded-xl border bg-card p-5 shadow-card">
+        <section className="rounded-xl border bg-card p-5 shadow-card">
           <header className="mb-3">
             <h2 className="text-lg font-semibold">Conversion Funnel</h2>
             <p className="text-xs text-muted-foreground">
@@ -250,38 +258,6 @@ function Dashboard() {
                 <span className="ml-auto font-semibold">{s.v}</span>
               </div>
             ))}
-          </div>
-        </section>
-
-        {/* Rep performance */}
-        <section className="rounded-xl border bg-card p-5 shadow-card">
-          <header className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Top Rep Performance</h2>
-          </header>
-          <div className="space-y-4 max-h-[22rem] overflow-y-auto pr-1">
-            {repStats.map(({ rep, total, demo, trial, rejected, conversion }) => (
-              <div key={rep.name} className="space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <RepAvatar name={rep.name} />
-                  <div className="flex-1">
-                    <div className="text-sm font-medium leading-tight">{rep.name}</div>
-                    <div className="text-[11px] text-muted-foreground">
-                      {total} accounts · {demo} demo · {trial} trial · {rejected} rej
-                    </div>
-                  </div>
-                  <div className="text-sm font-bold text-gradient-brand">{conversion}%</div>
-                </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-gradient-brand"
-                    style={{ width: `${Math.min(100, conversion * 2)}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-            {repStats.length === 0 && (
-              <div className="text-sm text-muted-foreground">No reps yet.</div>
-            )}
           </div>
         </section>
       </div>

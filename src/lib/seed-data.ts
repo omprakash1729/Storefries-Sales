@@ -4,6 +4,159 @@ type Seed = Omit<Account, "id"> & { status: AccountStatus };
 
 const raw: Seed[] = [
   {
+    name: "Venkat ventre",
+    owner: "Bhuvaneshwari",
+    industry: "Healthcare",
+    month: "July 2026",
+    status: "qualified",
+    reason: "sent message from WA asking for their availability to connect",
+    createdAt: "2026-07-06T10:00:00.000Z",
+  },
+  {
+    name: "Derma Vue Clinics",
+    owner: "Bhuvaneshwari",
+    industry: "Healthcare",
+    month: "July 2026",
+    status: "qualified",
+    reason:
+      "sent message from WA asking for their availability to connect - he replied saying 'send details' so i sent pitch deck",
+    createdAt: "2026-07-06T10:05:00.000Z",
+  },
+  {
+    name: "Narayana Health",
+    owner: "Bhuvaneshwari",
+    industry: "Healthcare",
+    month: "July 2026",
+    status: "qualified",
+    reason:
+      "Sent reminder message to connect for demo by 11.30am - follow up Mr.Udit by , july13th to 15th - Email to udit sent with deck or pre- recorded video",
+    createdAt: "2026-07-06T10:10:00.000Z",
+    reminderType: "followup",
+    reminderDate: "2026-07-13T10:00:00.000Z",
+  },
+  {
+    name: "Soch Apparels",
+    owner: "Bhuvaneshwari",
+    industry: "Apparel & Footwear",
+    month: "July 2026",
+    status: "qualified",
+    reason:
+      "Sent msg ti Srijita asking whether we can connect over the phone . - she said we dont have any scope of it",
+    createdAt: "2026-07-06T10:15:00.000Z",
+  },
+  {
+    name: "venkat centre",
+    owner: "Bhuvaneshwari",
+    industry: "Healthcare",
+    month: "July 2026",
+    status: "qualified",
+    reason: "she is in meeting , will get back once done",
+    createdAt: "2026-07-03T10:00:00.000Z",
+  },
+  {
+    name: "Berkowits",
+    owner: "Bhuvaneshwari",
+    industry: "Beauty & Wellness",
+    month: "July 2026",
+    status: "qualified",
+    reason: "Send me the details through whatsapp, will review or get back - sent deck through WA",
+    createdAt: "2026-07-03T10:05:00.000Z",
+  },
+  {
+    name: "Yatharth hospital",
+    owner: "Bhuvaneshwari",
+    industry: "Healthcare",
+    month: "July 2026",
+    status: "qualified",
+    reason: "Cut the call halfway through it - Pankaj Kumar - 8860986692",
+    createdAt: "2026-07-03T10:10:00.000Z",
+  },
+  {
+    name: "Khazana Jewellery",
+    owner: "Bhuvaneshwari",
+    industry: "Jewellery Retail",
+    month: "July 2026",
+    status: "qualified",
+    reason: "Did not pick - Jemma Yugini- 9442570373",
+    createdAt: "2026-07-03T10:15:00.000Z",
+  },
+  {
+    name: "Cothas",
+    owner: "Bhuvaneshwari",
+    industry: "Food & Beverage",
+    month: "July 2026",
+    status: "qualified",
+    reason: "Expect",
+    createdAt: "2026-07-03T10:20:00.000Z",
+  },
+  {
+    name: "Chocolate Bash",
+    owner: "Bhuvaneshwari",
+    industry: "Food & Beverage",
+    month: "July 2026",
+    status: "qualified",
+    reason: "Sent an email to Miran, Creative Director. No Indian contact number available.",
+    createdAt: "2026-07-08T10:00:00.000Z",
+  },
+  {
+    name: "5K Car Care",
+    owner: "Bhuvaneshwari",
+    industry: "Automotive",
+    month: "July 2026",
+    status: "qualified",
+    reason:
+      "Tried contacting the CEO but ended up speaking with Praveen (PRO). Call: 7094484650 WhatsApp: 7094442626. Asked to send WA message. Will review and connect with CEO tomorrow morning/evening.",
+    createdAt: "2026-07-08T10:05:00.000Z",
+  },
+  {
+    name: "Vandha Vettuvom",
+    owner: "Bhuvaneshwari",
+    industry: "Food & Beverage",
+    month: "July 2026",
+    status: "qualified",
+    reason:
+      "Contact: Akhil, Phone: 7845718318. Out of station. Asked to call back on Monday after 11:00 AM.",
+    createdAt: "2026-07-08T10:10:00.000Z",
+  },
+  {
+    name: "Burgerman",
+    owner: "Bhuvaneshwari",
+    industry: "Food & Beverage",
+    month: "July 2026",
+    status: "qualified",
+    reason:
+      "Contact: Ramesh, Phone: 9940169261, Position: COO. Handles operations. Asked to send an email to hello@burgerman.in.",
+    createdAt: "2026-07-08T10:15:00.000Z",
+  },
+  {
+    name: "Basics (Hasbro)",
+    owner: "Bhuvaneshwari",
+    industry: "Apparel & Footwear",
+    month: "July 2026",
+    status: "qualified",
+    reason:
+      "Contact: Suhail Sathar, Phone: 9841046796, Director. Referred to Promanage. Pricing for AI Brand Agent is high. Asked to send deck via WhatsApp.",
+    createdAt: "2026-07-08T10:20:00.000Z",
+  },
+  {
+    name: "Mysore Saree",
+    owner: "Bhuvaneshwari",
+    industry: "Apparel & Footwear",
+    month: "July 2026",
+    status: "qualified",
+    reason: "Did not answer the call.",
+    createdAt: "2026-07-08T10:25:00.000Z",
+  },
+  {
+    name: "Topi Vappa Biryani",
+    owner: "Bhuvaneshwari",
+    industry: "Food & Beverage",
+    month: "July 2026",
+    status: "qualified",
+    reason: "Spoke with the owner. No contact number available. Sent an email to the founder.",
+    createdAt: "2026-07-08T10:30:00.000Z",
+  },
+  {
     name: "Mysore Saree Udyog",
     owner: "Bhuvaneshwari",
     industry: "Apparel & Footwear",
@@ -99,7 +252,8 @@ const raw: Seed[] = [
     industry: "Healthcare",
     month: "July 2026",
     status: "prospect",
-    reason: "Called Dhananjay - 8826397606 - but didnot pick up - call me around 11 am in the morning tomorrow (friday) - 03.07.2026",
+    reason:
+      "Called Dhananjay - 8826397606 - but didnot pick up - call me around 11 am in the morning tomorrow (friday) - 03.07.2026",
     createdAt: "2026-07-02T10:05:00.000Z",
   },
   {
@@ -171,7 +325,8 @@ const raw: Seed[] = [
     industry: "Healthcare",
     month: "July 2026",
     status: "prospect",
-    reason: "didnot pick the call. sent message via linkedin. She asked the purpose for calling and cut the call afyer that - Please contact by friday 11am",
+    reason:
+      "didnot pick the call. sent message via linkedin. She asked the purpose for calling and cut the call afyer that - Please contact by friday 11am",
     createdAt: "2026-07-01T10:10:00.000Z",
   },
   {
@@ -189,7 +344,8 @@ const raw: Seed[] = [
     industry: "Apparel & Footwear",
     month: "July 2026",
     status: "rejected",
-    reason: "Speaking with someone else thank you so much I dont require a saas platform - sent over the pitch deck",
+    reason:
+      "Speaking with someone else thank you so much I dont require a saas platform - sent over the pitch deck",
     createdAt: "2026-07-01T10:20:00.000Z",
   },
   {
@@ -3273,11 +3429,8 @@ export const SEED_ACCOUNTS: Account[] = [
   ...PATCH_ACCOUNTS,
 ];
 
-export const SEED_REPS = [
-  { name: "Bhuvaneshwari", color: "blue" as const },
-  { name: "Om Prakash", color: "green" as const },
-  { name: "Aswini", color: "purple" as const },
-  { name: "Venkat", color: "amber" as const },
+export const SEED_REPS: SalesRep[] = [
+  { id: "1", name: "Bhuvaneshwari", color: "blue", createdAt: new Date().toISOString() },
 ];
 
 export const ALL_MONTHS = Array.from(new Set(SEED_ACCOUNTS.map((a) => a.month)));
