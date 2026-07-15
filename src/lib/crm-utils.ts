@@ -38,10 +38,39 @@ export interface UniqueCompany {
   history: Account[];
 }
 
+const ALIASES: Record<string, string> = {
+  "aster mdcity": "aster medcity",
+  "sakhuya skin clinic": "sakhiya skin clinic",
+  "sakhiya skin cllinic": "sakhiya skin clinic",
+  "derma vue": "derma vue clinics",
+  "dermavue clinics": "derma vue clinics",
+  "indira ivf fertility": "indira ivf",
+  "venkat ventre": "venkat center",
+  "venkat centre": "venkat center",
+  "yatharth hospital": "yatharth hospitals",
+  "havells india private ltd": "havells",
+  "wockharft hospitals": "wockhardt hospitals",
+  "mysore saree udyog": "mysore saree",
+  "berkowits hair and skin": "berkowits",
+  "basics llife": "basics",
+  "basics (hasbro)": "basics",
+  "fasta pizza": "fazta pizza",
+  "tea bench/zwarma": "tea bench zwarma",
+};
+
+export function normalizeCompanyName(name: string): string {
+  let lower = name.trim().toLowerCase();
+  if (ALIASES[lower]) {
+    lower = ALIASES[lower];
+  }
+  // Remove spaces and non-alphanumeric characters to robustly group same names
+  return lower.replace(/[^a-z0-9]/g, "");
+}
+
 export function groupAccountsByCompany(accounts: Account[]): UniqueCompany[] {
   const map = new Map<string, Account[]>();
   for (const a of accounts) {
-    const key = a.name.trim().toLowerCase();
+    const key = normalizeCompanyName(a.name);
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(a);
   }
