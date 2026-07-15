@@ -291,24 +291,16 @@ const AccountRow = memo(function AccountRow({
       </td>
       <td className="px-7 py-4.5 text-center">
         <div className="flex items-center justify-center">
-          {!isEditMode ? (
-            <div
-              className="h-7 w-7 rounded-full bg-primary/5 border border-primary/10 text-primary font-extrabold flex items-center justify-center text-xs cursor-help shadow-xs hover:bg-primary/10 transition-all select-none"
-              title="Total interactions recorded"
-            >
-              {a.followUpCount ?? 0}
-            </div>
-          ) : (
-            <input
-              type="number"
-              min="0"
-              className="h-7 w-12 text-center text-xs font-bold border border-slate-200 shadow-xs rounded bg-white focus:ring-1 ring-primary/50 focus:border-primary focus:outline-none"
-              value={a.followUpCount ?? 0}
-              onChange={(e) =>
-                updateAccount(a.id, { followUpCount: parseInt(e.target.value) || 0 })
-              }
-            />
-          )}
+          <div
+            className="h-7 w-7 rounded-full bg-primary/5 border border-primary/10 text-primary font-extrabold flex items-center justify-center text-xs cursor-help shadow-xs hover:bg-primary/10 transition-all select-none"
+            title="Total interactions (excluding unanswered)"
+          >
+            {uc.history.filter(h => {
+              if (!h.reason) return true;
+              const r = h.reason.toLowerCase();
+              return !(r.includes("not pick") || r.includes("didn't pick") || r.includes("didnt pick") || r.includes("did not pick"));
+            }).length}
+          </div>
         </div>
       </td>
       <td className="px-7 py-4.5 text-xs text-slate-500 font-medium max-w-xs truncate italic group-hover/row:text-slate-600 transition-colors">
