@@ -13,6 +13,7 @@ import {
   Clock,
   Network,
   Briefcase,
+  KanbanSquare,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
@@ -37,6 +38,7 @@ import type { Account } from "@/lib/types";
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/accounts", label: "Accounts", icon: Users },
+  { to: "/kanban", label: "Kanban", icon: KanbanSquare },
   { to: "/bni", label: "BNI Contacts", icon: Network },
   { to: "/franchise", label: "Franchise", icon: Briefcase },
   { to: "/rejected", label: "Rejected", icon: XCircle },

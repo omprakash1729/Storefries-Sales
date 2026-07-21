@@ -23,9 +23,9 @@ import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { useStore } from "@/lib/store";
-import type { Account, AccountStatus, RepColor, AccountContact } from "@/lib/types";
+import type { Account, AccountStatus, LeadStage, RepColor, AccountContact } from "@/lib/types";
 import { groupAccountsByCompany, UniqueCompany } from "@/lib/crm-utils";
-import { INDUSTRIES, STATUS_LABEL } from "@/lib/types";
+import { INDUSTRIES, STATUS_LABEL, LEAD_STAGE_LABEL } from "@/lib/types";
 import { ALL_MONTHS } from "@/lib/seed-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,6 +77,17 @@ const STATUSES: AccountStatus[] = [
   "proposal_sent",
   "trial",
   "rejected",
+];
+const LEAD_STAGES: LeadStage[] = [
+  "identify_account",
+  "active_platform_check",
+  "initial_contact",
+  "social_engagement",
+  "first_email_whatsapp",
+  "cold_call",
+  "demo",
+  "newsletter",
+  "onboarding",
 ];
 const COLORS: RepColor[] = ["blue", "green", "amber", "teal", "purple", "red"];
 
@@ -284,6 +295,32 @@ const AccountRow = memo(function AccountRow({
             {STATUSES.map((s) => (
               <option key={s} value={s} className="bg-white text-slate-700 font-medium">
                 {STATUS_LABEL[s]}
+              </option>
+            ))}
+          </select>
+        )}
+      </td>
+      <td className="px-7 py-4.5">
+        {!isEditMode ? (
+          <div className="h-8 flex items-center">
+            {a.leadStage ? (
+              <span className="text-[10px] font-bold px-2.5 py-1 bg-slate-100/80 text-slate-700 rounded-md border border-slate-200/60 shadow-2xs whitespace-nowrap">
+                {LEAD_STAGE_LABEL[a.leadStage]}
+              </span>
+            ) : (
+              <span className="text-[10px] text-slate-400 italic">No stage</span>
+            )}
+          </div>
+        ) : (
+          <select
+            value={a.leadStage || ""}
+            onChange={(e) => updateAccount(a.id, { leadStage: (e.target.value as LeadStage) || undefined })}
+            className="h-7 w-[140px] text-xs font-medium rounded border border-slate-200 focus:outline-none cursor-pointer transition-all bg-white text-slate-700"
+          >
+            <option value="">No Stage</option>
+            {LEAD_STAGES.map((s) => (
+              <option key={s} value={s}>
+                {LEAD_STAGE_LABEL[s]}
               </option>
             ))}
           </select>
@@ -1157,6 +1194,7 @@ function AccountsPage() {
                 <th className="text-left px-7 py-4.5 font-bold tracking-wider">Owner</th>
                 <th className="text-left px-7 py-4.5 font-bold tracking-wider">Month</th>
                 <th className="text-left px-7 py-4.5 font-bold tracking-wider">Status</th>
+                <th className="text-left px-7 py-4.5 font-bold tracking-wider">Lead Stage</th>
                 <th className="text-center px-7 py-4.5 font-bold tracking-wider">Follow Ups</th>
                 <th className="text-left px-7 py-4.5 font-bold tracking-wider">Remark</th>
                 <th
@@ -1185,7 +1223,7 @@ function AccountsPage() {
               {filteredUnique.length === 0 && (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={9}
                     className="px-5 py-16 text-center text-sm text-slate-400 font-medium bg-slate-50/20"
                   >
                     No accounts match your current filters.
@@ -1247,6 +1285,7 @@ function AddAccountModal({
     reps.includes("Bhuvaneshwari") ? "Bhuvaneshwari" : (reps[0] ?? ""),
   );
   const [status, setStatus] = useState<AccountStatus>("new_lead");
+  const [leadStage, setLeadStage] = useState<LeadStage>("identify_account");
   const [date, setDate] = useState<Date>(new Date());
   const [reason, setReason] = useState("");
   const [followUpCount, setFollowUpCount] = useState(0);
@@ -1273,6 +1312,7 @@ function AddAccountModal({
     setIndustry(industries[0] ?? "Other");
     setOwner(reps.includes("Bhuvaneshwari") ? "Bhuvaneshwari" : (reps[0] ?? ""));
     setStatus("new_lead");
+    setLeadStage("identify_account");
     setReason("");
     setFollowUpCount(0);
     setDate(new Date());
@@ -1299,6 +1339,7 @@ function AddAccountModal({
           prefill.owner ?? (reps.includes("Bhuvaneshwari") ? "Bhuvaneshwari" : (reps[0] ?? "")),
         );
         setStatus(prefill.status ?? "new_lead");
+        setLeadStage(prefill.leadStage ?? "identify_account");
         setReason("");
         setFollowUpCount(prefill.followUpCount ?? 0);
         setDate(new Date());
@@ -1326,6 +1367,7 @@ function AddAccountModal({
               draft.owner ?? (reps.includes("Bhuvaneshwari") ? "Bhuvaneshwari" : (reps[0] ?? "")),
             );
             setStatus(draft.status ?? "new_lead");
+            setLeadStage(draft.leadStage ?? "identify_account");
             setReason(draft.reason ?? "");
             setFollowUpCount(draft.followUpCount ?? 0);
 
@@ -1383,6 +1425,7 @@ function AddAccountModal({
         industry,
         owner,
         status,
+        leadStage,
         date: date.toISOString(),
         reason,
         followUpCount,
@@ -1458,6 +1501,7 @@ function AddAccountModal({
       industry,
       owner,
       status,
+      leadStage,
       month: derivedMonth,
       reason: reason.trim() || undefined,
       createdAt: date.toISOString(),
@@ -1629,6 +1673,22 @@ function AddAccountModal({
                       {STATUSES.map((s) => (
                         <SelectItem key={s} value={s}>
                           {STATUS_LABEL[s]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-xs font-semibold text-slate-600">Lead Stage</Label>
+                  <Select value={leadStage} onValueChange={(v) => setLeadStage(v as LeadStage)}>
+                    <SelectTrigger className="h-10 mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LEAD_STAGES.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {LEAD_STAGE_LABEL[s]}
                         </SelectItem>
                       ))}
                     </SelectContent>

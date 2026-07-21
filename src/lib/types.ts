@@ -7,6 +7,17 @@ export type AccountStatus =
   | "trial"
   | "rejected";
 
+export type LeadStage =
+  | "identify_account"
+  | "active_platform_check"
+  | "initial_contact"
+  | "social_engagement"
+  | "first_email_whatsapp"
+  | "cold_call"
+  | "demo"
+  | "newsletter"
+  | "onboarding";
+
 export interface Account {
   id: string;
   name: string;
@@ -14,6 +25,7 @@ export interface Account {
   industry: string;
   month: string;
   status: AccountStatus;
+  leadStage?: LeadStage;
   reason?: string;
   createdAt?: string; // ISO timestamp
   followUpCount?: number;
@@ -48,6 +60,18 @@ export const STATUS_LABEL: Record<AccountStatus, string> = {
   proposal_sent: "Proposal Sent",
   trial: "Trial Started",
   rejected: "Rejected",
+};
+
+export const LEAD_STAGE_LABEL: Record<LeadStage, string> = {
+  identify_account: "1. Identify Account & Contact",
+  active_platform_check: "2. Active Platform Check",
+  initial_contact: "3. Initial Contact (Phone/Email)",
+  social_engagement: "4. Social Engagement",
+  first_email_whatsapp: "5. First Email & WhatsApp",
+  cold_call: "6. Cold Call",
+  demo: "7. Demo",
+  newsletter: "8. Newsletter",
+  onboarding: "9. Onboarding",
 };
 
 export const REP_COLOR_CLASS: Record<RepColor, string> = {

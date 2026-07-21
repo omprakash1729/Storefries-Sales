@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RejectedRouteImport } from './routes/rejected'
+import { Route as KanbanRouteImport } from './routes/kanban'
 import { Route as FranchiseRouteImport } from './routes/franchise'
 import { Route as BniRouteImport } from './routes/bni'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
@@ -19,6 +20,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const RejectedRoute = RejectedRouteImport.update({
   id: '/rejected',
   path: '/rejected',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KanbanRoute = KanbanRouteImport.update({
+  id: '/kanban',
+  path: '/kanban',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FranchiseRoute = FranchiseRouteImport.update({
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AnalyticsRoute
   '/bni': typeof BniRoute
   '/franchise': typeof FranchiseRoute
+  '/kanban': typeof KanbanRoute
   '/rejected': typeof RejectedRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/analytics': typeof AnalyticsRoute
   '/bni': typeof BniRoute
   '/franchise': typeof FranchiseRoute
+  '/kanban': typeof KanbanRoute
   '/rejected': typeof RejectedRoute
 }
 export interface FileRoutesById {
@@ -70,6 +78,7 @@ export interface FileRoutesById {
   '/analytics': typeof AnalyticsRoute
   '/bni': typeof BniRoute
   '/franchise': typeof FranchiseRoute
+  '/kanban': typeof KanbanRoute
   '/rejected': typeof RejectedRoute
 }
 export interface FileRouteTypes {
@@ -80,9 +89,17 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/bni'
     | '/franchise'
+    | '/kanban'
     | '/rejected'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/accounts' | '/analytics' | '/bni' | '/franchise' | '/rejected'
+  to:
+    | '/'
+    | '/accounts'
+    | '/analytics'
+    | '/bni'
+    | '/franchise'
+    | '/kanban'
+    | '/rejected'
   id:
     | '__root__'
     | '/'
@@ -90,6 +107,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/bni'
     | '/franchise'
+    | '/kanban'
     | '/rejected'
   fileRoutesById: FileRoutesById
 }
@@ -99,6 +117,7 @@ export interface RootRouteChildren {
   AnalyticsRoute: typeof AnalyticsRoute
   BniRoute: typeof BniRoute
   FranchiseRoute: typeof FranchiseRoute
+  KanbanRoute: typeof KanbanRoute
   RejectedRoute: typeof RejectedRoute
 }
 
@@ -109,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/rejected'
       fullPath: '/rejected'
       preLoaderRoute: typeof RejectedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kanban': {
+      id: '/kanban'
+      path: '/kanban'
+      fullPath: '/kanban'
+      preLoaderRoute: typeof KanbanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/franchise': {
@@ -155,6 +181,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnalyticsRoute: AnalyticsRoute,
   BniRoute: BniRoute,
   FranchiseRoute: FranchiseRoute,
+  KanbanRoute: KanbanRoute,
   RejectedRoute: RejectedRoute,
 }
 export const routeTree = rootRouteImport
