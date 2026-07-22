@@ -82,7 +82,7 @@ function KanbanPage() {
       updateAccount(accountId, { leadStage: targetStage });
       toast.success("Lead stage updated");
     } else if (accountId && targetStage === "unassigned") {
-      updateAccount(accountId, { leadStage: undefined });
+      updateAccount(accountId, { leadStage: null as any });
       toast.success("Account removed from pipeline stages");
     }
     
