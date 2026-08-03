@@ -1,4 +1,4 @@
-import type { Account, AccountStatus } from "./types";
+import type { Account, AccountStatus, SalesRep } from "./types";
 
 type Seed = Omit<Account, "id"> & { status: AccountStatus };
 
@@ -3871,7 +3871,7 @@ export const SEED_ACCOUNTS: Account[] = [
 ];
 
 export const SEED_REPS: SalesRep[] = [
-  { id: "1", name: "Bhuvaneshwari", color: "blue", createdAt: new Date().toISOString() },
+  { name: "Bhuvaneshwari", color: "blue" },
 ];
 
 export const ALL_MONTHS = Array.from(new Set(SEED_ACCOUNTS.map((a) => a.month)));

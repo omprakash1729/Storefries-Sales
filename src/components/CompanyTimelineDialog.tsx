@@ -14,6 +14,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 
 export function CompanyTimelineDialog() {
   const {
@@ -22,6 +24,7 @@ export function CompanyTimelineDialog() {
     updateAccount,
     activeCompanyTimeline,
     setActiveCompanyTimeline,
+    isEditMode,
   } = useStore();
 
   const activeCompany = useMemo(() => {
@@ -152,14 +155,47 @@ export function CompanyTimelineDialog() {
 
                       <div className="flex items-start justify-between mb-2 gap-2 flex-wrap pr-6">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-sm font-bold text-slate-800">{h.month}</span>
+                          {isEditMode ? (
+                            <input
+                              type="text"
+                              value={h.month}
+                              onChange={(e) => updateAccount(h.id, { month: e.target.value })}
+                              className="text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 w-24 focus:outline-none focus:ring-1 focus:ring-primary"
+                            />
+                          ) : (
+                            <span className="text-sm font-bold text-slate-800">{h.month}</span>
+                          )}
                           <StatusBadge status={h.status} className="text-[9px]" />
                         </div>
-                        {h.createdAt && (
-                          <span className="text-[10px] font-medium bg-slate-100/80 text-slate-500 px-2 py-1 rounded-md inline-flex items-center gap-1 border border-slate-200/30">
-                            <CalendarIcon className="h-3 w-3" />
-                            {format(new Date(h.createdAt), "MMM dd, yyyy")}
-                          </span>
+                        {isEditMode ? (
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button className="text-[10px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded-md inline-flex items-center gap-1 border border-slate-200/30 cursor-pointer">
+                                <CalendarIcon className="h-3 w-3 text-slate-500" />
+                                {h.createdAt ? format(new Date(h.createdAt), "MMM dd, yyyy") : "Pick Date"}
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0 bg-white" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={h.createdAt ? new Date(h.createdAt) : undefined}
+                                onSelect={(d) => {
+                                  if (d) {
+                                    updateAccount(h.id, { createdAt: d.toISOString() });
+                                    toast.success("Interaction date updated");
+                                  }
+                                }}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        ) : (
+                          h.createdAt && (
+                            <span className="text-[10px] font-medium bg-slate-100/80 text-slate-500 px-2 py-1 rounded-md inline-flex items-center gap-1 border border-slate-200/30">
+                              <CalendarIcon className="h-3 w-3" />
+                              {format(new Date(h.createdAt), "MMM dd, yyyy")}
+                            </span>
+                          )
                         )}
                       </div>
                       <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 mb-2 font-medium">

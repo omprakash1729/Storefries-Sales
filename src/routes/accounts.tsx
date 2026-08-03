@@ -16,6 +16,7 @@ import {
   Users,
   User,
   Upload,
+  History,
 } from "lucide-react";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import type { DateRange } from "react-day-picker";
@@ -203,9 +204,19 @@ const AccountRow = memo(function AccountRow({
               >
                 {uc.name}
               </span>
+              {isEditMode && (
+                <button
+                  onClick={() => setActiveCompanyTimeline(uc.name)}
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border border-slate-200 leading-none shadow-3xs bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer"
+                  title="View Timeline / Activity Logs"
+                >
+                  <History className="h-2.5 w-2.5" />
+                  Logs
+                </button>
+              )}
               {contactCount > 0 && (
                 <button
-                  onClick={() => !isEditMode && setContactsCompany(uc.name)}
+                  onClick={() => setContactsCompany(uc.name)}
                   className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border leading-none shadow-3xs bg-indigo-50 text-indigo-600 border-indigo-200 hover:bg-indigo-100 transition-colors cursor-pointer"
                   title={`${contactCount} contact${contactCount !== 1 ? "s" : ""} — click to view`}
                 >
@@ -354,8 +365,17 @@ const AccountRow = memo(function AccountRow({
       >
         <div
           className="flex items-center justify-end gap-1 opacity-60 group-hover/row:opacity-100 transition-opacity ml-auto"
-          style={{ width: "96px" }}
+          style={{ width: "128px" }}
         >
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-lg text-amber-500 hover:bg-amber-50 hover:text-amber-600 transition-colors"
+            title="View timeline / activity logs"
+            onClick={() => setActiveCompanyTimeline(uc.name)}
+          >
+            <History className="h-4 w-4" />
+          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -412,6 +432,8 @@ function AccountsPage() {
     globalMonths,
     setActiveCompanyTimeline,
     contacts,
+    isEditMode,
+    setIsEditMode,
   } = useStore();
   const [search, setSearch] = useState("");
   // Per-item include/exclude rules for all filters
@@ -422,7 +444,6 @@ function AccountsPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [showAddRep, setShowAddRep] = useState(false);
   const [showImport, setShowImport] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
   const [prefillData, setPrefillData] = useState<Partial<Account> | null>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [contactsCompany, setContactsCompany] = useState<string | null>(null);

@@ -12,7 +12,10 @@ import {
   Upload,
   UserPlus,
   Network,
+  CalendarIcon,
 } from "lucide-react";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
 import { useStore } from "@/lib/store";
 import type { BniContact, OutreachStatus, RepColor } from "@/lib/types";
 import { OUTREACH_STATUS_LABEL } from "@/lib/types";
@@ -251,6 +254,36 @@ const ContactRow = memo(function ContactRow({
           />
         )}
       </td>
+      <td className="px-6 py-4 text-slate-500 font-medium text-xs">
+        {!isEditMode ? (
+          c.createdAt ? format(new Date(c.createdAt), "MMM dd, yyyy") : "—"
+        ) : (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="h-7 text-xs font-semibold px-2 py-1 rounded bg-transparent hover:bg-slate-100 border border-slate-200 cursor-pointer inline-flex items-center gap-1"
+              >
+                <CalendarIcon className="h-3.5 w-3.5 text-slate-400" />
+                {c.createdAt ? format(new Date(c.createdAt), "MMM dd, yyyy") : "Pick Date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 bg-white" align="start">
+              <Calendar
+                mode="single"
+                selected={c.createdAt ? new Date(c.createdAt) : undefined}
+                onSelect={(d) => {
+                  if (d) {
+                    updateBniContact(c.id, { createdAt: d.toISOString() });
+                    toast.success("Creation date updated");
+                  }
+                }}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        )}
+      </td>
       <td className="px-6 py-4">
         {!isEditMode ? (
           <span className="text-xs font-semibold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md border">
@@ -344,18 +377,20 @@ function BniPage() {
     updateBniContact,
     deleteBniContact,
     importBniContacts,
+    isEditMode,
+    setIsEditMode,
   } = useStore();
 
   const [search, setSearch] = useState("");
   const [statusRules, setStatusRules] = useState<Record<string, "include" | "exclude">>({});
   const [mediumRules, setMediumRules] = useState<Record<string, "include" | "exclude">>({});
   const [ownerRules, setOwnerRules] = useState<Record<string, "include" | "exclude">>({});
-  const [isEditMode, setIsEditMode] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [showImport, setShowImport] = useState(false);
 
   // Form State
   const [newName, setNewName] = useState("");
+  const [newDate, setNewDate] = useState<Date>(new Date());
   const [newCompany, setNewCompany] = useState("");
   const [newDesignation, setNewDesignation] = useState("");
   const [newChapter, setNewChapter] = useState("");
@@ -480,6 +515,7 @@ function BniPage() {
       medium: newMedium,
       owner: newOwner,
       remark: newRemark.trim() || undefined,
+      createdAt: newDate.toISOString(),
     });
     toast.success("BNI contact added successfully");
     setShowAdd(false);
@@ -495,6 +531,7 @@ function BniPage() {
     setNewStatus("reached_out");
     setNewMedium("LinkedIn");
     setNewRemark("");
+    setNewDate(new Date());
   };
 
   const exportData = (rows: BniContact[], fmt: "csv" | "xlsx") => {
@@ -1018,6 +1055,7 @@ function BniPage() {
                 <th className="text-left px-6 py-4">Phone</th>
                 <th className="text-left px-6 py-4">Email</th>
                 <th className="text-left px-6 py-4">LinkedIn</th>
+                <th className="text-left px-6 py-4">Date</th>
                 <th className="text-left px-6 py-4">Medium</th>
                 <th className="text-left px-6 py-4">Status</th>
                 <th className="text-left px-6 py-4">Rep (Owner)</th>
@@ -1039,7 +1077,7 @@ function BniPage() {
               {filtered.length === 0 && (
                 <tr>
                   <td
-                    colSpan={12}
+                    colSpan={13}
                     className="px-5 py-16 text-center text-slate-400 font-medium bg-slate-50/20"
                   >
                     No contacts match the filters.
@@ -1132,6 +1170,30 @@ function BniPage() {
                 onChange={(e) => setNewLinkedin(e.target.value)}
                 placeholder="linkedin.com/in/username"
               />
+            </div>
+
+            <div className="space-y-1">
+              <Label>Date of Creation</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    className="w-full justify-start text-left font-normal h-10 border border-slate-200"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4 text-slate-400" />
+                    {newDate ? format(newDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-white" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={newDate}
+                    onSelect={(d) => d && setNewDate(d)}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

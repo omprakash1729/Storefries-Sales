@@ -63,6 +63,8 @@ interface State {
   isLoading: boolean;
   isAuthenticated: boolean | null;
   activeCompanyTimeline: string | null;
+  isEditMode: boolean;
+  setIsEditMode: (val: boolean) => void;
 
   fetchData: () => Promise<void>;
   fetchContacts: () => Promise<void>;
@@ -105,6 +107,8 @@ export const useStore = create<State>()((set, get) => ({
   isLoading: false,
   isAuthenticated: null,
   activeCompanyTimeline: null,
+  isEditMode: false,
+  setIsEditMode: (val) => set({ isEditMode: val }),
 
   fetchData: async () => {
     set({ isLoading: true });
